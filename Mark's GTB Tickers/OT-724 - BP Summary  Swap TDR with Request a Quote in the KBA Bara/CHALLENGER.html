@@ -1,0 +1,92 @@
+<script>
+    /* TAG */
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-724:ab:bp:tdr-vs-preventivo:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    /* BnP Summary Page Changes*/
+
+    var prevPage = '';
+    var buttonFound = false, stopLoop = true, textUpdate = false;
+    var stf_counter;
+
+    setInterval(function() {
+        if (document.URL.indexOf('/summary/') > 0) {
+            if (prevPage != 'summary') {
+                prevPage = 'summary';
+                executeSevenTwoFourChanges(500);
+            }
+        } else if (prevPage != 'other') {
+            prevPage = 'other';
+            buttonFound = false, stopLoop = true, textUpdate = false;
+        }
+    }, 500);
+
+    setInterval(function() {
+        if (!stopLoop) {
+            updateButtons();
+        }
+    }, 100);
+
+    function updateButtons() {
+        var tempButtons = $('.splitter-column.large-4.columns').find('a');
+        var hrefIsHere = $('.vehicle-view-cta.show-for-large-up').children();
+        
+        var href = -1;
+        buttonFound = false;
+
+        for (stf_counter = 0; stf_counter < hrefIsHere.length; stf_counter++) {
+            if (hrefIsHere[stf_counter].innerText.trim().toLowerCase() == 'Richiedi Preventivo'.toLowerCase()) {
+                href = hrefIsHere[stf_counter].href;
+            }
+        }
+
+        if (href != -1) {
+            for (stf_counter = 0; stf_counter < tempButtons.length; stf_counter++) {
+                if (tempButtons[stf_counter].innerText.trim().toLowerCase() == "Prenota un Test Drive".trim().toLowerCase()) {
+                    if (!stopLoop) {
+                        buttonFound = true;
+                    }
+                    
+                    tempButtons[stf_counter].href = href;//"/guida-allacquisto/scegli-la-tua-ford/contatta-ford-partner";
+                    tempButtons[stf_counter].children[0].children[1].children[0].innerText = "Richiedi un preventivo".trim();
+
+                    tempButtons[stf_counter].onclick = function() { linkClicked(); };            
+                }
+            }
+        }
+
+        
+
+        if (buttonFound) {
+            stopLoop = true;
+        }
+    }
+
+    function executeSevenTwoFourChanges(time) {
+        setTimeout(function() {
+            console.log('OT-724-CHALLENGER');
+            updateButtons();
+            stopLoop = false;
+        }, time);
+
+    }
+
+    /* Redirect Changes */
+    function linkClicked() {
+        textUpdate = false;
+        setInterval(function() {
+            if (!textUpdate) {
+                $('.wizard-title')[0].outerHTML = '<span class="wizard-title">Richiedi un preventivo</span>';
+                $('.step-heading')[0].style.display = 'none';
+                textUpdate = true;
+            }
+        }, 100);
+    }
+</script>

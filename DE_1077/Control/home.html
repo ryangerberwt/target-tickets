@@ -1,0 +1,52 @@
+<script>
+    var snippet_link = null;
+
+   function searchElement(){
+
+      snippet_link = document.querySelectorAll(".billboard-link-layer")[1];
+       if(snippet_link.href.includes("/fahrzeuge/der-neue-ford-mustang-mach-e")){
+           return true;
+       }
+   }
+
+
+   function clickMainContainer(){
+       setTimeout(function(){
+
+           if(searchElement())
+           snippet_link.closest(".billboard-content").addEventListener("click",function(){
+               
+               targetCampaign = {
+               page: {
+                   campaignName: "tt:nwp:opt-1077:ab:hp:hpr-motor:control"
+               }
+           };
+
+           _satellite.track("genericTestingImpressionIDWorkaround");
+           })
+
+       },500)
+   }
+
+   window.onload = function(){
+
+       searchElement();
+       clickMainContainer()
+
+   }
+   
+</script>
+
+
+<!-- 
+    
+    Place the section below within a set attribute action.
+
+    Attribute Name: class
+
+    Selector: #global-ux > DIV.content:eq(0) > DIV:nth-of-type(1) > DIV.genericCarousel:eq(0) > DIV.generic-carousel:eq(0) > DIV.carousel:eq(0) > DIV.flex-viewport:eq(0) > DIV.slide-container:eq(0) > ARTICLE.carousel-slide:eq(1) > DIV.carousel-content:eq(0) > DIV.content:eq(0) > DIV.billboard:eq(0) > DIV.billboard-content:eq(0) > DIV.billboard-inner:eq(0) > A.billboard-link-layer:eq(0)
+
+    Attribute Value: billboard-link-layer  initialized initialized-contextualLinks first-slide
+
+
+-->

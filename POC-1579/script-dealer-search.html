@@ -1,0 +1,86 @@
+<script>
+    console.log('1579 | Dealer Search');
+    var osbLinks, targetNode, $, resultsHtmlSections;
+    const config = { attributes: true, childList: false, subtree: false };
+
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                console.log('found jQuery');
+                clearInterval(waitForJquery);
+                $ = jQuery;
+                run();
+
+            }
+        }, 500);
+
+    }
+    function run() {
+        targetNode = $('div[class^="dealer-locator__search-results ng-isolate-scope"]')[0];
+        const callback = function (mutationsList, observer) {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    if (mutation.target.className === 'dealer-locator__search-results ng-isolate-scope results-available') {
+                        console.log('added');
+                        //Add click events
+                        osbLinks = document.querySelectorAll('a[data-analytics-cta-name="book service"]');
+                        changeHref(osbLinks, 'support/book-a-service/dealer-step');
+                        $.each(osbLinks, function (i, v) {
+                            $(this).on('click', function () {
+                                resultsHtmlSections = $(this).parent().parent().parent().parent().siblings();
+                                refreshCookies(resultsHtmlSections);
+                            });
+                        });
+                        break;
+                    }
+                }
+            }
+        };
+
+
+        const observer = new MutationObserver(callback);
+        //Init the observer - call this method to get things started
+        function initMutationObserver() {
+            observer.observe(targetNode, config);
+        }
+
+
+        initMutationObserver();
+    }
+
+    
+    function refreshCookies(htmlSnippet) {
+        console.log('refresh cookies');
+        if (getCookie('dealerAddressFormatted') !== undefined && getCookie('dealerAddressFormatted') !== '') {
+            document.cookie = "dealerAddressFormatted= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+        if (getCookie('dealerName') !== undefined && getCookie('dealerName') !== '') {
+            document.cookie = "dealerName= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+        storeCookies(htmlSnippet);
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+
+    function storeCookies(htmlSnippet) {
+        console.log('store cookies');
+        document.cookie = 'dealerAddressFormatted=' + (htmlSnippet[1].children[0].innerHTML.replaceAll('\n', '').replaceAll('\t', '') + ',' + htmlSnippet[1].children[1].innerHTML.replaceAll('\n', '').replaceAll('\t', '') + htmlSnippet[1].children[2].innerHTML.replaceAll('\n', '').replaceAll('\t', '').trim() + ' ' + htmlSnippet[1].children[3].innerHTML.replaceAll('\n', '').replaceAll('\t', '')).replace(' ,', ', ').trim();
+        document.cookie = 'dealerName=' + htmlSnippet[0].children[0].innerHTML;
+    }
+
+    function changeHref(elementCollections, newHref) {
+        $.each(elementCollections, function (i, v) {
+            $(this).attr('href', newHref);
+        });
+    }
+
+
+</script>

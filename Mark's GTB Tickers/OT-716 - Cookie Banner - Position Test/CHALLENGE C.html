@@ -1,0 +1,90 @@
+<!-- Permanent cookie overlay -->
+
+<script>
+    $(document).ready(function() {
+        if (document.cookie.indexOf('guxfoe-cookiedisclaimer') < 0) {
+            // The User has not accepted the cookie.
+
+            if (document.URL.includes('configuracion-de-cookies')) {
+                // User is on the configure page don't show the cookie disclaimer.
+                hideOverlay(true);
+            } else {
+                hideOverlay(false);
+
+                //Accept / Config buttons
+                let btns = $('.cookie-disclaimer').find('.cta-button');
+
+                let counter = 0;
+
+                while (counter < btns.length) {
+                    if (/aceptar/i.test(btns[counter].innerText)) {
+                        //Add Click Event here
+                        btns[counter].onclick = function() {
+                            hideOverlay(true);
+                        }
+
+                    } else if (/configurar/i.test(btns[counter].innerText)) {
+                        btns[counter].classList.add('move-right');
+                        btns[counter].id = 'manageCookie';
+                    }
+
+                    counter = counter + 1;
+                }
+            }
+        }
+
+        function hideOverlay(hide) {
+            if (hide) {
+                $('.cookie-disclaimer').css('display', 'none');
+                $('.cookie-disclaimer-background')[0].classList.remove('visible');
+                $('.cookie-disclaimer-background')[0].classList.remove('shown');
+            } else {
+                $('.cookie-disclaimer').css('display', 'block');
+                $('.cookie-disclaimer-background')[0].classList.add('visible');
+                $('.cookie-disclaimer-background')[0].classList.add('shown');
+
+                window.targetCampaign = window.targetCampaign || {
+                    page: {
+                        campaignName: "tt:nwp:opt-716:ab:as:cookie-position:var-c"
+                    }
+                }
+
+                _satellite.track("genericTestingImpressionIDWorkaround");
+            }
+        }
+    });
+</script>
+
+<style>
+    #global-ux .cookie-disclaimer-background {
+        background: rgba(0,0,0,0.8);
+    }
+
+    #global-ux .cookie-disclaimer.bottom {
+        top: 21%;
+        width: 70%;
+        margin: auto;
+        max-width: 1240px;
+    }
+
+    #global-ux .cookie-disclaimer.bottom .text {
+        background-color: #FFF;
+    }
+
+    #global-ux .cookie-disclaimer .text p {
+        color: #1B394E;
+    }
+
+    #global-ux .cookie-disclaimer .text p a {
+        color: #008CBA;
+        font-weight: 300;
+    }
+
+    #global-ux .cookie-disclaimer .text p .cta-button {
+        color: #FFF;
+    }
+
+    #global-ux .move-right {
+        margin-right: 100px;
+    }
+</style>

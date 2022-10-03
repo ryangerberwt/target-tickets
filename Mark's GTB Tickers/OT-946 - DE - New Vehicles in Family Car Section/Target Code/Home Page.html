@@ -1,0 +1,86 @@
+<script>
+    console.log("OT-839 - Home Page");
+
+    $(function() {
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "tt:nwp:opt-839:ab:nav:family-cars:challenger"
+            }
+        }
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    });
+
+    var homePageCarSlider;
+    var homePageCarsIsRunning = false;
+
+    setTimeout(function(){
+        homePageCarSlider = setInterval(homePageCars, 100);
+    }, 1000);
+
+    function homePageCars() {
+        if (!homePageCarsIsRunning) {
+            homePageCarsIsRunning = true;
+
+            try {
+                if ($('.slick-track') != undefined) {
+                    var currentTab = $('.tabs-nav-item.is-active > a')[0].text;
+                    if (currentTab.includes('Familienautos')) {
+                        
+                        var added = false;
+
+                        //get the mondeo
+                        if (getVehicle("MONDEO", 3).length == 0) {
+                            var modeo = getVehicle("MONDEO", 0).clone();
+                            added = true;
+                            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('slickAdd', modeo[0], 1, true);
+                        }
+
+                        //get the focus
+                        if (getVehicle("FOCUS", 3).length == 0) {
+                            var focus = getVehicle("FOCUS", 0).clone();
+                            added = true;
+                            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('slickAdd', focus[0], 0, true);                      
+                        }
+
+                        //get the tourneo courier
+                        if (getVehicle("TOURNEO COURIER", 3).length == 0) {
+                            var tourneo = getVehicle("TOURNEO COURIER", 0).clone();
+                            added = true;
+                            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('slickAdd', tourneo[0], 0, true);
+                        }
+
+                        if (added) {
+                            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('setOption','centerMode', false);
+
+                            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('setPosition');
+
+                            setInterval(function() {
+                                if ($('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel-arrows.hidden').length > 0) {
+                                    $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel-arrows.hidden')[0].classList.remove('hidden');
+                                }
+                            }, 50);
+
+                            $('.tabs-nav-item a:contains("Hybrid & Elektrisch")')[0].click();
+                            $('.tabs-nav-item a:contains("Familienautos")')[0].click();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+
+            homePageCarsIsRunning = false;
+        }
+
+        $(window).resize(function() {
+            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('setOption','centerMode', false);
+            $('#snippetPar-box_1478489040-generalParsys-tabs-3 .carousel.loaded .slide-container').slick('setPosition');
+        });
+
+        function getVehicle(car, pos) {
+            if ($('#snippetPar-box_1478489040-generalParsys-tabs-' + pos).find(".slick-track > .carousel-slide:contains('" + car + "')").length > 0)
+                return $('#snippetPar-box_1478489040-generalParsys-tabs-' + pos).find(".slick-track > .carousel-slide:contains('" + car + "')");
+            return $('#snippetPar-box_1478489040-generalParsys-tabs-' + pos).find(".slide-container > .carousel-slide:contains('" + car + "')");
+        }
+    }
+</script>

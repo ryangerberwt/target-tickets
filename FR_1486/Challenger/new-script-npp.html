@@ -1,0 +1,56 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1486 | Challenger | NPP');
+    var allowed = {
+        'puma': {
+            'selector': 'a[href="/achat/poursuivre-lexperience/bp/ice#/catalogID/WAEFX-CF7-2020-PumaFRA202250/?code=ACMAA_VS-DK"]',
+            'url': '/achat/poursuivre-lexperience/bp/ice-chal#/model?catalogId=WAEFX-CF7-2020-PumaFRA202250'
+        },
+        'focus': {
+            'selector': 'a[href="/achat/poursuivre-lexperience/bp/ice#/catalogID/WAEFX-CGE-2022-FocusMCAFRA202250/"]',
+            'url': '/achat/poursuivre-lexperience/bp/ice-chal#/model?catalogId=WAEFX-CGE-2022-FocusMCAFRA202250'
+        },
+        'fiesta': {
+            'selector': 'a[href="/achat/poursuivre-lexperience/bp/ice#/catalogID/WAEFX-CE1-2022-FiestaCarFRA202200/?code=ACMAA_VS-DJ"]',
+            'url': '/achat/poursuivre-lexperience/bp/ice-chal#/model?catalogId=WAEFX-CE1-2022-FiestaCarFRA202200'
+        }
+    }
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        if (window.location.href !== 'https://www.ford.fr/voitures-neuves?bnpShowroom=on' 
+        && window.location.href !== 'https://www.ford.fr/voitures-neuves' 
+        && window.location.href.indexOf('ford.fr/voitures-neuves') >= 0) {
+            setHrefs();
+        }
+    });
+
+
+    function setElementAttrVal(elementSelector, updatedValue, attrName) {
+        let waitForMe = setInterval(function () {
+        
+            if ($(elementSelector) !== undefined && $(elementSelector).length > 0) {
+                $(elementSelector).attr(attrName, updatedValue);
+                clearInterval(waitForMe);
+            }else{
+                console.log('waiting');
+            }
+        }, 100);
+    }
+
+    function setHrefs() {
+
+        if (window.location.href.indexOf('voitures-neuves/puma') >= 0) {
+            setElementAttrVal(allowed.puma.selector, allowed.puma.url, 'href');
+        }
+        else if (window.location.href.indexOf('voitures-neuves/nouvelle-fiesta') >= 0) {
+            setElementAttrVal(allowed.fiesta.selector, allowed.fiesta.url, 'href');
+
+        }
+        else if (window.location.href.indexOf('voitures-neuves/nouvelle-focus') >= 0 || window.location.href.indexOf('voitures-neuves/r-focus') >= 0) {
+            setElementAttrVal(allowed.focus.selector, allowed.focus.url, 'href');
+        }
+    }
+
+</script>

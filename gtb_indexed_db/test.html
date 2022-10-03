@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+            let dbName = "books";
+    let dbVersion = 2;
+    let openRequest = indexedDB.open("store", dbName);
+
+    openRequest.onsuccess = function () {
+        let db = openRequest.result;
+        alert('success');
+        // continue working with database using db object
+    };
+    openRequest.onupgradeneeded = function (event) {
+        // the existing database version is less than 2 (or it doesn't exist)
+        let db = openRequest.result;
+
+        if (event.oldVersion = dbVersion) {
+            console.log('matched versions')
+        }
+        switch (event.oldVersion) { // existing db version
+            case 0:
+                // version 0 means that the client had no database
+                // perform initialization
+                console.log('no db');
+                break;
+            case evet.oldVersion < dbVersion:
+                // client had version 1
+                // update
+                console.log('db is old');
+                let deleteRequest = indexedDB.deleteDatabase(dbName);
+        }
+    };
+
+    openRequest.onerror = function () {
+        console.error("Error", openRequest.error);
+    };
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

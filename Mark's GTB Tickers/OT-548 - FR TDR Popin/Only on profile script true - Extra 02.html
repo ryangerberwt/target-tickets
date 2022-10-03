@@ -1,0 +1,66 @@
+<script>
+    var Popupdetection = {};
+    Popupdetection.getCookie = function(name) {
+        var cookie = " " + document.cookie;
+        var search = " " + name + "=";
+        var setStr = null;
+        var offset = 0;
+        var end = 0;
+        if (cookie.length > 0) {
+            offset = cookie.indexOf(search);
+            if (offset != -1) {
+                offset += search.length;
+                end = cookie.indexOf(";", offset)
+                if (end == -1) {
+                    end = cookie.length;
+                }
+                setStr = unescape(cookie.substring(offset, end));
+            }
+        }
+        return (setStr);
+    };
+    Popupdetection.getCookie = function(name) {
+        var cookie = " " + document.cookie;
+        var search = " " + name + "=";
+        var setStr = null;
+        var offset = 0;
+        var end = 0;
+        if (cookie.length > 0) {
+            offset = cookie.indexOf(search);
+            if (offset != -1) {
+                offset += search.length;
+                end = cookie.indexOf(";", offset)
+                if (end == -1) {
+                    end = cookie.length;
+                }
+                setStr = unescape(cookie.substring(offset, end));
+            }
+        }
+        return (setStr);
+    };
+
+    var psymaParticipation = Popupdetection.getCookie("psyma_participation");
+    var psymaIpBlock = Popupdetection.getCookie("psyma_ip_block");
+    var popupsDisable = Popupdetection.getCookie("optprg-popups-disable");
+
+    console.log("=====================");
+    console.log("Psyma Participation: " + psymaParticipation);
+    console.log("Psyma IP Block     : " + psymaIpBlock);
+    console.log("Popup Disable      : " + popupsDisable);
+    console.log("=====================");
+
+    // DETECT PSYMA PARTICIPATION
+    if(Popupdetection.getCookie("psyma_participation") === "1" && Popupdetection.getCookie("optprg-popups-disable")) {
+
+    }
+
+    if($("#psyma_layer").length > 0) {
+        console.log("PSYMA ELEMENT EXISTS: " + $("#psyma_layer").length);
+    }
+
+    /*setCookie("optprg-popups-disable", true, {
+        expires: 1,
+        path: "/"
+    });*/
+
+</script>

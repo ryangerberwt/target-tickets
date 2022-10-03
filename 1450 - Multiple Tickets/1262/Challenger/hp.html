@@ -1,0 +1,114 @@
+<script>
+    var $ = jQuery;
+    console.log("OT-1262")
+    var storedData_1262 = {
+        market: "${profile.market}",
+        ticket: "${profile.ticket}",
+        carName: "${profile.carName}",
+        vehicleType:"${profile.vehicleType}",
+        contextualiseLink: "${profile.contextualiseLink}",
+        promo: getPromo()
+
+    }
+    console.log('storedData');
+    console.dir(storedData_1262);
+
+
+    var promo_list;
+    var promo_pages;
+    var str = '';
+
+
+    console.log("stored data  ", storedData_1262)
+
+    function getPromo() {
+        if (localStorage.getItem("promo") != undefined && localStorage.getItem("promo") != null && localStorage.getItem("promo") != '') {
+            return JSON.parse(localStorage.getItem("promo"))
+
+        }
+        return '';
+    }
+
+
+
+    function getLink(storedData) {
+        console.log('getting link')
+        promo_list = storedData_1262.promo;
+        if (storedData.vehicleType == "PV" || storedData.vehicleType == "CV") {
+            let promo_list = JSON.parse(localStorage.getItem("promo"));
+            if (promo_list != null) {
+                for (let i = 0; i < promo_list.length; i++) {
+                    for (let val in promo_list[i]) {
+                        if (storedData.carName.toLowerCase().replace('ford','').indexOf(promo_list[i].name.toLowerCase().replace('nuova','')) > -1) {
+                            for (let prop in promo_pages) {
+                                console.log('checking the following PROP ' + prop.toLowerCase().replace('nuova',''));
+                                console.log('checking the following CAR  ' + storedData.carName.toLowerCase().replace('ford ',''));
+                                if (storedData.carName.toLowerCase().replace('ford ','').includes(prop.toLowerCase().replace('nuova',''))) {
+                                    str = promo_pages[prop];
+                                    console.log('link found ' + str);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    $(document).ready(function () {
+
+        let sub = storedData_1262.contextualiseLink.slice(storedData_1262.contextualiseLink.indexOf("Id=") + 3, storedData_1262.contextualiseLink.indexOf("&"))
+        if (storedData_1262.contextualiseLink.includes("ACMAA_VS-LC")) {
+            storedData_1262.carName = "Ford Fiesta ST"
+        }
+        else if (storedData_1262.contextualiseLink.includes("ACMKC_VS-C9")) {
+            storedData_1262.carName = "Ford Focus ST";
+        }
+        promo_pages = {
+
+            "PUMA": "https://www.ford.it/auto/nuova-puma/promozioni/promozioni-privati.showroom",
+            "KUGA": "https://www.ford.it/auto/kuga/promozioni/promozioni-privati.showroom",
+            "NUOVA FIESTA": "https://www.ford.it/auto/fiesta/promozioni/promozioni-privati.showroom",
+            "FIESTA ST": "https://www.ford.it/auto/fiesta-st/promozioni/promozioni-privati.showroom",
+            "TOURNEO COURIER": "https://www.ford.it/auto/tourneo-courier/promozioni/promozioni-privati.showroom",
+            "ECOSPORT": "https://www.ford.it/auto/ecosport/promozioni/promozioni-privati.showroom",
+            "FOCUS": "https://www.ford.it/auto/focus/promozioni/promozioni-privati.showroom",
+            "FOCUS ST": "https://www.ford.it/auto/nuova-focus-st/promozioni/promozioni-privati.showroom",
+            "TOURNEO CONNECT": "https://www.ford.it/auto/tourneo-connect/promozioni/promozioni-privati.showroom",
+            "MONDEO": "https://www.ford.it/auto/mondeo/promozioni/promozioni-privati.showroom",
+            "S-MAX": "https://www.ford.it/auto/s-max/promozioni/promozioni-privati.showroom",
+            "MUSTANG MACH-E": "https://www.ford.it/auto/mustang-mach-e/promozioni/promozioni-privati.showroom",
+            "GALAXY": "https://www.ford.it/auto/galaxy/promozioni/promozioni-privati.showroom",
+            "EXPLORER": "https://www.ford.it/auto/explorer/promozioni/promozioni-privati.showroom",
+            "FIESTA VAN": "https://www.ford.it/furgoni-pick-up/nuova-fiesta-van/promozioni/promozioni-privati",
+            "TRANSIT COURIER": "https://www.ford.it/furgoni-pick-up/transit-courier/promozioni/promozioni-privati",
+            "TRANSIT CONNECT": "https://www.ford.it/furgoni-pick-up/transit-connect/promozioni/promozioni-privati",
+            "TRANSIT CUSTOM": "https://www.ford.it/furgoni-pick-up/nuovo-transit-custom/promozioni/promozioni-privati",
+            "TRANSIT VAN": "https://www.ford.it/furgoni-pick-up/transit/promozioni/promozioni-privati",
+            "TOURNEO CUSTOM": "https://www.ford.it/furgoni-pick-up/tourneo-custom/promozioni/promozioni-privati",
+            "TRANSIT CHASSIS": "https://www.ford.it/furgoni-pick-up/transit-chassis-cab/promozioni/promozioni-privati",
+            "TRANSIT MINIBUS": "https://www.ford.it/furgoni-pick-up/transit-minibus/promozioni/promozioni-privati",
+            "RANGER": "https://www.ford.it/furgoni-pick-up/ranger/promozioni/promozioni-privati",
+        };
+
+        getLink(storedData_1262);
+        console.log('setting interval');
+        console.log('str is ' + str);
+        let x = setInterval(function () {
+            if (storedData_1262.carName != '' && str != '') {
+                if ($('.billboard-paragraph a[href="/guida-allacquisto/scegli-la-tua-ford/promozioni/offerte-auto"]') !== undefined
+                    && $('.billboard-paragraph a[href="/guida-allacquisto/scegli-la-tua-ford/promozioni/offerte-auto"]').length > 0) {
+                    $('div[data-analytics-content-type="promotions banner"]>.richtext-content>h2').eq(0).text("Scopri le promozioni del mese su " + storedData_1262.carName.replace("Nuova", ""));
+                    $('.billboard-paragraph a[href="/guida-allacquisto/scegli-la-tua-ford/promozioni/offerte-auto"]').attr('href', str)
+                    clearInterval(x);
+                }
+            } else {
+                console.log('nothing found')
+                clearInterval(x);
+            }
+        }, 250)
+
+    });
+
+</script>

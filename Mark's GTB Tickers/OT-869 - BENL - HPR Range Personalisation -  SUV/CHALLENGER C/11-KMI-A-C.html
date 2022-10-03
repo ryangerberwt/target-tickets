@@ -1,0 +1,67 @@
+<!-- C - KMI-A-C -->
+<script>
+    $(document).ready(function(){
+        console.log("OT-869 - C - KMI-A-C");
+        function vehicleOnList() {
+            if ($('.selected label')[0] == undefined)
+                return setTimeout(vehicleOnList, 50);
+            var cars = $('.selected label')
+
+            for (var i = 0; i < cars.length; i++) {
+                switch (cars[i].innerText.toLowerCase()) {
+                    case "new ecosport":
+                    case "edge":
+                        return true;
+                    default:
+                        break;
+                }
+            }
+
+            return false;    
+        }
+        function adobeLog(action) {
+            var d = new Date();
+            d.setTime(d.getTime() + 1209600000);
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.hpr.range.personalisation.market" : "BE-NL",
+                    "profile.hpr.range.personalisation.action" : action,
+                    "profile.hpr.range.personalisation.triggerHomePage" : true,
+                    "profile.hpr.range.personalisation.imageToShow" : "SUV",
+                    "profile.hpr.range.personalisation.visibleUntil" : d,
+                    "profile.hpr.range.personalisation.seen": 0
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+        function setVehicleSelected() {
+            var logIt = vehicleOnList();
+
+            if ($('a:contains("Bevestigen")').length > 0) {
+                $('a:contains("Bevestigen")')[0].onclick = function() { 
+                    logIt = vehicleOnList();
+                    if (logIt) {
+                        adobeLog("KMI-C");
+                    } 
+                };
+            } 
+            if (logIt) {
+                adobeLog("KMI-A");
+            }
+
+            return setTimeout(setVehicleSelected, 50);
+        }
+
+        setVehicleSelected();
+    });
+</script>

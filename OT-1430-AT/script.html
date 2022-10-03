@@ -1,0 +1,326 @@
+<script>
+    console.log('OT-1430');
+
+
+    var steps = /ihre-mobilitaet/;
+    var url = window.location.href;
+    var num;
+    const maxCount = 3;
+    const timeLimit = 900;
+
+    var enableLogs = true;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+    var $;
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                // You can place the rest of your script(s) here
+                setTimeout(displaypopup(), 10000)
+
+            }
+        }, 500);
+    }
+
+    function createPopup() {
+        var popupId = 'js-popup-pumanext';
+        var translations = {
+            mainHeading: "Online Terminbuchung",
+            secondaryHeading: "Buchen Sie Ihren Servicetermin bei Ihrem bevorzugten Ford Partner online.",
+            primaryCta: "Jetzt Servicetermin buchen!",
+            primaryCtaUrl: "https://www.ford.at/hilfe/online-service-buchung/h%C3%A4ndler?qrcid=qrcode::2022:c:re:none:ow:cross-carline:::::none-RETB::nwp:bs:none:"
+        };
+
+        // Get image of configured Puma (exists on page)
+        var carImageUrl =
+            "/content/dam/guxeu/rhd/central/sandbox/training/billboard/ford-pop_up_banner-eu-GettyImages-3x2-1800x1201-bb-man-with-a-labtop-on-a-sofa.jpg";
+
+        // Build the popup
+        var popupShell = $(
+            '<div class="popup-overlay" id="' +
+            popupId +
+            '"><div class="popup-dialog"><div class="popup-header"><button class="popup-close">&times;</button></div><div class="popup-body"><img src="' +
+            carImageUrl +
+            '" /><h1>' +
+            translations.mainHeading +
+            ' </h1><h2 class="heading-small">' +
+            translations.secondaryHeading +
+            '</h2><a href="' +
+            translations.primaryCtaUrl +
+            '" class="popup-btn" id="js-popup-testdrive">' +
+            translations.primaryCta +
+            "</a></div><div style='clear:both;'></div></div></div>"
+        );
+        $("body").append(popupShell);
+
+        setTimeout(() => {
+            openPopup(popupId);
+        }, 4000);
+
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+
+    function openPopup(popupId) {
+
+        Scroll = (function () {
+            var x, y;
+
+            function hndlr() {
+                window.scrollTo(x, y);
+                //return;
+            }
+            return {
+                disable: function (x1, y1) {
+                    x = x1;
+                    y = y1;
+                    if (window.addEventListener) {
+                        window.addEventListener("scroll", hndlr);
+                    } else {
+                        window.attachEvent("onscroll", hndlr);
+                    }
+                },
+                enable: function () {
+                    if (window.removeEventListener) {
+                        window.removeEventListener("scroll", hndlr);
+                    } else {
+                        window.detachEvent("onscroll", hndlr);
+                    }
+                },
+            };
+        })();
+        Scroll.disable(0, document.body.scrollTop);
+        if(popupId === undefined) {
+            popupId = 'js-popup-pumanext';
+        }
+        document.getElementById(popupId).classList.add("active");
+        document
+            .querySelector(".popup-close")
+            .addEventListener("click", function () {
+                closePopup();
+                document.getElementById(popupId).classList.remove("active");
+
+                Scroll.enable();
+            });
+
+    }
+
+    function closePopup(popupId) {
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1430:xt:osb:osb-abandon-popup",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+        logLastOpened();
+        if(popupId === undefined){
+            popupId = 'js-popup-pumanext';
+        }
+        document.getElementById(popupId).classList.remove("active");
+    }
+
+    function currentTimestampUTC() {
+        return Date.now();
+    }
+
+    function check() {
+        if (getCookie('1430-at-osb-aban') !== null && getCookie('1430-at-osb-aban') === 'isTrue' && compareTimestampsAndLimits()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function compareTimestampsAndLimits() {
+
+        //Current
+        var currentState = getLastOpened();
+
+        console.dir(currentState);
+
+        if ((currentState.lastTime === 'none' || currentState.lastTime - currentTimestampUTC() > 900) && currentState.lastCount < 3) {
+            return true;
+        } else {
+            return false;
+        }
+
+
+    }
+
+    function updateCount() {
+        debugger;
+        var current = ( parseInt(sessionStorage.getItem('count'))  === NaN  || sessionStorage.getItem('count') === null) ? 0 : parseInt(sessionStorage.getItem('count'))
+        current += 1;
+       return current;
+    }
+
+    function getLastOpened() {
+        return {
+            'lastTime': sessionStorage.getItem('lastopened') !== null ? sessionStorage.getItem('lastopened') : 'none',
+            'lastCount': sessionStorage.getItem('count') !== null ? sessionStorage.getItem('count') : 0
+        }
+    }
+
+    function logLastOpened() {
+        sessionStorage.setItem('lastopened', currentTimestampUTC());
+        sessionStorage.setItem('count', updateCount());
+    }
+
+
+
+    function displaypopup() {
+        if (check() === true) {
+            createPopup();
+        } else {
+            console.log('check failed');
+        }
+    }
+</script>
+
+
+
+
+<style>
+    .popup-overlay {
+        position: fixed;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 320px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+    }
+
+    @media screen and (min-width: 768px) {
+        .popup-dialog {
+            height: auto;
+            width: 500px;
+        }
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        padding: 0;
+        color: #102a4d;
+        background-color: transparent;
+        margin: 8px 0 0 0;
+    }
+
+    .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body h1,
+    .popup-body h2,
+    .popup-body p {
+        padding: 0 20px;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.6rem;
+        font-weight: bold;
+    }
+
+    .popup-btn {
+        display: block;
+        padding: 8px 20px;
+        background-color: #102a4d;
+        text-decoration: none;
+        color: white;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px,
+            rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        font-size: 1.125rem;
+        cursor: pointer;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px auto;
+        max-width: 250px;
+    }
+
+    .popup-btn:hover {
+        color: white;
+    }
+
+    .heading-small {
+        font-size: 1.2rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .m-small {
+        padding: 20px;
+        font-size: 0.8rem;
+    }
+
+    .voucher-code {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 0;
+        padding: 0;
+    }
+</style>

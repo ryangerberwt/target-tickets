@@ -1,0 +1,577 @@
+<script type="text/javascript">
+    !(function() {
+        var bundle,
+            ENV = { services: {}, constructions: {} },
+            counter = 0,
+            targetErrors = targetErrors || [];
+        function getIPInfo() {
+            if (/targetDebug=1080/i.test(window.location.href)) {
+                initialize();
+            } else {
+                counter++;
+                if (counter > 3)
+                    return overrideLog("Looping too many times");
+
+                $.get("https://www.cloudflare.com/cdn-cgi/trace", function(response) {
+                    checkByIp(response);
+                });
+            }
+            
+        }
+        function overrideLog(error) {
+            if (/targetDebug=1080/i.test(window.location.href)) {
+                console.log(error);
+            }
+            
+            targetErrors.push({ticket: "1080", error});
+        }
+        function checkByIp(response) {
+            var parsedIp = /ip=([\d\.]+)/i.exec(response);
+            
+            if (parsedIp == null)
+                return setTimeout(getIPInfo, 250);
+            else if (parsedIp.length == 0)
+                return setTimeout(getIPInfo, 250);
+
+            var ipAddress = parsedIp[1];
+
+            for (var i = 0; i < IPlist.length; i++) {
+                if (ipAddress.includes(IPlist[i])) {
+                    // IP in Wales, Northern Ireland or England
+                    initialize();
+                }
+            }
+
+            if (userInfo.country == 'united kingdom') {
+                if (navigator.geolocation) {
+                    // Check if IP near one of the cities in Scotland
+                    navigator.geolocation.getCurrentPosition(checkUserLocation);
+                }
+            }
+        }
+
+        function checkUserLocation(pos) {
+            var checkPosition = false;
+
+            var userCoords = {
+                'lat': position.coords.latitude,
+                'lng': position.coords.longitude
+            }
+
+            for (var i = 0; i < validLatLong.length; i++) {
+
+                checkPosition = arePointsNear(userCoords, validLatLong[i], 10);
+
+                if (checkPosition === true) {
+                    initialize();
+                    break;
+                }
+            }
+        }
+
+        function arePointsNear(checkPoint, centerPoint, km) {
+            var ky = 40000 / 360;
+            var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
+            var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
+            var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
+
+            return Math.sqrt(dx * dx + dy * dy) <= km;
+        }
+
+        function initialize() {
+            targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-1079:xt:hp:care-code-hpr"
+                }
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+
+            function waitForBillboard(billboardURI) {
+                if (billboardURI) {
+                    var billboard = $("div.carousel.carousel-billboard-homepage.active").data("flexslider");
+                    if (!billboard)
+                        return setTimeout(function() {
+                            waitForBillboard(billboardURI);
+                        }, 50);
+
+                    ((function realInitialize(billboardURI, flexslider) {
+                        flexslider.addSlide(ENV.constructions.createMockUp(), 0),
+                            ENV.services.remoteOffer(billboardURI, function(err) {
+                                err && (flexslider.removeSlide(0), debugLog(err));
+                            });
+                    })(billboardURI, billboard));
+
+                    // Is Showing
+                }
+            }
+            waitForBillboard("/content/snippets/target/bot-hpr-personalisation");
+        }
+
+        // Adding Required Variables
+        var IPList = [
+            // WALES
+            '2.96.17.',
+            '31.120.9.0',
+            '31.111.69.', 
+            '5.80.155.', 
+            '31.103.253.', 
+            '2.30.163.',
+            '51.9.179.',
+            '31.103.69.',
+            '31.125.123.',
+            '31.116.147.', 
+            '31.205.1.', 
+            '2.220.133.', 
+            '31.112.45.',
+            '31.99.66.0',
+            '46.208.85.',
+            '2.126.176.',
+            '5.69.180.', 
+            '2.121.40.', 
+            '5.64.194.', 
+            '31.91.34.',
+            '51.7.78.', 
+            '2.29.73.', 
+            '2.223.163.', 
+            '2.101.105.',
+            '31.119.251.', 
+            '46.65.153.', 
+            '31.119.210.',
+            '31.123.9.',
+            '2.99.25.',
+            '31.113.217.',
+            '5.69.30.',
+            '2.100.173.',
+            '46.208.15.',
+            '31.51.100.',
+            '31.55.120.',
+            '62.255.176.',
+            '31.53.130.',
+            '31.118.51.',
+            '31.113.51.',
+            '31.118.21.',
+            '2.99.31.',
+            '31.111.36.',
+            '2.102.89.',
+            '31.117.197.',
+            '31.119.48.',
+            '46.65.49.',
+            '31.116.192.',
+            '2.221.205.',
+            '2.223.15.',
+            '2.97.133.',
+            '31.117.230.',
+            '2.120.59.',
+            '5.71.223.',
+            '2.102.52.',
+            '31.114.100.',
+            '31.6.73.',
+            '31.120.61.',
+            '2.100.122.',
+            '31.110.88.',
+            '31.123.215.',
+            '31.98.1.',
+            '31.93.100.',
+            '31.112.110.',
+            '2.100.113.',
+            '31.126.3.',
+            '31.49.171.',
+            '31.104.239.',
+            '2.27.51.',
+            '31.119.88.',
+            '31.98.241.',
+            '31.114.164.',
+            '31.65.145.',
+            '2.223.103.',
+            '31.99.2.',
+            '2.102.114.',
+            '31.112.202.',
+            '31.99.122.',
+            '2.30.246.',
+            '31.115.16.',
+            '31.125.111.',
+            '5.67.190.',
+            '5.71.243.',
+            '31.87.35.',
+            '31.103.242.',
+            '2.103.190.',
+            '31.113.3.',
+            '31.94.233.',
+            '2.219.123.',
+            '31.83.106.',
+            '2.124.132.',
+            '31.118.229.',
+            '2.27.48.',
+            '31.51.221.',
+            '2.97.136.',
+            '2.101.102.',
+            '46.254.202.',
+            '2.97.139.',
+            '31.117.142.',
+            '5.69.187.',
+            '31.116.49.',
+            // NORTHERN IRELAND
+            '31.49.16.',
+            '31.76.48.',
+            '31.90.250.',
+            '2.103.157.',
+            '31.64.3.',
+            '5.80.216.',
+            '31.51.105.',
+            '31.86.166.',
+            '31.90.107.',
+            '62.64.179.',
+            '2.221.95.',
+            '31.99.182.',
+            '2.27.211.',
+            '31.99.11.',
+            '31.66.124.',
+            '31.81.129.',
+            '31.76.147.',
+            '31.85.33.',
+            '31.82.160.',
+            '31.86.107.',
+            '31.88.157.',
+            '62.64.172.',
+            '31.88.39.',
+            '5.69.229.',
+            '31.80.117.',
+            '31.104.95.',
+            '31.89.0.',
+            '5.151.202.',
+            '31.87.6.',
+            '62.253.106.',
+            '31.85.205.',
+            '31.86.117.',
+            '31.80.58.',
+            '46.65.63.',
+            '31.76.215.',
+            '31.85.154.',
+            '5.65.47.',
+            '5.67.185.',
+            '31.96.83.',
+            '31.84.62.',
+            '2.217.181.',
+            '31.91.120.',
+            '62.64.185.',
+            '31.77.214.',
+            '31.79.9.',
+            '2.101.117.',
+            '31.102.6.',
+            '31.84.127.',
+            '31.103.185.',
+            '31.53.148.',
+            '31.82.89.',
+            '31.49.29.',
+            '31.54.189.',
+            '31.77.149.',
+            '5.81.142.',
+            '31.98.122.',
+            '31.83.192.',
+            '5.64.233.',
+            '31.55.40.',
+            '31.82.100.',
+            '31.76.92.',
+            '62.64.161.',
+            '31.79.228.',
+            '31.86.156.',
+            '2.218.118.',
+            '2.220.43.',
+            '31.78.193.',
+            '2.101.123.',
+            '31.81.16.',
+            '62.64.165.',
+            '31.98.73.',
+            '2.220.223.',
+            '31.89.74.',
+            '5.71.102.',
+            '2.125.160.',
+            '2.101.121.',
+            '31.105.235.',
+            '31.79.235.',
+            '31.84.132.',
+            '31.91.111.',
+            '31.98.255.',
+            '2.100.94.',
+            '31.79.209.',
+            '31.49.202.',
+            '31.83.62.',
+            '2.221.173.',
+            '31.81.59.',
+            '5.80.166.',
+            '5.68.178.',
+            '5.80.165.',
+            '2.25.184.',
+            '31.105.125.',
+            '31.84.75.',
+            '31.53.254.',
+            '31.50.109.',
+            '31.82.125.',
+            '5.172.48.',
+            '31.79.44.',
+            '31.86.227.',
+            '31.54.250.',
+            // ENGLAND
+            '51.6.33.',
+            '62.130.215.',
+            '31.48.82.',
+            '2.28.252.',
+            '31.116.245.',
+            '31.74.56.',
+            '5.71.61.',
+            '2.101.50.',
+            '31.93.34.',
+            '31.109.198.',
+            '62.171.12.',
+            '46.254.184.',
+            '2.123.246.',
+            '5.68.45.',
+            '62.253.111.',
+            '5.70.183.',
+            '5.81.46.',
+            '62.185.146.',
+            '31.75.95.',
+            '31.105.76.',
+            '31.85.67.',
+            '31.106.27.',
+            '2.103.144.',
+            '2.122.18.',
+            '46.208.31.',
+            '31.48.30.',
+            '5.23.3.',
+            '2.101.29.',
+            '46.233.80.',
+            '2.98.73.',
+            '31.123.106.',
+            '5.69.52.',
+            '31.99.187.',
+            '51.6.245.',
+            '31.114.59.',
+            '2.100.253.',
+            '31.116.88.',
+            '62.252.42.',
+            '2.17.24.',
+            '31.87.153.',
+            '31.124.186.',
+            '31.48.105.',
+            '31.122.213.',
+            '62.253.125.',
+            '31.103.232.',
+            '2.123.42.',
+            '2.124.64.',
+            '2.125.23.',
+            '62.56.108.',
+            '62.115.244.',
+            '2.103.143.',
+            '31.112.245.',
+            '2.25.77.',
+            '31.55.61.',
+            '31.74.214.',
+            '31.185.35.',
+            '62.3.72.',
+            '31.118.8.',
+            '51.9.102.',
+            '62.231.128.',
+            '31.108.158.',
+            '31.80.0.',
+            '31.91.106.',
+            '2.19.52.',
+            '31.69.19.',
+            '2.27.134.',
+            '2.218.172.',
+            '62.56.48.',
+            '2.123.89.',
+            '2.97.113.',
+            '31.118.64.',
+            '31.101.22.',
+            '31.55.26.',
+            '5.64.184.',
+            '31.92.239.',
+            '2.102.204.',
+            '31.93.37.',
+            '2.26.198.',
+            '31.107.95.',
+            '31.115.51.',
+            '31.110.167.',
+        ];
+
+        var userInfo = {
+            'country': '${profile.geolocation.country}',
+            'state': '${profile.geolocation.state}',
+            'city': '${profile.geolocation.city}',
+            'zip': '${profile.geolocation.zip}'
+        };
+
+        // Scotland
+        var validLatLong = [
+            {
+                'name': 'Inverclyde',
+                'lat': 55.9049859,
+                'lng': -4.8881271
+            },
+            {
+                'name': 'East Dunbartonshire',
+                'lat': 55.9631133,
+                'lng': -4.364544
+            },
+            {
+                'name': 'West Dunbartonshire',
+                'lat': 55.986613,
+                'lng': -4.657781
+            },
+            {
+                'name': 'Renfrewshire',
+                'lat': 55.8478307,
+                'lng': -4.7086411
+            },
+            {
+                'name': 'East Renfrewshire',
+                'lat': 55.7493944,
+                'lng': -4.5249378
+            },
+            {
+                'name': 'Glasgow',
+                'lat': 55.8553807,
+                'lng': -4.3725408
+            },
+            {
+                'name': 'South Ayrshire',
+                'lat': 55.2984748,
+                'lng': -5.3221941
+            },
+            {
+                'name': 'East Ayrshire',
+                'lat': 55.449546,
+                'lng': -4.858235
+            },
+            {
+                'name': 'North Ayrshire',
+                'lat': 55.657772,
+                'lng': -5.2253447
+            },
+            {
+                'name': 'Stirling',
+                'lat': 56.1187003,
+                'lng': -3.9747177
+            },
+            {
+                'name': 'Falkirk',
+                'lat': 56.0048779,
+                'lng': -3.834041
+            },
+            {
+                'name': 'Clackmannanshire',
+                'lat': 56.1447502,
+                'lng': -3.8683334
+            },
+            {
+                'name': 'Edinburgh',
+                'lat': 55.9411885,
+                'lng': -3.2753782
+            },
+            {
+                'name': 'Midlothian',
+                'lat': 55.8211067,
+                'lng': -3.2477209
+            },
+            {
+                'name': 'West Lothian',
+                'lat': 55.8880375,
+                'lng': -3.7490256
+            },
+            {
+                'name': 'East Lothian ',
+                'lat': 55.9479887,
+                'lng': -3.0064571
+            },
+            {
+                'name': 'North Lanarkshire',
+                'lat': 55.8827464,
+                'lng': -4.2329956
+            },
+            {
+                'name': 'South Lanarkshire',
+                'lat': 55.5663252,
+                'lng': -4.3998896
+            }
+        ];
+        ((ENV.constructions.createMockUp = function() {
+                return (function DOMBuilder(obj) {
+                    if (obj) {
+                        if ($.isArray(obj)) {
+                            var i,
+                                arr = [];
+                            for (i = 0; i < obj.length; i++)
+                                obj[i] instanceof $
+                                    ? arr.push(obj[i])
+                                    : arr.push(DOMBuilder(obj[i]));
+                            return arr;
+                        }
+                        if (obj instanceof $) return obj;
+                        if ($.isFunction(obj)) return DOMBuilder(obj());
+                        if (!obj.type) return obj.html || obj.text || undefined;
+                        if (obj.hasOwnProperty("render") && !obj.render) return undefined;
+                        var $e = $("<" + obj.type + ">");
+                        if (
+                            (obj.id && $e.prop("id", obj.id),
+                            obj.className && $e.addClass(obj.className),
+                            $.isPlainObject(obj.data) &&
+                            obj.data.key &&
+                            $e.data(obj.data.key, obj.data.value),
+                                obj.html ? $e.html(obj.html) : $e.text(obj.text || ""),
+                            obj.child && $e.append(DOMBuilder(obj.child)),
+                                $.isPlainObject(obj.handlers))
+                        )
+                            for (var evName in obj.handlers)
+                                $e.on(evName, obj.handlers[evName]);
+                        if ($.isPlainObject(obj.props))
+                            for (var propName in obj.props)
+                                $e.prop(propName, obj.props[propName]);
+                        return $.isFunction(obj.callback) && obj.callback($e), $e;
+                    }
+                })({
+                    type: "article",
+                    className: "carousel-slide slider-model-detail target-slide",
+                    id: "optprg-returning-slide-billboard",
+                    child: [
+                        {
+                            type: "div",
+                            className: "carousel-content",
+                            child: [{ type: "div", className: "content" }]
+                        }
+                    ]
+                });
+            }),
+            (function(bundle) {
+                FordPersonalisation &&
+                FordPersonalisation.target &&
+                "function" == typeof FordPersonalisation.target.getRemoteTargetOffer
+                    ? (bundle.remoteOffer = function remoteOffer(remoteURL, cb) {
+                        FordPersonalisation.target.getRemoteTargetOffer(
+                            remoteURL,
+                            "#optprg-returning-slide-billboard .content",
+                            function() {
+                                cb();
+                            },
+                            function() {
+                                cb("Error");
+                            },
+                            !1,
+                            !1,
+                            !0,
+                            !1
+                        );
+                    })
+                    : (bundle.remoteOffer = function() {
+                        debugLog(
+                            "ERROR: FordPersonalisation.target.getRemoteTargetOffer is not function!"
+                        );
+                    });
+            })(ENV.services),
+            FordPersonalisation.guxFrameworkDeferred.then(function() {
+                getIPInfo();
+                (FordPersonalisation.ptemplate.set("return"), getIPInfo());
+            }));
+    })();
+</script>

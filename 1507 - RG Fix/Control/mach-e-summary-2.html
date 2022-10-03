@@ -1,0 +1,19 @@
+<script>
+
+    var $ = jQuery;
+
+    $(window).on("load", function () {
+
+        console.log('firing impression ID')
+
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1507:ab:bp:remove-smartctas:control'
+            }
+        }
+
+        _satellite.track('genericTestingImpressionIDWorkaround');
+
+    });
+
+</script>

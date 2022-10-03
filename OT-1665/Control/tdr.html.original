@@ -1,0 +1,167 @@
+<script>
+    var $ = jQuery;
+    var nodes;
+    var isMobile = false;
+
+    var enableLogs = true;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+
+    console.log('OT-1632 Control');
+
+    $(document).ready(function () {
+
+        if (getCookie('1632-control-impressionid-fired') === null) {
+            setCookieForImpressionID(1, '/', '1632-control-impressionid-fired', true);
+        }
+
+        waitForElm('div.call-to-action > button').then((elm) => {
+            console.log('Element is ready');
+            console.dir(jQuery(elm));
+            addTracking();
+        });
+    });
+
+    function waitForElm(selector) {
+        return new Promise(resolve => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector));
+            }
+
+            const observer = new MutationObserver(mutations => {
+                console.log('selector : ' + selector);
+                if (document.querySelector(selector)) {
+                    console.log('resolving');
+                    resolve(document.querySelector(selector));
+                    observer.disconnect();
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    }
+
+    function addTracking() {
+        document.querySelectorAll('.call-to-action > button')[0].addEventListener('click', function () {
+            console.log('is form invalid??');
+            console.log(jQuery(('.form-wizard')).hasClass('ng-invalid'));
+            if (jQuery(('.form-wizard')).hasClass('ng-invalid') === false) {
+
+                setTimeout(function () {
+                   
+                    var mboxName = "NL_TDR_FORM_1632";
+                    trackTargetEvent(
+                        {
+                            "mbox": mboxName,
+                            "params": {
+                                "form_submitted": "true"
+                            }
+                        });
+                }, 750)
+            }
+        });
+
+              //For mobile
+              document.querySelectorAll('.call-to-action > button')[0].addEventListener('touchend', function () {
+                console.log('is form invalid??');
+                console.log(jQuery(('.form-wizard')).hasClass('ng-invalid'));
+                if (jQuery(('.form-wizard')).hasClass('ng-invalid') === false) {
+    
+                    setTimeout(function () {
+                        
+                        var mboxName = "NL_TDR_FORM_1632";
+                        trackTargetEvent(
+                            {
+                                "mbox": mboxName,
+                                "params": {
+                                    "form_submitted": "true"
+                                }
+                            });
+                    }, 750)
+                }
+            }); 
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+            console.log("no cookie set --- setting now");
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            console.log("cookie is set");
+            setTimeout(function () {
+                fireImpressionId();
+            }, 500);
+
+        } else {
+            console.log("Cookie is still valid");
+        }
+    }
+
+
+    function fireImpressionId() {
+        console.log('Firing impression ID');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1632:ab:tdr:reduce-spacing:control",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+        setTimeout(function () {
+            setOnClick();
+            $('body').click();
+        }, 500);
+    }
+
+    function trackTargetEvent(params) {
+        return adobe.target.trackEvent(params)
+        //Example params
+        /* 
+            "mbox": MBOXName,
+            "params": {
+                "open": "pop-up-open"
+            }
+        */
+    }
+
+    function setOnClick() {
+        console.log('setOnClick');
+        window.addEventListener('click', function () {
+            console.log('click');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            //_satellite.track('genericTestingImpressionIDWorkaround');
+        });
+
+
+    }
+
+</script>

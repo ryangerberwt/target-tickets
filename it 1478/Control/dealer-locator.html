@@ -1,0 +1,38 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1478 : Control');
+
+    $(document).ready(function () {
+        if (window.location.href.indexOf("ford.it/dealer-locator") > 0) {
+            setTimeout(function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: "tt:nwp:opt-1478:ab:lad:dealer-filters:control"
+                    }
+                };
+                _satellite.track("genericTestingImpressionIDWorkaround");
+                console.log('Fired Impression ID');
+            }, 250);
+            setTimeout(function () {
+                $(document).on('click', blockImpressionId());
+            }, 500);
+
+        }
+    });
+
+
+
+    function blockImpressionId() {
+        $(document).on('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            };
+            //_satellite.track("");
+            console.log('Blocked Impression ID');
+        });
+
+    }
+</script>

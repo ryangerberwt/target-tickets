@@ -1,0 +1,43 @@
+<script>
+    setTimeout(function() {
+        console.log("OT-835 - HEV LP");
+
+        var hevRunner = setInterval(hevChanges, 250);
+        var hevIsRunning = false;
+        var stopHevRunner = true;
+
+        function hevChanges() {
+            if (!hevIsRunning) {
+                hevIsRunning = true;
+
+                getAndMove("KUGA");     // Third
+                getAndMove("MACH-E");   // Second
+                getAndMove("PUMA");     // First
+
+                function getAndMove(car) {
+                    moveVehicle(getVehicle(car));
+                }
+
+                function moveVehicle(object) {
+                    if (object.length > 0) {
+                        for (var i = 0; i < object.length; i++) {
+                            object[i].parentNode.insertBefore(object[i], object[i].parentNode.children[0]);
+                        }
+                    } else {
+                        stopHevRunner = false;
+                    }
+                }
+
+                function getVehicle(car) {
+                    return $(".slick-track > .carousel-slide:contains('" + car + "')");
+                }
+
+                if (stopHevRunner) {
+                    clearInterval(hevRunner);
+                }
+
+                hevIsRunning = false;
+            }
+        }
+    }, 250);
+</script>

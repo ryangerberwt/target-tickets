@@ -1,0 +1,31 @@
+<script>
+    console.log("OT-788");
+    $(document).ready(function(){
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+        var series = getParameterByName('series');
+
+        if(location.pathname === "/achat/poursuivre-lexperience/reservation/configurez-votre-vehicule")
+        {
+            $(window).on( 'hashchange', function( e ) {
+
+                var series = getParameterByName('series');
+                if(window.location.hash.indexOf("/summary") > 0 && (series === "ACMRA_VS-KZ" || series === "ACMRJ_VS-LE"))
+                {
+                    console.log("Control found");
+                    var targetCampaign = targetCampaign || {};
+                    window.targetCampaign = window.targetCampaign || {page: {campaignName: "tt:nwp:opt-788:ab:bp:ebp-sum-cta-position:control"}};
+                    _satellite.track("genericTestingImpressionIDWorkaround");
+                }
+            });
+        }
+    });
+</script>

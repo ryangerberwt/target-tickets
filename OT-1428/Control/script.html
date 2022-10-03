@@ -1,0 +1,77 @@
+<script>
+
+    var $ = jQuery;
+
+    console.log('OT-1428');
+    console.log('Control');
+
+    var personalCvUrls = [
+        'https://www.ford.co.uk/vans-and-pickups/new-fiesta-van/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-courier/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-connect/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-custom/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-minibus/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/ranger/promotions/personal'
+    ];
+
+    var businessCvUrls = [
+        'https://www.ford.co.uk/vans-and-pickups/transit-courier/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit-connect/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit-custom/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/ranger/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/ranger/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit-minibus/promotions/business'
+    ];
+
+
+    $(document).ready(function(){
+
+        if(personalCvUrls.includes(window.location.href))
+        {
+            console.log('found in personalCvUrls'); 
+        }
+        else if(businessCvUrls.includes(window.location.href))
+        {
+            console.log('found in businessCvUrls');
+        }
+        else
+        {
+            console.log('URL Not found in either array');
+            return;
+        }
+
+         //Fire impression
+         fireImpression();
+
+    });
+
+
+    function fireImpression(){
+        console.log('firing impression id');
+        window.targetCampaign = {    
+            page:{
+                campaignName: "tt:nwp:opt-1428:ab:psr:view-others:control"
+            }
+        }
+
+        _satellite.track('genericTestingImpressionIDWorkaround');
+
+
+    }
+
+    function blockImpressionId(){
+        console.log('blocking impression id')
+        window.targetCampaign = {    
+            page:{
+                campaignName: ""
+            }
+        }
+    }
+
+    window.addEventListener('click',blockImpressionId());
+
+
+
+</script>

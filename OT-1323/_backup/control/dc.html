@@ -1,0 +1,572 @@
+<!-- The DC -->
+<script type="text/javascript">
+    var $ = jQuery;
+    var dataStored = false;
+    var globalInfo = undefined;
+    var targetErrors = targetErrors || [];
+    var disclaimers_1323 = [];
+    //Get disclaimer enumerators
+    var enums_1323;
+    var discs_1323;
+    var disclaimersFound = false;
+    console.log('OT-1323 DC');
+
+    $(document).ready(function () {
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+        $(document).ready(function () {
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            $(document).ready(function (services) {
+
+                var StorageHandler = {};
+                StorageHandler.cookie = "opt-gux-it"; // opt-gux-MARKET ~ for countries with multiple locales, name it MARKET_LANG ~ Always lower case.
+                StorageHandler.getData = function () {
+                    var current = JSON.parse(localStorage.getItem(StorageHandler.cookie));
+                    if (current == null)
+                        return [];
+                    else
+                        return current;
+                };
+                StorageHandler.saveData = function (key, data) {
+                    var current = StorageHandler.getData();
+
+                    var exists = StorageHandler.getSpecificData(key);
+
+                    if (exists.length > 0) {
+                        for (var i = 0; i < current.length; i++) {
+                            if (current[i].key == key) {
+                                current[i].data = data;
+                            }
+                        }
+                    } else {
+                        current.push({ key, data });
+                    }
+                    localStorage.setItem(StorageHandler.cookie, JSON.stringify(current));
+                };
+                StorageHandler.getSpecificData = function (key) {
+                    var current = StorageHandler.getData();
+                    return current.filter(function (each) {
+                        return each.key == key;
+                    });
+                };
+
+                function formatMoney(amount) {
+                    return Number(Number(amount).toFixed(0)).toLocaleString().replace(/\,/gm, ".")
+                }
+
+                function getDisclaimers(data) {
+                    disclaimers_1323 = [];
+                    var disclosureContent = $(findDisclaimerContentClass());
+                    console.log("disclosure content >> ",disclosureContent)
+
+                    if (disclosureContent == undefined)
+                        return setTimeout(getDisclaimers, 250);
+
+                    if (disclosureContent.length == 0)
+                        return setTimeout(getDisclaimers, 250);
+
+                    if (isNull(data))
+                        return setTimeout(getDisclaimers, 250);
+
+                    for (var i = 0; i < data.length; i++) {
+                        if (!isNull(data[i].disclaimerKey)) {
+                            for (var j = 0; j < disclosureContent.length; j++) {
+                                if (disclosureContent[j].innerText.includes(data[i].disclaimerKey)) {
+                                    disclaimers_1323.push({ key: "disclaimer" + (i + 1), symbol: data[i].disclaimerKey, type: data[i].type, content: findDisclaimer(disclosureContent[j]) });
+                                    // disclaimers_1323.push({key: "disclaimer" + (i+1), symbol: data[i].disclaimerKey, type: data[i].type, content: findDisclaimer(disclosureContent[j])});
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+
+                    // disclaimers_1323.push({
+                    //     key: "disclaimer5", symbol: "5", type: "Retail", content: findDisclaimer(disclosureContent[5])
+                    // })
+
+                    // disclaimers_1323.push({
+                    //     key: "disclaimer3", symbol: "3", type: "Emissions", content: findDisclaimer(disclosureContent[7])
+                    // })
+
+
+
+                }
+
+                function findDisclaimer(theContent) {
+                    if (theContent.getElementsByTagName('p').length > 0) {
+                        return theContent.getElementsByTagName('p')[0].innerHTML;
+                    } else {
+                        return "";
+                    }
+                }
+
+                function findDisclaimerContentClass() {
+                    var disclosureContent = $('div[class*="BottomDisclosure__BottomDisclosureWrapperContent-sc-1rvjz71-9"]');
+
+                    var prevClass = "";
+                    var currentClass = "";
+
+                    for (var i = 0; i < disclosureContent.length; i++) {
+                        var classLists = disclosureContent[i].classList;
+                        for (var j = 0; j < classLists.length; j++) {
+                            currentClass += "." + classLists[j];
+                        }
+
+                        if (prevClass != "") {
+                            if (prevClass == currentClass) {
+                                return currentClass;
+                            } else {
+                                prevClass = currentClass;
+                                currentClass = "";
+                            }
+                        } else {
+                            prevClass = currentClass;
+                            currentClass = "";
+                        }
+                    }
+                }
+
+                function getPriceNameAndDisclaimerKey(amount) {
+                    var disclaimerKey = "", priceName = "";
+
+                    if (isNull(amount))
+                        return { disclaimerKey, priceName };
+
+                    var p = jQuery('p').filter(function (i) { return jQuery('p')[i].innerText.includes(formatMoney(amount)); });
+
+                    console.log("p tags >> ",p)
+
+                    for (var i = 0; i < p.length; i++) {
+                        disclaimerKey = "", priceName = "";
+                        if (!isNull(p[i].nextElementSibling)) {
+                            disclaimerKey = p[i].nextElementSibling.innerText;
+                        }
+
+                        if (!isNull(p[i].previousElementSibling)) {
+                            priceName = p[i].previousElementSibling.innerText;
+                        }
+                    }
+
+                    if (isNull(disclaimerKey) || isNull(priceName)) {
+                        disclaimerKey = "", priceName = "";
+                    }
+                    console.log("priceName = " + priceName + "  " + "disclaimerkey = " + disclaimerKey);
+
+                    return { disclaimerKey, priceName };
+                }
+
+                var parseRegExp = /catalogID\=([^\/]+)/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = parseRegExp.exec(location.href);
+
+                    var id, code, features = "";
+
+                    if (parsedCurrentURL == null)
+                        return undefined;
+                    else if (parsedCurrentURL.length == 0)
+                        return undefined;
+
+                    var tempList = parsedCurrentURL[1].split('&');
+
+                    for (var i = 0; i < tempList.length; i++) {
+                        var key_value = tempList[i].split('=');
+                        if (key_value.length == 1) {
+                            id = tempList[i];
+                        } else if (key_value[0] == "series") {
+                            code = key_value[1];
+                        } else {
+                            features += features == "" ? key_value[1] : "," + key_value[1];
+                        }
+                    }
+
+                    return {
+                        id: id,
+                        code: code,
+                        features: features
+                    };
+                }
+
+                function getCarConfiguration(IDs, callback) {
+
+                    if (isNull(IDs))
+                        return callback("Information not set");
+
+                    var theLine = IDs.id;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+                        theLine += "~" + IDs.code;
+                    }
+
+                    if (IDs.features != undefined && IDs.features != "") {
+                        theLine += "," + IDs.features.replaceAll("included", "");
+                    }
+
+                    if (isNull(theLine))
+                        return callback("Information not set");
+
+                    var key = [theLine].join("");
+
+                    var data = sessionStorage.getItem(key);
+
+                    if (data != null)
+                        return callback(undefined, JSON.parse(data), key);
+
+                    var url = [
+                        "https://www.servicescache.ford.com/api",
+                        "/vehicleModel/",
+                        "v1",
+                        "/load?locale=",
+                        "it_IT",
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        theLine
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: false
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200) {
+                            //sessionStorage.setItem(key, JSON.stringify(response.data));
+                            return callback(undefined, response.data, key);
+                        }
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function sanitizeAPIResponse(data, IDs) {
+                    console.log("nameplate-data >> ",data);
+                    var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+                    var car = "";
+                    try {
+                        car = getCarName(data, IDs);
+                    } catch (ex) {
+                        overrideLog(ex);
+                        return undefined;
+                    }
+
+                    var retailPrice = data.price.finalPrice.grossRetailWithOTR;
+                    var offerPrice = data.price.finalPrice.recommendedOTRPromotionalPrice;
+
+                    var retailInfo = getPriceNameAndDisclaimerKey(retailPrice);
+                    var offerInfo = getPriceNameAndDisclaimerKey(offerPrice);
+
+                    retailInfo.type = "Retail";
+                    offerInfo.type = "Offer";
+
+                    var combined = [];
+                    combined.push(retailInfo, offerInfo);
+
+                    getDisclaimers(combined);
+
+                    return {
+                        carName: car.name,
+                        date: (new Date()).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combinedWeighted ? fuelPerformance.co2_emission_combinedWeighted.unitTypes : (
+                                        fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : (
+                                            fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : (
+                                                fuelPerformance.co2_emission_extra_urban ? fuelPerformance.co2_emission_extra_urban.unitTypes : undefined
+                                            )
+                                        )
+                                    )
+                                ),
+                            coNEDC: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                                ),
+                            lToKm: typeof fuelPerformance.fuel_consumption_combinedweighted !== "undefined" ? fuelPerformance.fuel_consumption_combinedweighted.unitTypes : (
+                                typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined
+                            ),
+                            kwToKm: fuelPerformance.combined_ecWeighted ? fuelPerformance.combined_ecWeighted.unitTypes :
+                                (fuelPerformance.energy_consumption ? fuelPerformance.energy_consumption.unitTypes.kWh100Km : undefined)
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: retailPrice,
+                        retailTitle: retailInfo.priceName,
+                        offerPrice: offerPrice,
+                        offerTitle: offerInfo.priceName,
+                        dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: car.secondary,
+                        vehicleType: data.props['segment-code'],
+                        contextualiseLink: window.location.pathname + window.location.hash
+                    }
+                }
+
+                function getCarName(data, IDs) {
+                    var carName, subName = "";
+
+                    carName = data.props['nameplate-label'];
+
+                    if (carName.includes("car") || carName.includes("Car"))
+                        carName = carName.replace("Car", "").replace("car", "").trim();
+
+                    if (!carName.toLowerCase().includes("ford"))
+                        carName = "Ford " + carName;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+
+                        var selectedSeries = data.features.selectedByMarketing.filter(function (el) {
+                            return el.code == 'series';
+                        });
+
+                        if (selectedSeries.length > 0) {
+                            subName = (selectedSeries[0].children != undefined ? (selectedSeries[0].children.length > 0 ? selectedSeries[0].children[0].name : "") : "");
+                            subName = (subName != "" ? subName : (selectedSeries[0].features != undefined ? (selectedSeries[0].features.length > 0 ? selectedSeries[0].features[0].name : "") : ""));
+                        }
+
+                        if (subName == "") {
+                            var series = data.features.byMarketing.filter(function (el) {
+                                return el.code == 'series';
+                            });
+
+                            if (series.length > 0) {
+                                if (series[0].features != undefined) {
+                                    if (series[0].features.length > 0) {
+                                        var sub = series[0].features.filter(function (el) {
+                                            return el.code == IDs.code;
+                                        });
+                                        if (sub.length > 0) {
+                                            subName = sub[0].name;
+                                        }
+                                    }
+                                }
+                                if (subName == "") {
+                                    if (series[0].children != undefined) {
+                                        if (series[0].children.length > 0) {
+                                            var sub = series[0].children.filter(function (el) {
+                                                return el.code == IDs.code;
+                                            });
+                                            if (sub.length > 0) {
+                                                subName = sub[0].name;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (carName == ("Ford " + subName) || carName == subName) {
+                        subName = "";
+                    }
+
+                    return {
+                        name: carName,
+                        secondary: subName
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+                services.storageHandler = StorageHandler;
+
+            }(ENV.services));
+
+            var MBOXName = "AT_BP_A_Popin";
+
+            /* Get model basic info */
+
+            var thresholdCounter = 0;
+
+            function reRun(error) {
+                thresholdCounter++;
+                overrideLog(error);
+                if (thresholdCounter < 100) {
+                    setTimeout(runInformationsGathering, 250);
+                }
+            }
+
+            function overrideLog(error) {
+                if (/targetDebug=1323/i.test(window.location.href)) {
+                    console.log(error);
+                }
+
+                targetErrors.push({ ticket: "1323", error });
+            }
+
+            function isNull(obj) {
+                return obj == undefined || obj == null || obj == "";
+            }
+
+            function runInformationsGathering() {
+                //if (!/summary/i.test(window.location.href) && !/WAEDX-CGW-2021-CX727BEVSUVDEU202100/i.test(window.location.href)) {
+                if (/summary/i.test(window.location.href)) {
+                    adobe.target.getOffer({
+                        'mbox': 'global-mbox',
+                        'params': {
+                            "profile.id": "",
+                            'profile.market': "",
+                            "profile.ticket": "",
+                            "profile.carName": "",
+                            "profile.date": "",
+                            "profile.emissions": "",
+                            "profile.img": "",
+                            "profile.retailPrice": "",
+                            "profile.retailTitle": "",
+                            "profile.offerPrice": "",
+                            "profile.offerTitle": "",
+                            "profile.dutyFreePrice": "",
+                            "profile.subName": "",
+                            "profile.vehicleType": "",
+                            "profile.contextualiseLink": "",
+                        },
+                        'success': function (offer) {
+                            adobe.target.applyOffer({
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                            dataStored = true;
+                        },
+                        'error': function (status, error) {
+                            overrideLog({ message: "Error", status, error });
+                        }
+                    });
+
+                    return overrideLog({ message: "Not on Summary Page" });
+                }
+
+                // if (/summary/i.test(window.location.href) && /WAEDX-CGW-2021-CX727BEVSUVDEU202100/i.test(window.location.href)) {
+                if (!/summary/i.test(window.location.href)) {
+                    if ($('div[class*="loading-spinner"]').length > 0) {
+                        isRunning = false;
+                        return reRun("Still loading");
+                    }
+
+                    var currentIDs = ENV.services.getCarIDs();
+
+                    if (isNull(currentIDs))
+                        return reRun("currentIDs not set");
+
+
+                    ENV.services.describeCall(currentIDs, function (err, result, key) {
+                        if (err)
+                            return reRun(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+
+                        // if (isNull(vehicleInfo))
+                        //     return reRun("Vehicle information not captured");
+
+                        // if (!isNull(vehicleInfo.offerPrice) && isNull(vehicleInfo.offerTitle))
+                        //     return reRun("OfferPrice set, but OfferTitle not set");
+                        // if (!isNull(vehicleInfo.retailPrice) && isNull(vehicleInfo.retailTitle))
+                        //     return reRun("RetailPrice set, but RetailTitle not set");
+
+                        var disclaimersKey = "disclaimers_1323_" + key;
+                        ENV.services.storageHandler.saveData(disclaimersKey, disclaimers_1323);
+
+                        globalInfo = vehicleInfo;
+
+                        console.log("VEHICLE INFO >> ",vehicleInfo);
+
+
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                "profile.id": key,
+                                'profile.market': "IT",
+                                "profile.ticket": "OT-1323",
+                                "profile.carName": vehicleInfo.carName,
+                                "profile.date": vehicleInfo.date,
+                                "profile.emissions": JSON.stringify(vehicleInfo.emissions).replace(/"/g, "'"),
+                                "profile.img": vehicleInfo.img,
+                                "profile.retailPrice": vehicleInfo.retailPrice,
+                                "profile.retailTitle": vehicleInfo.retailTitle,
+                                "profile.offerPrice": vehicleInfo.offerPrice,
+                                "profile.offerTitle": vehicleInfo.offerTitle,
+                                "profile.dutyFreePrice": vehicleInfo.dutyFreePrice,
+                                "profile.subName": vehicleInfo.subName,
+                                "profile.vehicleType": vehicleInfo.vehicleType,
+                                "profile.contextualiseLink": vehicleInfo.contextualiseLink,
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                                dataStored = true;
+                            },
+                            'error': function (status, error) {
+                                overrideLog({ message: "Error", status, error });
+                            }
+                        });
+
+                        adobe.target.trackEvent({
+                            'mbox': MBOXName,
+                            'params': {
+                                'summary': 'summary-get-data'
+                            }
+                        });
+                    });
+                }
+            }
+
+            function getDisclaimerEnums(arr) {
+            enums_1323 = $('span[class^="Attributes__AttributePrefixSuffixDropdown"] ~');
+            if (enums_1323 !== undefined) {
+                for (var i = 0; i < enums_1323.length; i++) {
+                    arr.push({ 'enumKey': enums_1323[i].textContent });
+                }
+            }
+        }
+
+            function matchEnumsToDisclaimers(arr) {
+            let discArr_1323 = [];
+            discs_1323 = $('div[class^="BottomDisclosure__BottomDisclosureWrapperContent-sc-1rvjz71-9"]');
+            
+            if (discs_1323 !== undefined) {
+                for (var i = 0; i < arr.length; i++) {
+                    for (var x = 1; x < discs_1323.length; x++) {
+                        if (discs_1323[x].innerText.includes('[' + arr[i].enumKey + ']')) {
+                            console.log('found a disclaimer');
+
+                            let disclaimer_ = {
+                                'disclaimer': i,
+                                'suffix_key': arr[i].enumKey,
+                                'disclaimer_content': discs_1323[x].textContent.replace('[' + arr[i].enumKey + ']', '').trim()
+                            };
+                            console.log("disclaimer >> ",disclaimer_);
+                            discArr_1323.push({
+                                'disclaimer': i,
+                                'suffix_key': arr[i].enumKey,
+                                'disclaimer_content': discs_1323[x].textContent.replace('[' + arr[i].enumKey + ']', '').trim()
+                            });
+                        }
+                    }
+                }
+                console.log("discArr_1323 >> ",discArr_1323);
+                //localStorage.setItem('3.0_disclaimers', '');
+                localStorage.setItem('3.0_disclaimers', JSON.stringify(discArr_1323));
+            
+
+            }
+        }
+
+
+            $(window).on("hashchange", runInformationsGathering);
+           setTimeout(function(){
+            runInformationsGathering();
+            let enumsArr_1323 = [];
+            getDisclaimerEnums(enumsArr_1323);
+            matchEnumsToDisclaimers(enumsArr_1323);
+           },4000)
+        });
+
+    }());
+</script>

@@ -1,0 +1,109 @@
+<script>
+    console.log('OT-1591 Challenger');
+    var $;
+    //These don't get used
+    //var accordionControls, theText, theOtherText;
+    
+    //why do we need this?
+    var isMobile = false;
+
+    //This is fine
+    var _dir = console.dir;
+    var _log = console.log;
+    var enableLogs = false;
+
+    console.log = function (logMsg) {
+        if (enableLogs) {
+            _log.apply(console, arguments);
+        }
+    }
+
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+    window.onload = function () {
+        let jWait = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+
+                // jQuery is loaded
+
+                $ = jQuery;
+
+                clearInterval(jWait);
+
+                console.log('jQuery loaded');
+
+                //Do we need to check for mobile devices? If yes then please
+                //Add the code as documented at: https://confluence.uhub.biz/display/WUNJHBFORD/How+to+check+for+a+mobile+device+via+jQuery
+                
+                /*checkIfMobile()
+
+                if (isMobile) {
+
+                    //We can't use methods that are not defined.
+                    runScriptMobile();
+
+                } else {
+
+                    //We can't use methods that are not defined.
+                    runScriptDesktop();
+
+                }*/
+                
+                //We need to use onhashchange like we do on the 'regular' data collectors so that it checks on each step
+                window.onhashchange = function(){
+                    if (checkPage('summary?') === true) {
+                        //We just need to call the clone in it's own method
+                        cloneAndSwap()
+                        //Please remember to fire the impressionId if required.
+                        //A comprehensive section on troubleshooting them can be found at : https://confluence.uhub.biz/display/WUNJHBFORD/Impression+IDs
+                    }
+                }
+            } else {
+                // jQuery is not loaded
+                console.log("Not loaded - will check again in 500ms");
+            }
+        }, 500);
+    }
+
+    function checkPage(url) {
+        if (window.location.href.indexOf(url) >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function cloneAndSwap() {
+        //Get all the accordions
+        var allAccordions = document.querySelectorAll('div[class^="Accordion__AccordionWrapper-sc-1umbobk-0"]');
+
+        //Only clone the one you need to move
+        var cloned = jQuery(allAccordions[allAccordions.length - 1]).clone(true, true);
+
+        //For some reason the click event does not come through so we have to add it manually
+        cloned.on('click', function (e) {
+            var content = e.target.nextSibling;
+            if (content.className.indexOf('is-hidden') >= 0) {
+                jQuery(content).removeClass('is-hidden');
+
+            } else {
+                jQuery(content).addClass('is-hidden')
+            }
+        });
+
+
+        //Remove the one you have cloned (not the cloned node, but the one you originally cloned from)
+        allAccordions[allAccordions.length - 1].remove();
+
+        //Re-reun the selector to get the updated DOM elements for the accordions
+        var updatedAccordions = document.querySelectorAll('div[class^="Accordion__AccordionWrapper-sc-1umbobk-0"]');
+
+        //Add the cloned node
+        cloned.insertAfter(updatedAccordions[0])
+    }
+</script>

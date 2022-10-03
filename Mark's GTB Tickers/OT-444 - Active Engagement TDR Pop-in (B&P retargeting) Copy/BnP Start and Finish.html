@@ -1,0 +1,526 @@
+<script type="text/javascript">
+
+    (function () {
+        /* Libraries included */
+        /**
+         *A  Log just when url search part match 'jsDebugEx='
+         *   --> Arbitrary number of arguments
+         *
+         * #def name debugLog
+         */
+        var debugLog = (function () {
+            var _enabledDebugLog = window.location.search.indexOf('jsDebugEx=') !== -1 || window.location.hostname === "localhost";
+            return function () {
+                if (_enabledDebugLog) {
+                    for (var i = 0; i < arguments.length; i++) {
+                        console.log(arguments[i]);
+                    }
+                }
+            };
+        }());
+
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+
+
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            debugLog("TDR Pop up summary entered");
+
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            (function (services) {
+
+                var urlParseRegExp = /catalogID\/([^\/]+).*code\=([^&\/\s]+)/i,
+                    codeRegexp = /[^:]+/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = urlParseRegExp.exec(location.href);
+                    if (!parsedCurrentURL || parsedCurrentURL.length < 3)
+                        return false;
+                    var currentCode = getCurrentCarCode(getAllModelCodes(parsedCurrentURL[1]), parsedCurrentURL[2]);
+
+                    return {
+                        usc: parsedCurrentURL[1],
+                        codeWithFeatures: parsedCurrentURL[2]
+                    };
+                }
+
+                var getEndPointConfiguration = (function () {
+                    var conf;
+                    return function () {
+                        if (conf)
+                            return conf;
+                        conf = $("#bsl-endpoints-configuration > .configuration").data();
+                        return conf;
+                    };
+                }());
+
+                function getCarConfiguration(serviceVersion, IDs, callback) {
+                    var url = [
+                        getEndPointConfiguration().endpoint,
+                        "/vehicleModel/",
+                        (serviceVersion ? serviceVersion : "v0"),
+                        "/load?locale=",
+                        getEndPointConfiguration().locale,
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        IDs.usc,
+                        "~",
+                        IDs.codeWithFeatures.replace(/\:/g, ",")
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: !!getEndPointConfiguration().cookieToBsl
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200)
+                            return callback(undefined, response.data);
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function getNameplate(usc) {
+                    var nameplate = $("#bnp-configuration > span.configuration")
+                            .data()
+                            .nameplatesConfigurations
+                            .filter(function (nmp) {
+                                return nmp.nameplateCode === usc;
+                            }),
+                        model;
+
+                    if (!nameplate || !nameplate.length)
+                        return false;
+                    return nameplate[0];
+                }
+
+                function getAllModelCodes(usc) {
+                    var nameplate = getNameplate(usc),
+                        codes = [];
+                    if (!nameplate)
+                        return false;
+
+                    for (var i = 0; i < nameplate.models.length; i++)
+                        codes.push(nameplate.models[i].code)
+                    return codes;
+                }
+
+                function getCurrentCarCode(allCarCodes, codeWithFeatures) {
+                    var splitedCWF = codeWithFeatures.split(":");
+                    for (var i = 0; i < allCarCodes.length; i++)
+                        if (splitedCWF.indexOf(allCarCodes[i]) !== -1)
+                            return allCarCodes[i];
+                    return false;
+                }
+
+                function getCarSchema(usc, code) {
+                    var nameplate = getNameplate(usc);
+                    if (!nameplate)
+                        return false;
+
+                    model = nameplate.models
+                        .filter(function (model) {
+                            return model.code === code;
+                        });
+                    if (!model || !model.length)
+                        return false;
+                    return {
+                        nameplate: nameplate,
+                        model: model[0]
+                    };
+                }
+
+                function sanitizeAPIResponse(data, nameplate, IDs) {
+                    var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+                    return {
+                        carName: ENV.services.getCarName().name,//nameplate.name,
+                        date: (new Date()).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : undefined
+                                ),
+                            coNEDC: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                                ),
+                            lToKm: typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined,
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: data.price.finalPrice.grossRetailWithOTR,
+                        offerPrice: data.price.finalPrice.grossRetailWithOTRAndIncentives,
+                        dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: ENV.services.getCarName().subname,
+                        tdr: IDs.usc,
+                        contextualiseLink: nameplate.contextualLinks.form
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+                services.getCarSchema = getCarSchema;
+                services.getNameplate = getNameplate;
+
+            }(ENV.services));
+
+
+            /* Market configuration */
+
+            (function (environment) {
+                environment.MarketConfiguration = {
+                    // Define overlay URL
+                    overlay: "/overlay/content/overlays/target/tdr",
+                    // Define delay in ms before opening overlay
+                    delayBeforeOpenOverlay: 2000,
+                    // Define where to store data
+                    storageCookieName: "optprg-visited-car-informations-v2",
+                    // Determine in days when should cookie disappear
+                    storageCookieExpiration: 15,
+
+                    // Panel with informations like CO2
+                    carDataSelector: "#global-ux .summary-wrapper .vehicle-info-view .vehicle-data .vehicle-data-row",
+                    // Selectors to disclaimers in summary page
+                    disclaimersSelector: "#global-ux .disclosure-text > ul.disclosure-list",
+                    // Selector to offer price (if exists)
+                    offerPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-promotional-bnp",
+                    // Selector to retail price (if exists)
+                    retailPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-retail-with-otr",
+
+                    // Determine which data will be grabed from summary page
+                    summaryPageDataDestinations: [{
+                        // Image of car
+                        query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.right-content > div > img",
+                        prop: "src",
+                        key: "img"
+                    }, {
+                        // Find a dealer link
+                        query: "a[data-contextual-link=\"dealer-locator\"]",
+                        prop: "href",
+                        key: "findDealer"
+                    }, {
+                        // Car nameplate name
+                        query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.left-content > h3 > strong",
+                        text: true,
+                        key: "carName"
+                    }]
+                };
+            }(ENV));
+
+            var MBOXName = "DE_SummaryPage_tdrV2PopUp_v2";
+            var MBOXFallbackTimeout = 300;
+
+            /* Helpers for data storage */
+
+            var Storage = {};
+
+            Storage.createCookie = function (name, value, days) {
+                if (typeof localStorage !== "undefined")
+                    localStorage.setItem(name, value);
+            };
+
+            Storage.readCookie = function (name) {
+                if (typeof localStorage !== "undefined")
+                    return localStorage.getItem(name);
+                return undefined;
+            };
+
+            Storage.eraseCookie = function (name) {
+                if (typeof localStorage !== "undefined")
+                    localStorage.removeCookie(name);
+            };
+
+            Storage.readAndParse = function (name) {
+                var storedData;
+                var fromCookie = Storage.readCookie(name);
+
+                if (!fromCookie)
+                    return false;
+
+                try {
+                    storedData = JSON.parse(fromCookie);
+                } catch (e) {
+                    throw "Failed to parse stored data!";
+                }
+                return storedData;
+            };
+
+            /* Get model basic info */
+
+            (function (bundle) {
+                var BnPHeadingSelector = "#build-price-configurator > div.app-view div.bp-header-wrapper div.bp-configurator-header-wrap > h3",
+                    SummaryPageHeadingSelector = "#build-price-configurator > div.app-view div.vehicle-view-content.left-content > h3";
+
+                function isSummaryPage() {
+                    return /\/summary\//i.test(window.location.href);
+                }
+
+                function getCarName() {
+                    var wrapper;
+                    if (!isSummaryPage()) {
+                        wrapper = $(BnPHeadingSelector);
+                        return {
+                            name: (wrapper.find("strong").text() || "").trim(),
+                            subname: (wrapper.find("span").text() || "").trim()
+                        };
+                    }
+                    wrapper = $(SummaryPageHeadingSelector).find("strong");
+                    return {
+                        name: (wrapper.text() || "").trim(),
+                        subname: (wrapper[0].nextSibling.nodeValue || "").trim()
+                    };
+                }
+
+                bundle.isSummaryPage = isSummaryPage;
+                bundle.getCarName = getCarName;
+
+            }(ENV.services));
+
+
+
+            function runInformationsGathering() {
+                var currentIDs = ENV.services.getCarIDs(),
+                    currentNameplate = ENV.services.getNameplate(currentIDs.usc);
+                if (!currentNameplate)
+                    return debugLog("Nameplate not found!");
+
+                ENV.services.describeCall(currentNameplate.serviceVersion, currentIDs, function (err, result) {
+                    if (err)
+                        return debugLog(err);
+
+                    Storage.createCookie(
+                        ENV.MarketConfiguration.storageCookieName,
+                        JSON.stringify(
+                            ENV.services.sanitizeAPIResponse(result, currentNameplate, currentIDs)
+                        ),
+                        1
+                    );
+
+
+                    adobe.target.trackEvent({
+                        "mbox": MBOXName,
+                        "params": {
+                            "summary": "summary-get-data"
+                        }
+                    });
+                });
+            }
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+
+        });
+
+    }());
+</script>
+
+<style>
+
+    .optprg-tdr-pop-up-price .price-prefix {
+        display: none;
+    }
+    .optprg-carname {
+        font-weight: 800 !important;
+        font-size: 1.9rem !important;
+    }
+
+    #global-ux p.hors-taxe {
+        font-size: 12px;
+    }
+
+    p.optprg-car-name {
+        display: none;
+    }
+
+    .nameplate-model {
+        font-weight: 800;
+    }
+
+    p .regular .richtext-inner {
+        display: block !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-heading {
+        font-weight: 200 !important;
+        line-height: 2.7rem !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name {
+        margin-bottom: 4px !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name span {
+        font-size: 1.4rem
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name .optprg-car-name-main-name {
+        font-size: 1.45rem;
+        font-weight: 900;
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .cta-button.cta-button-primary {
+        margin-bottom: 2rem;
+        font-size: .9rem
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-vehicle-attribute-prefix,
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-vehicle-attribute-suffix {
+        font-size: 1.8rem;
+        font-weight: 200
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-co2-info,
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-price-info {
+        font-size: .7rem !important;
+        font-weight: 300 !important;
+        margin: 0 !important;
+        padding: 0 !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-price,
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box {
+        font-size: 1.8rem !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-price span,
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box span {
+        font-size: 1.8rem;
+        /* font-size: 1.8rem !important */
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box.optprg-include-offer {
+        margin-top: -12px !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box.optprg-include-offer span {
+        font-size: .75rem !important;
+        font-weight: 300 !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content p.optprg-main-price-label {
+        font-size: .75rem;
+        display: block;
+        padding: 0;
+        margin: 0
+    }
+
+    @media only screen and (min-width:48em) and (max-width:61.9375em) {
+        #global-ux .optprg-tdr-pop-up-ov-content {
+            top: 400px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-heading br {
+            display: none
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap {
+            display: block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap .splitter-column.large-6.columns {
+            display: block;
+            float: none;
+            padding: 0;
+            width: auto
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-image {
+            width: 60%
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name span {
+            display: block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name .optprg-car-name-sub-name {
+            margin-top: -6px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-co2-info,
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-price-info {
+            font-size: .85rem !important;
+            font-weight: 300 !important;
+            margin: 0 !important;
+            padding: 0 !important
+        }
+    }
+
+    @media only screen and (max-width:30em),
+    only screen and (min-width:30.0625em) and (max-width:47.9375em) {
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap {
+            display: block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap .splitter-column.large-6.columns {
+            display: block;
+            float: none;
+            padding: 0;
+            width: auto
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-co2-info,
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-price-info {
+            margin: 0 -15px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name {
+            line-height: 2rem !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name span {
+            display: block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name .optprg-car-name-sub-name {
+            margin-top: -6px !important;
+            margin-bottom: 15px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-heading {
+            font-weight: 300 !important;
+            font-size: 1.5rem;
+            line-height: 1.5rem !important;
+            margin-top: 16px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-price {
+            margin-top: -10px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-main-price-label {
+            margin-bottom: 12px !important
+        }
+    }
+
+    @media only screen and (max-width:47.9375em) {
+        #global-ux #optprg-tdr-pop-up-price-tooltip {
+            top: 0 !important;
+            left: 0 !important;
+            height: 100%;
+            width: 100%
+        }
+    }
+</style>
+
+<script>
+    $(function(){
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "impression:tt:nwp:opt-444:xt:ase:rt-popin:bp-start"
+            }
+        }
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+    });
+</script>

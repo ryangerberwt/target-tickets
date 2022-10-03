@@ -1,0 +1,46 @@
+<script>
+    var $ = jQuery;
+    $(document).ready(function () {
+
+        if (window.location.href.indexOf("ford.fr/achat/poursuivre-lexperience/tenez-moi-informe") >= 0) {
+           window.addEventListener('load',function(){
+            console.log('firing tag');
+
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1326:ab:kmi:email-vs-emailphone:control",
+                },
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        });
+
+        window.addEventListener('click', function () {
+                try {
+                    console.log('This is to force it to stop firing');
+                    console.dir(window.targetCampaign);
+                    window.targetCampaign.page.campaignName = "";
+                    console.log('name is ' + window.targetCampaign.page.campaignName)
+                } catch (ex) {
+                    console.log('Ex is');
+                    console.dir(ex);
+                }
+            });
+
+
+
+
+        /* setTimeout(function () {
+
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+                _satellite.track('');
+                console.log('done firing -- second pass');
+            }, 250)*/
+        }
+    });
+
+</script>

@@ -1,0 +1,36 @@
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            saveName();
+        }, 2000);
+
+        function saveName() {
+            var saved = false;
+            if (/dashboard/i.test(window.location.href)) {
+                if ($('.dash-greetings').length > 0) {
+                    var theName = $('.dash-greetings')[0].innerText;
+                    adobe.target.getOffer({
+                        'mbox': 'global-mbox',
+                        'params': {
+                            'profile.market': "UK",
+                            "profile.greetings" : theName,
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                            saved = true;
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                }
+            }
+
+            if (!saved)
+                return setTimeout(saveName, 250);
+        }
+    });
+</script>

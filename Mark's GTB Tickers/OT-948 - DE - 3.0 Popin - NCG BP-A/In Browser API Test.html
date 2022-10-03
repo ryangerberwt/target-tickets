@@ -1,0 +1,72 @@
+<script>
+    var parseRegExp = /catalogID\=([^\/]+)/i;
+    var globalData = undefined;
+
+    function getCarIDs() {
+        var parsedCurrentURL = parseRegExp.exec(location.href);
+
+        var id, code, features = "";
+
+        var tempList = parsedCurrentURL[1].split('&');
+
+        for (var i = 0; i < tempList.length; i++) {
+            var key_value = tempList[i].split('=');
+            if (key_value.length == 1) {
+                id = tempList[i];
+            } else if (key_value[0] == "series") {
+                code =  key_value[1];  
+            } else {
+                features += features == "" ? key_value[1] : "," + key_value[1];   
+            }
+        }
+
+        return {
+            id: id,
+            code: code,
+            features: features
+        };
+    }
+
+    function getCarConfiguration(IDs) {
+        var theLine = IDs.id;
+
+        if (IDs.code != undefined && IDs.code != "") {
+            theLine += "~" + IDs.code;
+        }
+
+        if (IDs.features != undefined && IDs.features != "") {
+            theLine += "," + IDs.features;
+        }
+
+        
+
+        var url = [
+            "https://www.servicescache.ford.com/api",
+            "/vehicleModel/",
+            "v1",
+            "/load?locale=",
+            "de_DE",
+            "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+            "default",
+            "&config=",
+            theLine
+        ].join("");
+        console.log(url);
+        $.ajax({
+            url: url,
+            xhrFields: {
+                withCredentials: false
+            }
+        }).done(function (response) {
+            if (response.status && response.status.statusCode === 200) {
+                globalData = response.data;
+            } else {
+                console.log("Bad response status");
+            }
+        }).fail(function () {
+            console.log("Bad response status");
+        });
+    }
+
+    getCarConfiguration(getCarIDs());
+</script>

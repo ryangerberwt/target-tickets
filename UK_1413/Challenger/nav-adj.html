@@ -1,0 +1,31 @@
+<script>
+
+    $ = jQuery;
+    console.log('Challenger - 1413');
+
+
+    $(document).ready(function () {
+
+        console.log('doc ready');
+
+        $('.icon-hamburger').on('click', function () {
+            if (jQuery('a:contains("Request a Contact")') !== undefined
+                && jQuery('a:contains("Request a Contact")').eq(2)) {
+                jQuery('a:contains("Request a Contact")').eq(2).text('Book a Test Drive');
+            }
+        });
+
+
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "tt:nwp:opt-1413:ab:nav:action-design:challenger"
+            }
+        }
+
+        window.addEventListener('load', function () {
+            console.log('firing impression');
+            _satellite.track("impression-xt-popin")
+        });
+    });
+
+</script>

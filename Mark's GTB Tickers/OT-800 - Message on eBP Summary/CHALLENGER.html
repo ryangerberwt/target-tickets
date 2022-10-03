@@ -1,0 +1,46 @@
+<script>
+    setTimeout(function() {
+        var isRunning = false;
+        var runner = setInterval(executeCode, 100);
+
+        function executeCode() {
+            if (!isRunning) {
+                isRunning = true;
+                try {
+                    var i = 0;
+
+                    var objs = $('.summaryIntro').find('p:contains(RECOMMENDED)');
+
+                    $('.Disclaimer__DisclaimerEnumeration-q2sm22-2:contains(†)')[1].onclick = function() {
+                        setTimeout(function(){
+                            $('.disclaimer-dialog').find('p')[0].innerText += ". Deposit is fully refundable until July 2020";
+                        }, 100);
+                    };
+
+                    for (i = 0; i < objs.length; i++) {
+                        objs[i].id = "add-me";
+                        i = objs.length + 1000;
+                    }
+
+                    $('#add-me').append("<div>FULLY REFUNDABLE</div>");
+                    clearInterval(runner);
+                } catch (error) {
+                    //console.log(error);
+                }
+
+                isRunning = false;
+            }
+        }
+    }, 1000);
+
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-800:ab:bp:msg-on-ebp-summary:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+    console.log("OT-800");
+</script>

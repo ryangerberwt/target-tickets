@@ -1,0 +1,23 @@
+<script>
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-784:ab:vhp:bp-nomenclature:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    setTimeout(function() {
+        var objs = $('.initialized-anchor.initialized-BEVcta');
+
+        for (var i = 0; i < objs.length; i++) {
+            if (objs[i].innerText.trim().toLowerCase() == "pre-order") {
+                objs[i].innerText = 'Configure';
+            } else if (objs[i].innerText.trim().toLowerCase() == 'pre-order now') {
+                objs[i].innerText = 'CONFIGURE NOW';
+            }
+        }
+    }, 0);
+</script>

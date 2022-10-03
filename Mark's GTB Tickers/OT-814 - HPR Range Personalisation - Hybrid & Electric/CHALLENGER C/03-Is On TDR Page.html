@@ -1,0 +1,75 @@
+<script>
+    $(document).ready(function(){
+        console.log("OT-814 - C - Is On TDR Page");
+        function setVehicleSelected() {
+            if ($('.userselecteddata').find('h3.ng-binding')[0] == undefined)
+                return setTimeout(setVehicleSelected, 50);
+            
+            var car = $('.userselecteddata').find('h3.ng-binding')[0].innerHTML;
+
+            var logIt = false;
+
+            switch (car.toLowerCase()) {
+                case "der neue ford puma":
+                case "ford mondeo":
+                case "ford tourneo custom":
+                    logIt = true;
+                    break;
+                default:
+                    logIt = false;
+                    break;
+            }
+
+            if ($('a:contains("Absenden")').length > 0) {
+                $('a:contains("Absenden")')[0].onclick = function() { 
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.hpr.personalization.market" : "DE",
+                            "profile.hpr.personalization.action" : "TDR-C",
+                            "profile.hpr.personalization.triggerHomePage" : false,
+                            "profile.hpr.personalization.visibleUntil" : "",
+                            "profile.hpr.personalization.seen": ""
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                };
+            } else if (logIt) {
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.hpr.personalization.market" : "DE",
+                        "profile.hpr.personalization.action" : "TDR-A",
+                        "profile.hpr.personalization.triggerHomePage" : true,
+                        "profile.hpr.personalization.visibleUntil" : d,
+                        "profile.hpr.personalization.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+            }
+
+            return setTimeout(setVehicleSelected, 50);
+        }
+
+        setVehicleSelected();
+    });
+</script>

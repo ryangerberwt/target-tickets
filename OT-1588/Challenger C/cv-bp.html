@@ -1,0 +1,50 @@
+<script>
+    window.addEventListener('hashchange', () => {
+        console.log('OT-1588')
+        setTimeout(function(){
+            let p = document.querySelector('p.SummaryVehiclePreview__SummaryPreorderText-hg0o7h-12.iaIVLt');
+            function link(){
+            let btn = document.querySelector('button[data-testid="summary-static-cta"]').click();
+          }
+        p.addEventListener('click',link);
+         
+        },3000) 
+        //let p = document.querySelector('p.SummaryVehiclePreview__SummaryPreorderText-hg0o7h-12.iaIVLt');
+      }, false);
+     
+window.addEventListener('load', function() {
+     
+     console.log("control is running");
+    
+     window.targetCampaign = {
+       page: {
+         campaignName: 'tt:nwp:opt-1588:ab:bp:hyperlink:var-c'
+    
+       }
+     }
+    
+     _satellite.track('genericTestingImpressionIDWorkaround');
+     console.log('done firing -- first pass');
+    
+    
+     setTimeout(function(){
+    
+       window.targetCampaign = {
+       page:{
+         campaignName: ''
+       }
+     }
+     _satellite.track('');
+     console.log('done firing -- second pass');
+     },250)
+    
+    })
+    </script>
+    <style>
+        p.SummaryVehiclePreview__SummaryPreorderText-hg0o7h-12.iaIVLt {
+      text-decoration: navajowhite;
+      color: rgb(77, 77, 77);
+      font-weight: bold;
+      cursor: pointer;
+    }
+    </style>

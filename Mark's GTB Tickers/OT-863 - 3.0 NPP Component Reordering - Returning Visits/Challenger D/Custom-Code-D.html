@@ -1,0 +1,26 @@
+<script>
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-863:ab:vhp:comp-reordering:var-d"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    $(window).load(function(e) {
+        var intro = $('#intro').parent().parent();
+        var three_sixty = $('#360').parent().parent();
+        var models = $('#models').parent().parent().parent().parent().parent();
+        var ttt = $('#ttt').parent().parent();
+        var charging = $('#charging').parent().parent();
+        var savings = $('#savings').parent().parent().parent().parent();
+
+        models.append(charging);
+        charging.append(savings);
+        savings.append(ttt);
+        ttt.append(three_sixty);
+        three_sixty.append(intro);
+    });
+</script>

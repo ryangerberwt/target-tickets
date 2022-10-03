@@ -1,0 +1,80 @@
+<script>
+    var impressionID = "tt:nwp:opt-1482:ab:hp:help-router-pulse:control";
+    var $ = jQuery;
+
+
+
+    $(document).ready(function () {
+        if (checkIfOnPage() === true) {
+            console.log('OT-1482 Control');
+
+            //Wait
+            let waitToCheck = setTimeout(function () {
+
+                if (checkForHelpRouter() > 0) {
+                    console.log('Router found');
+                    //Apply Pulse effect
+                    setTimeout(fireImpressionId(),250);
+                    setTimeout(function(){
+                        registerOnClick();
+                        $('body').click();
+                    },500)
+                } else {
+                    console.log('Router not found');
+                }
+            }, 1500)
+        }
+    });
+
+    function checkForHelpRouter() {
+
+        if ($('.help-router') !== undefined && $('.help-router') !== null) {
+            return $('.help-router').length;
+        }
+
+        return 0;
+
+    }
+
+    function registerOnClick() {
+        window.addEventListener('click', function () {
+            console.log('clicked');
+            blockImpressionId();
+        });
+    }
+
+    function checkIfOnPage() {
+        //TODO: Check if we are on BnP or OSB
+        if (window.location.href.indexOf('ford.fr/voitures-neuves?bnpShowroom=on') > 0 || window.location.href.indexOf('ford.fr/achat/poursuivre-lexperience/demande-d-essai') > 0) {
+            console.log('On the page');
+            return true;
+        }
+
+        return false;
+
+    }
+
+    function fireImpressionId() {
+
+        window.targetCampaign = {
+            page: {
+                campaignName: impressionID
+            }
+        }
+        console.log('firing impression id');
+
+        _satellite.track("genericTestingImpressionIDWorkaround")
+
+    }
+    function blockImpressionId() {
+        window.targetCampaign = {
+            page: {
+                campaignName: ""
+            }
+        }
+        console.log('blocking impression id');
+        _satellite.track("");
+    }
+
+
+</script>

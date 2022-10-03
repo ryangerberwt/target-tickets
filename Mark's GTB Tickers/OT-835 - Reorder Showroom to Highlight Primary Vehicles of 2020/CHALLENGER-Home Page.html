@@ -1,0 +1,65 @@
+<script>
+    // HP Car Slider
+    console.log("OT-835 - Home Page");
+    
+    var homePageCarSlider;
+    var homePageCarsIsRunning = false;
+
+    setTimeout(function(){
+        homePageCarSlider = setInterval(homePageCars, 100);
+    }, 1000);
+
+    function homePageCars() {
+        if (!homePageCarsIsRunning) {
+            homePageCarsIsRunning = true;
+
+            try {
+                if ($('.slick-track') != undefined) {
+                    var currentTab = $('.tabs-nav-item.is-active > a')[0].text;
+                    if (currentTab.includes('Ibride & Elettriche')) {
+                        if ($('.slick-track').firstChild != getVehicle("PUMA", 2)) {
+                            if (getVehicle("PUMA",2).length == 0) {
+                                var newPuma = getVehicle("PUMA", 0).clone();
+                                $('#snippetPar-box-generalParsys-tabs-2').find(".slick-track").append(newPuma[0]);
+                            }
+                            getAndMove("KUGA", 2);     // Third
+                            getAndMove("MACH-E", 2);   // Second
+                            getAndMove("PUMA", 2);     // First
+
+                            getVehicle("PUMA", 2)[0].style.width = getVehicle("KUGA", 2)[0].style.width;
+                        }
+                    } else if (currentTab.includes('Tutte le vetture')) {
+                        if ($('.slick-track')[0].firstChild != getVehicle('PUMA', 0)) {
+                            getAndMove("KUGA", 0);     // Third
+                            getAndMove("MACH-E", 0);   // Second
+                            getAndMove("PUMA", 0);     // First
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+            
+            homePageCarsIsRunning = false;
+        }
+        
+        function getAndMove(car, pos) {
+            moveVehicle(getVehicle(car, pos));
+        }
+
+        function moveVehicle(object) {
+            if (object.length > 0) {
+                object[0].parentNode.insertBefore(object[0], object[0].parentNode.children[0]);
+                if (object.find('img').length > 0) {
+                    if (object.find('img')[1].dataset.lazy != undefined) {
+                        object.find('img')[1].src = object.find('img')[1].dataset.lazy;
+                    }
+                }
+            }
+        }
+
+        function getVehicle(car, pos) {
+            return $('#snippetPar-box-generalParsys-tabs-' + pos).find(".slick-track > .carousel-slide:contains('" + car + "')");
+        }
+    }
+</script>

@@ -1,0 +1,117 @@
+<script>
+    var state;
+    console.log('popin detection!!')
+    if (accOverlay !== undefined || accOverlay !== null) {
+        //Call method to build 3.0
+        buildPopin_3_0();
+    } else if (guxOverlay !== undefined && guxOverlay !== null) {
+        //Call method to build 1.0
+        buildPopin_1_0()
+    }
+    function cleanUpHtml() {
+        return {};
+    }
+
+    function buildDisclosures() {
+        return {};
+    }
+
+    function addToPopin() {
+        return {};
+    }
+
+    function storePopinState(last_viewed_obj, currentDate) {
+        last_viewed_obj.date = currentDate;
+        last_viewed_obj.times_viewed = ++last_viewed_obj.times_viewed;
+        localStorage.setItem('last_viewed', last_viewed_obj)
+    }
+
+    function compareLastClosed() {
+        last_viewed = localStorage.getItem('last_viewed');
+        debugger;
+        //Convert MS to Secs
+        var currentDate = Math.floor(Date.now(), 1000);
+        if (last_viewed !== undefined && last_viewed !== null) {
+            //15 seconds but just for testing
+            if ((currentDate - last_viewed.date) > 15 && last_viewed.times_viewed <= 2) {
+                storePopinState(last_viewed, currentDate);
+                return true;
+            } else {
+                return false;
+            }
+
+        } else {
+            localStorage.setItem('last_viewed',
+                {
+                    last_viewed: {
+                        date: currentDate,
+                        times_viewed: 1
+                    }
+                });
+
+            return true;
+        }
+
+
+        return false
+    }
+
+    function return_3_0_Structure() {
+        var popinConfigState = {
+            use_3_0_disclamers: true,
+            popin_overlay: accOverlay.default,
+            overlay_url: "/overlay/content/overlays/target/acc-tdr",
+            use_3_0_methods: true,
+            image_selector: ".splitter-column.columns.xlarge-6.large-6>.column-content>.image>.component-content>picture>img",
+            image_overlay_query_selector: ".overlay .splitter .image img",
+            use_getOverlayContent: false,
+            method_list:
+            {
+                cleanUpHtml: cleanUpHtml(),
+                buildDisclosures: buildDisclosures(),
+                addToPopin: addToPopin(),
+                storePopinState: storePopinState(),
+                compareLastClosed: compareLastClosed()
+            }
+
+        }
+        return popinConfigState
+    }
+    /*function return_1_0_Structure() {
+        var popinConfigState = {
+            use_3_0_disclamers: false,
+            popin_overlay: guxOverlay.default,
+            overlay_url: "/overlay/content/overlays/target/tdr",
+            use_3_0_methods: false,
+            image_selector:"img.picture-tag-fallback",
+            image_overlay_query_selector:"img.picture-tag-fallback",
+            use_getOverlayContent:true,
+            method_list = ['storePopinState','compareLastClosed'],
+        }
+        return popinConfigState
+    }*/
+
+
+    function buildPopin_1_0() {
+        let state = return_1_0_Structure();
+
+    }
+
+    function buildPopin_3_0() {
+        let state = return_3_0_Structure();
+        console.dir(state);
+        state.method_list.each(function (i, v) {
+
+            //Run the methods in order
+            console.log('Running ' + v);
+
+
+
+        });
+
+
+    }
+
+
+
+</script>

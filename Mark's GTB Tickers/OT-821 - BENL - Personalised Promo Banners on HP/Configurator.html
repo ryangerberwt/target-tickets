@@ -1,0 +1,171 @@
+<script type="text/javascript">
+    console.log("cmd shift p");
+      ! function() {
+          var _enabledDebugLog, debugLog = (_enabledDebugLog = -1 !== window.location.search.indexOf("jsDebugEx=") || "localhost" === window.location.hostname, function() {
+              if (_enabledDebugLog)
+                  for (var i = 0; i < arguments.length; i++) console.log(arguments[i])
+          });
+          FordPersonalisation.guxFrameworkDeferred.then(function() {
+              debugLog("TDR PopUp Data Collector - Summary.js");
+              var services, numb, urlParseRegExp, conf, getEndPointConfiguration, ENV = {
+                  services: {}
+              };
+  
+              function getNameplate(usc) {
+                  var nameplate = $("#bnp-configuration > span.configuration").data().nameplatesConfigurations.filter(function(nmp) {
+                      return nmp.nameplateCode === usc
+                  });
+                  return !(!nameplate || !nameplate.length) && nameplate[0]
+              }
+              services = ENV.services, urlParseRegExp = /catalogID\/([^\/]+).*code\=([^&\/\s]+)/i, getEndPointConfiguration = function() {
+                  return conf = conf || $("#bsl-endpoints-configuration > .configuration").data()
+              }, services.sanitizeAPIResponse = function sanitizeAPIResponse(data, nameplate, IDs) {
+                  var fuelPerformance = "undefined" != typeof data.specs && "undefined" != typeof data.specs.fuel_and_performance ? data.specs.fuel_and_performance.children : {};
+                  return {
+                      carName: nameplate.name,
+                    //   date: (new Date).toString(),
+                    //   emissions: {
+                    //       co: fuelPerformance.co2_emission ? fuelPerformance.co2_emission.unitTypes : fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined,
+                    //       lToKm: "undefined" != typeof fuelPerformance.fuel_consumption_combined ? fuelPerformance.fuel_consumption_combined.unitTypes : undefined
+                    //   },
+                    //   img: data.images.exterior[0].urls[0],
+                    //   retailPrice: data.price.finalPrice.grossRetailWithOTR,
+                    //   offerPrice: data.price.finalPrice.grossRetailWithOTRAndIncentives,
+                      subName: ENV.services.getCarName().subname,
+                    //   tdr: IDs.usc,
+                    //   contextualiseLink: nameplate.models[numb].contextualLinks.form
+                  }
+              }, services.describeCall = function getCarConfiguration(serviceVersion, IDs, callback) {
+                  var url = [getEndPointConfiguration().endpoint, "/vehicleModel/", serviceVersion || "v0", "/load?locale=", getEndPointConfiguration().locale, "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=", "default", "&config=", IDs.usc, "~", IDs.codeWithFeatures.replace(/\:/g, ",")].join("");
+                  $.ajax({
+                      url: url,
+                      xhrFields: {
+                          withCredentials: !!getEndPointConfiguration().cookieToBsl
+                      }
+                  }).done(function(response) {
+                      if (response.status && 200 === response.status.statusCode) return callback(undefined, response.data);
+                      callback("Bad response status")
+                  }).fail(function() {
+                      callback("Request failed")
+                  })
+              }, services.getCarIDs = function getCarIDs() {
+                  var parsedCurrentURL = urlParseRegExp.exec(location.href);
+                  return !(!parsedCurrentURL || parsedCurrentURL.length < 3) && (function getCurrentCarCode(allCarCodes, codeWithFeatures) {
+                      for (var splitedCWF = codeWithFeatures.split(":"), i = 0; i < allCarCodes.length; i++)
+                          if (-1 !== splitedCWF.indexOf(allCarCodes[i])) return allCarCodes[numb = i];
+                      return !1
+                  }(function getAllModelCodes(usc) {
+                      var nameplate = getNameplate(usc),
+                          codes = [];
+                      if (!nameplate) return !1;
+                      for (var i = 0; i < nameplate.models.length; i++) codes.push(nameplate.models[i].code);
+                      return codes
+                  }(parsedCurrentURL[1]), parsedCurrentURL[2]), {
+                      usc: parsedCurrentURL[1],
+                      codeWithFeatures: parsedCurrentURL[2]
+                  })
+              }, services.getCarSchema = function getCarSchema(usc, code) {
+                  var nameplate = getNameplate(usc);
+                  return !!nameplate && (model = nameplate.models.filter(function(model) {
+                      return model.code === code
+                  }), !(!model || !model.length) && {
+                      nameplate: nameplate,
+                      model: model[0]
+                  })
+              }, services.getNameplate = getNameplate, ENV.MarketConfiguration = {
+                  overlay: "/overlay/content/overlays/target/tdr",
+                  delayBeforeOpenOverlay: 2e3,
+                  storageCookieName: "optprg-visited-car-informations-v2",
+                  storageCookieExpiration: 15,
+                  carDataSelector: "#global-ux .summary-wrapper .vehicle-info-view .vehicle-data .vehicle-data-row",
+                  disclaimersSelector: "#global-ux .disclosure-text > ul.disclosure-list",
+                  offerPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-promotional-bnp",
+                  retailPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-retail-with-otr",
+                  summaryPageDataDestinations: [{
+                      query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.right-content > div > img",
+                      prop: "src",
+                      key: "img"
+                  }, {
+                      query: 'a[data-contextual-link="dealer-locator"]',
+                      prop: "href",
+                      key: "findDealer"
+                  }, {
+                      query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.left-content > h3 > strong",
+                      text: !0,
+                      key: "carName"
+                  }]
+              };
+              var bundle, Storage = {};
+  
+              function isSummaryPage() {
+                  return /\/summary\//i.test(window.location.href)
+              }
+  
+              function runInformationsGathering() {
+                  if (/configurator/i.test(window.location.href)) {
+                    var currentIDs = ENV.services.getCarIDs(),
+                    currentNameplate = ENV.services.getNameplate(currentIDs.usc);
+                    if (!currentNameplate) return debugLog("Nameplate not found!");
+                    ENV.services.describeCall(currentNameplate.serviceVersion, currentIDs, function(err, result) {
+                        if (err) return debugLog(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentNameplate, currentIDs);
+                        
+                        console.log(vehicleInfo);
+
+                        adobe.target.getOffer({
+                            'mbox': "global-mbox",
+                            'params': {
+                                "profile.hp.promobanner.market" : "BE-NL",
+                                "profile.hp.promobanner.carName" : vehicleInfo.carName,
+                                "profile.hp.promobanner.subName" : vehicleInfo.subName
+                            },
+                            'success': function(offer) {
+                                adobe.target.applyOffer( {
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                                dataStored = true;
+                            },
+                            'error': function(status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+
+                        adobe.target.trackEvent({
+                            mbox: "BE_NL_SummaryPage_tdrV2PopUp_v2",
+                            params: {
+                                summary: "summary-get-data"
+                            }
+                        })
+                    })
+                  }
+              }
+              Storage.createCookie = function(name, value, days) {
+                  "undefined" != typeof localStorage && localStorage.setItem(name, value)
+              }, Storage.readCookie = function(name) {
+                  return "undefined" != typeof localStorage ? localStorage.getItem(name) : undefined
+              }, Storage.eraseCookie = function(name) {
+                  "undefined" != typeof localStorage && localStorage.removeCookie(name)
+              }, Storage.readAndParse = function(name) {
+                  var storedData, fromCookie = Storage.readCookie(name);
+                  if (!fromCookie) return !1;
+                  try {
+                      storedData = JSON.parse(fromCookie)
+                  } catch (e) {
+                      throw "Failed to parse stored data!"
+                  }
+                  return storedData
+              }, (bundle = ENV.services).isSummaryPage = isSummaryPage, bundle.getCarName = function getCarName() {
+                  var wrapper;
+                  return isSummaryPage() ? {
+                      name: ((wrapper = $("#build-price-configurator > div.app-view div.vehicle-view-content.left-content > h3").find("strong")).text() || "").trim(),
+                      subname: (wrapper[0].nextSibling.nodeValue || "").trim()
+                  } : {
+                      name: ((wrapper = $("#build-price-configurator > div.app-view div.bp-header-wrapper div.bp-configurator-header-wrap > h3")).find("strong").text() || "").trim(),
+                      subname: (wrapper.find("span").text() || "").trim()
+                  }
+              }, $(window).on("hashchange", runInformationsGathering), runInformationsGathering()
+          })
+      }();
+  </script>

@@ -1,0 +1,616 @@
+<script type="text/javascript">
+    console.log("OT-1175 | 3.0 DC");
+    var p_Market = "IT";
+    var popupId = 'js-bp+summary-popup';
+
+
+    var dataStored = false;
+
+    $(function () {
+
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            (function (services) {
+
+                var urlParseRegExp = /catalogID\/([^\/]+).*code\=([^&\/\s]+)/i,
+                    codeRegexp = /[^:]+/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = urlParseRegExp.exec(location.href);
+                    if (!parsedCurrentURL || parsedCurrentURL.length < 3)
+                        return false;
+                    var currentCode = getCurrentCarCode(getAllModelCodes(parsedCurrentURL[1]), parsedCurrentURL[2]);
+
+                    return {
+                        usc: parsedCurrentURL[1],
+                        codeWithFeatures: parsedCurrentURL[2]
+                    };
+                }
+
+                var getEndPointConfiguration = (function () {
+                    var conf;
+                    return function () {
+                        if (conf)
+                            return conf;
+                        conf = $("#bsl-endpoints-configuration > .configuration").data();
+                        return conf;
+                    };
+                }());
+
+                function getCarConfiguration(serviceVersion, IDs, callback) {
+                    var url = [
+                        getEndPointConfiguration().endpoint,
+                        "/vehicleModel/",
+                        (serviceVersion ? serviceVersion : "v0"),
+                        "/load?locale=",
+                        getEndPointConfiguration().locale,
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        IDs.usc,
+                        "~",
+                        IDs.codeWithFeatures.replace(/\:/g, ",")
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: !!getEndPointConfiguration().cookieToBsl
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200)
+                            return callback(undefined, response.data);
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function getNameplate(usc) {
+                    var nameplate = $("#bnp-configuration > span.configuration")
+                        .data()
+                        .nameplatesConfigurations
+                        .filter(function (nmp) {
+                            return nmp.nameplateCode === usc;
+                        }),
+                        model;
+
+                    if (!nameplate || !nameplate.length)
+                        return false;
+                    return nameplate[0];
+                }
+
+                function getAllModelCodes(usc) {
+                    var nameplate = getNameplate(usc),
+                        codes = [];
+                    if (!nameplate)
+                        return false;
+
+                    for (var i = 0; i < nameplate.models.length; i++)
+                        codes.push(nameplate.models[i].code)
+                    return codes;
+                }
+
+                function getCurrentCarCode(allCarCodes, codeWithFeatures) {
+                    var splitedCWF = codeWithFeatures.split(":");
+                    for (var i = 0; i < allCarCodes.length; i++)
+                        if (splitedCWF.indexOf(allCarCodes[i]) !== -1)
+                            return allCarCodes[i];
+                    return false;
+                }
+
+                function getCarSchema(usc, code) {
+                    var nameplate = getNameplate(usc);
+                    if (!nameplate)
+                        return false;
+
+                    model = nameplate.models
+                        .filter(function (model) {
+                            return model.code === code;
+                        });
+                    if (!model || !model.length)
+                        return false;
+                    return {
+                        nameplate: nameplate,
+                        model: model[0]
+                    };
+                }
+
+                function sanitizeAPIResponse(data, nameplate, IDs) {
+                    var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+                    var currentUrl = window.location.href;
+                    var commercial = false;
+                    if (currentUrl.indexOf('cv') > -1 || currentUrl.indexOf('ranger') > -1) {
+                        commercial = true;
+                    }
+                    return {
+                        carName: ENV.services.getCarName().name,//nameplate.name,
+                        isCommercial: commercial,
+                        date: (new Date()).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : undefined
+                                ),
+                            coNEDC: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                                ),
+                            lToKm: typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined,
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: data.price.finalPrice.grossRetailWithOTR,
+                        offerPrice: data.price.finalPrice.grossRetailWithOTRAndIncentives,
+                        dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: ENV.services.getCarName().subname,
+                        tdr: IDs.usc,
+                        contextualiseLink: nameplate.contextualLinks.form,
+                        tdrVehicleCode: ""
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+                services.getCarSchema = getCarSchema;
+                services.getNameplate = getNameplate;
+
+            }(ENV.services));
+
+            var MBOXName = "IT_1175_Popin";
+
+            /* Get model basic info */
+
+            (function (bundle) {
+                var BnPHeadingSelector = "#build-price-configurator > div.app-view div.bp-header-wrapper div.bp-configurator-header-wrap > h3",
+                    SummaryPageHeadingSelector = "#build-price-configurator > div.app-view div.vehicle-view-content.left-content > h3";
+
+                function isSummaryPage() {
+                    return /\/summary\//i.test(window.location.href);
+                }
+
+                function getCarName() {
+                    var wrapper;
+                    if (!isSummaryPage()) {
+                        wrapper = $(BnPHeadingSelector);
+                        return {
+                            name: (wrapper.find("strong").text() || "").trim(),
+                            subname: (wrapper.find("span").text() || "").trim()
+                        };
+                    }
+                    wrapper = $(SummaryPageHeadingSelector).find("strong");
+                    return {
+                        name: (wrapper.text() || "").trim(),
+                        subname: (wrapper[0].nextSibling.nodeValue || "").trim()
+                    };
+                }
+
+                bundle.isSummaryPage = isSummaryPage;
+                bundle.getCarName = getCarName;
+
+            }(ENV.services));
+
+            function runInformationsGathering() {
+
+                if (/summary/i.test(window.location.href)) {
+                    console.log('OT-1175 | 3.0 Summary Page');
+
+                  
+
+                    var p_Market = 'NO';
+                    var popupId = 'js-bp+summary-popup';
+                    var fordLogo = '/content/dam/guxeu/global-shared/header/ford-go-further.png.renditions.extra-large.png';
+                    //var ctaButton = 'https://www.ford.it/guida-allacquisto/scegli-la-tua-ford/promozioni/a-casa-o-sicuro-come-a-casa'
+
+
+                    var popupData = {
+                        popup_last_closed: Number("${profile.it.eleven_seven_five.popup_last_closed}"),
+                        popup_display_count: Number("${profile.it.eleven_seven_five.popup_display_count}")
+                    };
+
+
+                    function updatePopupData(popup_last_closed, popup_display_count) {
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                'profile.it.eleven_seven_five.popup_last_closed': popup_last_closed,
+                                'profile.it.eleven_seven_five.popup_display_count': popup_display_count
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                            },
+                            'error': function (status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+                    }
+
+                    var Popup = {};
+                    Popup.isPopupOpen = false;
+                    Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+                    Popup.openThreshold = 2; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+                    Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+                    Popup.setLastClosed = function () {
+                        Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+                    };
+                    Popup.determineIfPopupShows = function () {
+
+                        var popupCookie = popupData;
+                        var timeBool = false;
+                        var limitBool = false;
+
+                        var lastClosed_minutes = Math.floor(popupCookie.popup_last_closed / 60);
+                            var current_minutes = Math.floor(Popup.currentTimeStamp / 60);
+                            var minuteDifference = current_minutes - lastClosed_minutes;
+
+                            if(minuteDifference >= 21600){
+
+                            popupData.popup_last_closed = 0;
+                            popupData.popup_display_count = 1;
+                            updatePopupData(popupData.popup_last_closed, popupData.popup_display_count);
+                            return true;
+
+                            }
+
+                        // ---------------------------------------------
+                        // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+                        // ---------------------------------------------
+                        var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+                        if (timeDifference > Popup.showPopupAfter) {
+                            timeBool = true;
+                        } else {
+                            console.log("SHOW AFTER FAILED");
+                            console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+                        }
+
+                        // ---------------------------------------------
+                        // LIMIT OPEN THRESHOLD
+                        // ---------------------------------------------
+                        if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+                            if (popupCookie.popup_last_closed != null) {
+                                // INCREASE OPEN COUNTER BY 1
+                                Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                                Popup.setLastClosed();
+                            }
+
+                            limitBool = true;
+                        }
+                        console.log("TIMEBOOL : " + timeBool);
+                        console.log("LIMITBOOL: " + limitBool);
+
+                        return (timeBool && limitBool);
+                    };
+
+                    Popup.setKeyValue = function (key, value) {
+
+                        popupData[key] = value;
+
+                        updatePopupData(popupData.popup_last_closed, popupData.popup_display_count)
+                    };
+
+
+                    $(document).ready(function () {
+
+                        buildPopup();
+
+                    });
+
+
+                    function buildPopup() {
+
+                        var translations = {
+                            //mainHeading: 'I NOSTRI FORD PARTNER SONO APERTI',
+                            mainBody: 'Con IdeaFord +Facile hai la serenità di 3 anni di manutenzione ordinaria e 7 anni di garanzia convenzionale, con un risparmio del 50% sul prezzo di quest’ultima. <br> <b>Richiedi subito un preventivo per ricevere informazioni su questa promozione. </b>',
+                        };
+
+                        // Build the popup
+                        var popupShell = $('<div class="popup-overlay" id="' + popupId + '"><div class="popup-dialog"><div class="popup-header"><button class="popup-close">&times;</button></div><div class="popup-body"><img src="' + fordLogo + '" /><p>' + translations.mainBody + '</p><div style="clear:both;"></div><p> </p></div></div>');
+                        $('body').append(popupShell);
+
+                        function closePopup() {
+
+                            document.getElementById(popupId).classList.remove('active');
+
+                        }
+
+                        setTimeout(() => {
+                            if (!popupData) {
+
+                                updatePopupData(0, 1);
+                                Popup.setLastClosed();
+                                console.log("Trigger Popup");
+                                console.log("popup data ", popupData)
+                                openPopup();
+                            } else if (Popup.determineIfPopupShows()) {
+                                console.log("Trigger Popup");
+                                openPopup();
+                            }
+
+                        }, 2000)
+
+                    }
+
+                    function openPopup() {
+
+                        document.getElementById(popupId).classList.add('active');
+
+                    }
+
+                    $(document).on('click', '.popup-close', function () {
+                        document.getElementById(popupId).classList.remove('active');
+                    });
+
+
+                }
+
+                if (/bygg-din-ford/i.test(window.location.href)) {
+                    var currentIDs = ENV.services.getCarIDs(),
+                        currentNameplate = ENV.services.getNameplate(currentIDs.usc);
+                    if (!currentNameplate)
+                        return console.log("Nameplate not found!");
+
+                    ENV.services.describeCall(currentNameplate.serviceVersion, currentIDs, function (err, result) {
+                        if (err)
+                            return console.log(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentNameplate, currentIDs);
+                        console.log(vehicleInfo);
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                'profile.market': p_Market,
+                                "profile.isCommercial": vehicleInfo.isCommercial,
+                                "profile.carName": vehicleInfo.carName,
+                                "profile.date": vehicleInfo.date,
+                                "profile.emissions": JSON.stringify(vehicleInfo.emissions).replace(/"/g, "'"),
+                                "profile.img": vehicleInfo.img,
+                                "profile.retailPrice": vehicleInfo.retailPrice,
+                                "profile.offerPrice": vehicleInfo.offerPrice,
+                                "profile.dutyFreePrice": vehicleInfo.dutyFreePrice,
+                                "profile.subName": vehicleInfo.subName,
+                                "profile.tdr": vehicleInfo.tdr,
+                                "profile.contextualiseLink": vehicleInfo.tdrVehicleCode,
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                                dataStored = true;
+                            },
+                            'error': function (status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+
+                        adobe.target.trackEvent({
+                            'mbox': MBOXName,
+                            'params': {
+                                'summary': 'summary-get-data'
+                            }
+                        });
+                    });
+                }
+            }
+            var Popupdetection = {};
+            Popupdetection.getCookie = function (name) {
+                var cookie = " " + document.cookie;
+                var search = " " + name + "=";
+                var setStr = null;
+                var offset = 0;
+                var end = 0;
+                if (cookie.length > 0) {
+                    offset = cookie.indexOf(search);
+                    if (offset != -1) {
+                        offset += search.length;
+                        end = cookie.indexOf(";", offset)
+                        if (end == -1) {
+                            end = cookie.length;
+                        }
+                        setStr = unescape(cookie.substring(offset, end));
+                    }
+                }
+                return (setStr);
+            };
+
+            function containsSophus() {
+              if (typeof s3_creativeDisplayed === "undefined" && (typeof s3_creativeDisplayed !== "object" || !s3_creativeDisplayed))
+                    return false;   
+                if (s3_creativeDisplayed)
+                    return true;
+                return false;
+            }
+
+            function containsBrazePopUp() {
+                if ($('.ab-iam-root').length > 0)
+                    return true;
+                else
+                    return false;
+            }
+
+            function getCookieNameContains(nameIncludes) {
+                var allCookies = document.cookie;
+                if (allCookies.length > 0) {
+                    var cookieArray = allCookies.split(';');
+                    for (var i = 0; i < cookieArray.length; i++) {
+                        var name = cookieArray[i].split('=')[0];
+                        //console.log("Key is : " + name);
+                        if (name.includes(nameIncludes))
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+            var psymaParticipation = Popupdetection.getCookie("psyma_participation");
+            var psymaIpBlock = Popupdetection.getCookie("psyma_ip_block");
+            var popupsDisable = Popupdetection.getCookie("optprg-popups-disable");
+
+            console.log("=====================");
+            console.log("Psyma Participation: " + psymaParticipation);
+            console.log("Psyma IP Block     : " + psymaIpBlock);
+            console.log("Popup Disable      : " + popupsDisable);
+            console.log("=====================");
+
+            // DETECT PSYMA PARTICIPATION
+            if (Popupdetection.getCookie("psyma_participation") === "1" && Popupdetection.getCookie("optprg-popups-disable")) {
+
+                if ($("#psyma_layer").length > 0) {
+                    console.log('blocked');
+                    return;
+                }
+            }
+
+            if ((getCookieNameContains('IPE') || getCookieNameContains('IPE_M_')) || containsBrazePopUp() || containsSophus()) {
+              	console.log('blocked');
+                return;
+            }
+
+
+            var isRunning = false;
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+
+        });
+
+    }());
+
+
+</script>
+
+<style>
+    .popup-overlay {
+        position: absolute;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 350px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+        padding: 20px;
+    }
+
+    @media screen and (min-width: 768px) {
+
+        .popup-dialog {
+            padding: 40px;
+            height: auto;
+            width: 550px;
+        }
+
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        margin-bottom: 0 !important;
+        padding: 0;
+        color: #102a4d !important;
+        background-color: transparent !important;
+        outline: none;
+    }
+
+    .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        max-width: 120px;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+       /* font-family: Antenna, Arial, Helvetica, sans-serif;*/
+        color: rgb(77, 77, 77);
+        line-height: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 40px;
+    }
+
+    .popup-body p {
+        /*font-family: Antenna, Arial, Helvetica, sans-serif;*/
+        color: rgb(77, 77, 77);
+        line-height: 1.5rem;
+        font-size: 1.0rem;
+        font-weight: normal;
+        margin-bottom: 30px;
+    }
+
+    .popup-body a {
+        color: #06235f;
+        text-decoration: underline;
+        transition: color 0.25s ease;
+    }
+
+    .popup-body a:hover {
+        color: #2d96cd;
+        text-decoration: underline;
+    }
+
+    .popup-body>p>.cta-button-primary {
+        color: #fff;
+        border-radius: 20px;
+        background: #102b4e;
+        padding: 10px 40px 10px 40px !important;
+        width: 100px;
+    }
+
+    .popup-body>p>.cta-button-primary:hover {
+        background-color: rgb(40, 97, 164) !important;
+        color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px !important;
+    }
+
+    .popup-body>p .cta-button {
+        font-size: 1rem;
+        font-weight: 300;
+        min-width: 131px;
+        text-decoration: none;
+        transition: background-color .3s, color .3s;
+    }
+</style>

@@ -1,0 +1,6 @@
+<script>
+    function displayPopup(storedData) {
+        var regex = new RegExp(storedData.carName.toLowerCase().replaceAll(" ", "-").replaceAll("ford", ""));
+        return regex.test(window.location.pathname);
+    }
+</script>

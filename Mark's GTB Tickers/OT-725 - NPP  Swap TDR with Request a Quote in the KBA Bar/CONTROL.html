@@ -1,0 +1,13 @@
+<script>
+    if (document.URL.indexOf('/auto/') > 0 || document.URL.indexOf('/veicoli-commerciali/') > 0) {
+        var targetCampaign = targetCampaign || {};
+
+        targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-725:ab:vhp:tdr-vs-preventivo:control"
+            }
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+</script>

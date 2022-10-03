@@ -1,0 +1,91 @@
+<script>
+    var $ = jQuery;
+    var hasCookie = false;
+    var impressionID;
+    $(function () {
+
+        if(localStorage.getItem('cartOrLocatorVisited') !== null){
+            hasCookie = true;
+            console.log('checking cookie is ' + hasCookie);
+            addIcon();
+        }
+
+
+        $(window).on('hashchange', function () {
+            if(hasCookie){
+                impressionID = '';
+            }else{
+                impressionID  = 'tt:nwp:opt-1513:ab:bp:fleet-hyperlink:challenger';
+            }
+            //Check if summary page has been reached
+            if (/summary/.test(window.location.href)) {
+                // var previousElement = document.querySelector('[aria-label="Get monthly payment"]');
+                console.log('OT-1513');
+                console.log('Challenger');
+                if(hasCookie === false){
+                    addIcon();
+                }
+                // Impression ID
+                function fireImpression() {
+                    console.log('firing impression ID');
+                    window.targetCampaign = {
+                        page: {
+                            campaignName: impressionID
+                        }
+                    }
+                    sendImpression = false;
+                    _satellite.track("");
+                }
+
+                fireImpression();
+
+                let tOut = setTimeout(function () {
+                    if (window.targetCampaign !== undefined) {
+                        try {
+                            ;
+                            window.targetCampaign.page.campaignName = "";
+                            _satellite.track("genericTestingImpressionIDWorkaround");
+                        } catch (ex) {
+                            console.error(ex);
+                        }
+                    }
+                }, 750);
+
+            }
+        });
+    });
+
+    function addIcon(){
+        $(".finance-calculator-link__FinanceCalculatorLink-gw4h3o-0").after(
+                    `<a href="https://www.ford.co.uk/shop/research/request-a-contact?vehicleCode=CGW02" aria-label="" class="fleet-link" role="button">
+    <i class="fleet-link-icon site-link-icon icon-nav-vehicle"></i>
+    <span class="fleet-link"> Are you buying multiple vehicles?</span></a>`);
+    }
+
+</script>
+
+<style>
+    span.fleet-link {
+        color: rgb(16, 43, 78);
+        text-decoration: none;
+        font-size: 0.6875rem;
+        line-height: calc(1.81818);
+        letter-spacing: 0.8px;
+        text-decoration: underline;
+        margin: 0px 0px 50px;
+        margin-left: 8px;
+        margin-top: 14px;
+    }
+
+    .fleet-link-icon {
+        color: rgb(16, 43, 78);
+        font-size: 2rem;
+    }
+    .fleet-link-icon::before{
+        content: url("https://www.ford.co.uk/content/dam/guxeu/global-shared/target/OT-1513/Fleet.svg");
+    }
+
+    .fleet-link {
+        text-decoration: none;
+    }
+</style>

@@ -1,0 +1,83 @@
+<script>
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-791:ab:vhp:floaty-ebp-cta:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+    console.log('OT-791')
+    setInterval(function () {
+        if (isUpdateUrl()) {
+            if($('.float-button').length > 0) {
+                ($('.float-button').empty());
+            }
+            if ($('#root .hoZmCK').length > 0 && $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3').length > 0) {
+                if ($('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3').html() != $('#root .hoZmCK').html()) {
+                    $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3').html($('#root .hoZmCK').html())
+                    $("#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1").off("click");
+                    $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1').click(function () {
+                        $('#root .hoZmCK').trigger('click');
+                    })
+                }
+            }
+        }
+        else {
+              if(isUpdateModelRangeUrl()) {
+                    if($('#root .ProductTileSection__ProductTileFullWidthWrapper-sc-1a04xx1-1.DJDpg').find('button.iYyjMP').length>0) {
+                        if($('.float-button').length > 0) {
+                            ($('.float-button').empty());
+                        }
+                        else {
+                            $('#root').append('<div class="float-button"></div>');
+                        }
+
+                        $('.float-button').append($('#root .ProductTileSection__ProductTileFullWidthWrapper-sc-1a04xx1-1.DJDpg').find('button.iYyjMP'));
+
+                    }
+
+                    /* Mark Changes */
+                    if (document.URL.indexOf('/model') > 0) {
+                        var btns = $('.float-button > button');
+                        for (var i = 0; i < btns.length; i++) {
+                            if (btns[i].outerHTML.toLowerCase().indexOf('mustang mach-e') > 0 && btns[i].innerText != 'MUSTANG MACH-E') {
+                                btns[i].innerText = 'MUSTANG MACH-E';
+                            } else if (btns[i].outerHTML.toLowerCase().indexOf('awd') > 0 && btns[i].innerText != 'AWD') {
+                                btns[i].innerText = 'AWD';
+                            }
+                        }
+                    }
+
+                    if (document.URL.indexOf('/range') > 0) {
+                        var btns = $('.float-button > button');
+                        for (var i = 0; i < btns.length; i++) {
+                            if (btns[i].outerHTML.toLowerCase().indexOf('standard range rwd') > 0 && btns[i].innerText != 'STANDARD RANGE RWD') {
+                                btns[i].innerText = 'STANDARD RANGE RWD';
+                            } else if (btns[i].outerHTML.toLowerCase().indexOf('extended range rwd') > 0 && btns[i].innerText != 'EXTENDED RANGE RWD') {
+                                btns[i].innerText = 'EXTENDED RANGE RWD';
+                            } else if (btns[i].outerHTML.toLowerCase().indexOf('standard range awd') > 0 && btns[i].innerText != 'STANDARD RANGE AWD') {
+                                btns[i].innerText = 'STANDARD RANGE AWD';
+                            } else if (btns[i].outerHTML.toLowerCase().indexOf('extended range awd') > 0 && btns[i].innerText != 'EXTENDED RANGE AWD') {
+                                btns[i].innerText = 'EXTENDED RANGE AWD';
+                            }
+                        }
+                    }
+              }
+        }
+    }, 250)
+
+    function isUpdateUrl() {
+        if (document.URL.indexOf('/colour') > 0 || document.URL.indexOf('/interior') > 0 || document.URL.indexOf('/extras') > 0) {
+            return true;
+        }
+        return false
+    }
+    function isUpdateModelRangeUrl() {
+        if (document.URL.indexOf('/range') > 0 || document.URL.indexOf('/model') > 0 ) {
+            return true;
+        }
+        return false;
+    }
+</script>

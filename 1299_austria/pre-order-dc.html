@@ -1,0 +1,572 @@
+<!-- The DC -->
+<script type="text/javascript">
+    var $ = jQuery;
+    var dataStored = false;
+    var globalInfo = undefined;
+    var targetErrors = targetErrors || [];
+    console.log("OT-1299 | DC");
+    disclaimersNew_1299 = [];
+
+
+
+   $(document).ready(function () {
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+           $(document).ready(function (services) {
+
+            var StorageHandler = {};
+                StorageHandler.cookie = "opt-gux-at"; // opt-gux-MARKET ~ for countries with multiple locales, name it MARKET_LANG ~ Always lower case.
+                StorageHandler.getData = function() {
+                    var current = JSON.parse(localStorage.getItem(StorageHandler.cookie));
+                    if (current == null)
+                        return [];
+                    else
+                        return current;
+                };
+                StorageHandler.saveData = function(key, data) {
+                    var current = StorageHandler.getData();
+
+                    var exists = StorageHandler.getSpecificData(key);
+
+                    if (exists.length > 0) {
+                        for (var i = 0; i < current.length; i++) {
+                            if (current[i].key == key) {
+                                current[i].data = data;
+                            }
+                        }
+                    } else {
+                        current.push({key, data});
+                    }
+                    localStorage.setItem(StorageHandler.cookie, JSON.stringify(current));
+                };
+                StorageHandler.getSpecificData = function(key) {
+                    var current = StorageHandler.getData();
+                    return current.filter(function(each) {
+                        return each.key == key;
+                    });
+                };
+
+                function formatMoney(amount) {
+                    return Number(Number(amount).toFixed(0)).toLocaleString().replace(/\,/gm, ".")
+                }
+
+                function getDisclaimers(data) {
+                    disclaimers_1299 = [];
+                    var disclosureContent = $(findDisclaimerContentClass());
+
+                    if (disclosureContent == undefined)
+                        return setTimeout(getDisclaimers, 250);
+
+                    if (disclosureContent.length == 0)
+                        return setTimeout(getDisclaimers, 250);
+
+                    if (isNull(data))
+                        return setTimeout(getDisclaimers, 250);
+
+                    for (var i = 0; i < data.length; i++) {
+                        if (!isNull(data[i].disclaimerKey)) {
+                            for (var j = 0; j < disclosureContent.length; j++) {
+                                if (disclosureContent[j].innerText.includes(data[i].disclaimerKey)) {
+                                    disclaimers_1299.push({key: "disclaimer" + (i+1), symbol: data[i].disclaimerKey, type: data[i].type, content: findDisclaimer(disclosureContent[j])});
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                function findDisclaimer(theContent) {
+                    if (theContent.getElementsByTagName('p').length > 0) {
+                        return theContent.getElementsByTagName('p')[0].innerHTML;
+                    } else {
+                        return "";
+                    }
+                }
+
+                function getDisclaimersNew(){
+                    console.log('calling getDisclaimers')
+                    var bannerSection = $('div[role^="banner"] > :eq(2)');
+                    var bannerSectionOffer = $('div[role^="banner"] > :eq(2) > div > :eq(2)');
+                    var bannerSectionRetail = $('div[role^="banner"] > :eq(2) > div > :eq(1)');
+                    //Price labels
+                    var retailPriceLabel = bannerSectionRetail.children(1).children(0).eq(0).text();
+                    var offerPriceLabel = bannerSectionOffer.children(1).children(0).eq(0).text();
+                    //Prices
+                    var retailPriceText = bannerSectionRetail.children(1).children(0).children(0).text();
+                    var offerPriceLabel = bannerSectionOffer.children(1).children(0).eq(0).text();
+                    //Disclaimer suffix
+                    var retailPriceSuffix = bannerSectionRetail.children(1).children(0).eq(3).text();
+                    var offerPriceSuffix= bannerSectionOffer.children(1).children(0).eq(0).text();
+                    //Loop through for disclaimers
+                    var disclaimers = $('div[class^="BottomDisclosure__BottomDisclosureContent"');
+                    for(var i = 0; i < disclaimers.length; i ++){
+                        if(disclaimers[i].text().contains(offerPriceSuffix)){
+                            disclaimersNew_1299.push('disclaimer_'+offerPriceSuffix,disclaimers[i].text());
+                        }else if(disclaimers[i].text().contains(retailPriceSuffix)){
+                            disclaimersNew_1299.push('disclaimer_'+retailPriceSuffix,disclaimers[i].text());
+                        }
+                    }
+                    console.dir(disclaimersNew_1299);
+                    //Save
+                    ENV.services.storageHandler.saveData('disclaimers_New', disclaimersNew_1299);
+
+                }
+
+                function findDisclaimerContentClass() {
+                    var disclosureContent = $('div[class*="DisclosureContent"]');
+
+                    var prevClass = "";
+                    var currentClass = "";
+
+                    for (var i = 0; i < disclosureContent.length; i++) {
+                        var classLists = disclosureContent[i].classList;
+                        for (var j = 0; j < classLists.length; j++) {
+                            currentClass += "." + classLists[j];
+                        }
+
+                        if (prevClass != "") {
+                            if (prevClass == currentClass) {
+                                return currentClass;
+                            } else {
+                                prevClass = currentClass;
+                                currentClass = "";
+                            }
+                        } else {
+                            prevClass = currentClass;
+                            currentClass = "";
+                        }
+                    }
+                }
+
+                function getPriceNameAndDisclaimerKey(amount) {
+                    var disclaimerKey = "", priceName = "";
+
+                    if (isNull(amount))
+                        return {disclaimerKey, priceName};
+                    
+                    var p = jQuery('p').filter(function(i){ return jQuery('p')[i].innerText.includes(formatMoney(amount));});
+                    
+
+                    for (var i = 0; i < p.length; i++) {
+                        disclaimerKey = "", priceName = "";
+                        if (!isNull(p[i].nextElementSibling)) {
+                            disclaimerKey = p[i].nextElementSibling.innerText;
+                        }
+
+                        if (!isNull(p[i].previousElementSibling)) {
+                            priceName = p[i].previousElementSibling.innerText;
+                        }
+                    }
+
+                    if (isNull(disclaimerKey) || isNull(priceName)) {
+                        disclaimerKey = "", priceName = "";
+                    }
+
+                
+                    
+                    return {disclaimerKey, priceName};
+                }
+
+                var parseRegExp = /catalogID\=([^\/]+)/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = parseRegExp.exec(location.href);
+
+                    var id, code, features = "";
+
+                    if (parsedCurrentURL == null)
+                        return undefined;
+                    else if (parsedCurrentURL.length == 0)
+                        return undefined;
+
+                    var tempList = parsedCurrentURL[1].split('&');
+
+                    for (var i = 0; i < tempList.length; i++) {
+                        var key_value = tempList[i].split('=');
+                        if (key_value.length == 1) {
+                            id = tempList[i];
+                        } else if (key_value[0] == "series") {
+                            code =  key_value[1];  
+                        } else {
+                            features += features == "" ? key_value[1] : "," + key_value[1];   
+                        }
+                    }
+
+                    return { id, code, features };
+                }
+
+                function getCarConfiguration(IDs, callback) {
+
+                    if (isNull(IDs))
+                        return callback("Information not set");
+
+                    var theLine = IDs.id;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+                        theLine += "~" + IDs.code;
+                    }
+
+                    if (IDs.features != undefined && IDs.features != "") {
+                        theLine += (theLine.includes("~") ? "," : "~") + IDs.features.replaceAll("included", "");
+                    }
+
+                    if (isNull(theLine))
+                        return callback("Information not set");
+
+                    var key = [theLine].join("");
+
+                    var data = sessionStorage.getItem(key);
+
+                    if (data != null)
+                        return callback(undefined, JSON.parse(data), key);
+
+                    var url = [
+                        "https://www.servicescache.ford.com/api",
+                        "/vehicleModel/",
+                        "v1",
+                        "/load?locale=",
+                        "de_AT",
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        theLine
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: false
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200) {
+                            //sessionStorage.setItem(key, JSON.stringify(response.data));
+                            return callback(undefined, response.data, key);
+                        }
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function sanitizeAPIResponse(data, IDs) {
+
+                    
+                    console.log("nameplate data : ", data);
+                    
+                    var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+                    var car = "";
+                    try {
+                        car = getCarName(data, IDs);
+                    } catch (ex) {
+                        overrideLog(ex);
+                        return undefined;
+                    }
+
+                    var retailPrice = data.price.finalPrice.grossRetailWithOTR;
+                    var offerPrice = "";//data.price.finalPrice.grossRetailWithOTRAndIncentives;
+
+                    var retailInfo = getPriceNameAndDisclaimerKey(retailPrice);
+                    var offerInfo = "";//getPriceNameAndDisclaimerKey(offerPrice);
+
+                    retailInfo.type = "Retail";
+                    offerInfo.type = "Offer";
+
+                    var combined = [];
+                    combined.push(retailInfo, offerInfo);
+
+                    getDisclaimers(combined);
+
+                    return {
+                        carName: car.name,
+                        date: (new Date()).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combinedWeighted ? fuelPerformance.co2_emission_combinedWeighted.unitTypes : (
+                                        fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : (
+                                            fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : (
+                                                fuelPerformance.co2_emission_extra_urban ? fuelPerformance.co2_emission_extra_urban.unitTypes : undefined
+                                            )
+                                        )
+                                    )
+                                ),
+                            coNEDC: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                                ),
+                            lToKm: typeof fuelPerformance.fuel_consumption_combinedweighted !== "undefined" ? fuelPerformance.fuel_consumption_combinedweighted.unitTypes : (
+                                typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined
+                            ),
+                            kwToKm: fuelPerformance.combined_ecWeighted ? fuelPerformance.combined_ecWeighted.unitTypes : 
+                                (fuelPerformance.energy_consumption ? fuelPerformance.energy_consumption.unitTypes.kWh100Km : undefined)
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: retailPrice,
+                        retailTitle: retailInfo.priceName,
+                        offerPrice: offerPrice,
+                        offerTitle: offerInfo.priceName,
+                        //dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: car.secondary,
+                        vehicleType: data.props['segment-code'],
+                        contextualiseLink: window.location.pathname + window.location.hash
+                    }
+                }
+
+                function getCarName(data, IDs) {
+                    var carName, subName = "";
+                    
+                    carName = data.props['nameplate-label'];
+
+                    if (carName.includes("car") || carName.includes("Car"))
+                        carName = carName.replace("Car", "").replace("car", "").trim();
+
+                    if (!carName.toLowerCase().includes("ford"))
+                        carName = "Ford " + carName;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+
+                        var selectedSeries = data.features.selectedByMarketing.filter(function(el) {
+                            return el.code == 'series'; 
+                        });
+
+                        if (selectedSeries.length > 0) {
+                            subName = (selectedSeries[0].children != undefined ? (selectedSeries[0].children.length > 0 ? selectedSeries[0].children[0].name : "")  : "");
+                            subName = (subName != "" ? subName : (selectedSeries[0].features != undefined ? (selectedSeries[0].features.length > 0 ? selectedSeries[0].features[0].name : "") : ""));
+                        }
+
+                        if (subName == "") {
+                            var series = data.features.byMarketing.filter(function(el){
+                                return el.code == 'series';
+                            });
+
+                            if (series.length > 0) {
+                                if (series[0].features != undefined) {
+                                    if (series[0].features.length > 0) {
+                                        var sub = series[0].features.filter(function(el) {
+                                            return el.code == IDs.code;
+                                        });
+                                        if (sub.length > 0) {
+                                            subName = sub[0].name;
+                                        }
+                                    }
+                                }
+                                if (subName == "") {
+                                    if (series[0].children != undefined) {
+                                        if (series[0].children.length > 0) {
+                                            var sub = series[0].children.filter(function(el) {
+                                                return el.code == IDs.code;
+                                            });
+                                            if (sub.length > 0) {
+                                                subName = sub[0].name;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (carName == ("Ford " + subName) || carName == subName) {
+                        subName = "";
+                    }
+
+                    return {
+                        name: carName,
+                        secondary: subName
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+                services.storageHandler = StorageHandler;
+
+            }(ENV.services));
+
+            /* Get model basic info */
+
+            var thresholdCounter = 0;
+
+            function reRun(error) {
+                thresholdCounter++;
+                overrideLog(error);
+                if (thresholdCounter < 100) {
+                    setTimeout(runInformationsGathering, 250);
+                }
+            }
+
+            function overrideLog(error) {
+                if (/targetDebug=1299/i.test(window.location.href)) {
+                    console.log(error);
+                }
+                
+                targetErrors.push({ticket: "1299", error});
+            }
+
+            function isNull(obj) {
+                return obj == undefined || obj == "";
+            }
+
+            function runInformationsGathering() {
+                if (!/summary/i.test(window.location.href)) {
+                    adobe.target.getOffer({
+                        'mbox': 'global-mbox',
+                        'params': {
+                            'profile.market': "",
+                            "profile.ticket" : "",
+                            "profile.carName": "",
+                            "profile.date" : "",
+                            "profile.emissions" : "",
+                            "profile.img": "",
+                            "profile.retailPrice":"",
+                            "profile.retailTitle": "",
+                            "profile.offerPrice" : "",
+                            "profile.offerTitle" : "",
+                            "profile.subName": "",
+                            "profile.vehicleType": "",
+                            "profile.contextualiseLink": "",
+                        },
+                        'success': function (offer) {
+                            adobe.target.applyOffer({
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                            dataStored = true;
+                        },
+                        'error': function (status, error) {
+                            overrideLog({message: "Error", status, error});
+                        }
+                    });
+
+                    return overrideLog({message: "Not on Summary Page"});
+                }
+
+                if (/summary/i.test(window.location.href) ) {
+                    
+                   
+                    if ($('div[class*="loading-spinner"]').length > 0) {
+                        isRunning = false;
+                        return reRun("Still loading");
+                    }
+
+                    var currentIDs = ENV.services.getCarIDs();
+                    
+                    if (isNull(currentIDs))
+                        return reRun("currentIDs not set");
+
+
+                    ENV.services.describeCall(currentIDs, function (err, result, key) {
+                        if (err)
+                            return reRun(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+                       
+
+                    disclaimersNew_1299 = [];
+                    console.log('calling disclaimers')
+                    var bannerSection = $('div[role^="banner"] > :eq(2)');
+                    var bannerSectionOffer = $('div[role^="banner"] > :eq(2) > div > :eq(2)');
+                    var bannerSectionRetail = $('div[role^="banner"] > :eq(2) > div > :eq(1)');
+                    //Price labels
+                    var retailPriceLabel = bannerSectionRetail.children(1).children(0).eq(0).text();
+                    var offerPriceLabel = bannerSectionOffer.children(1).children(0).eq(0).text();
+                    //Prices
+                    var retailPriceText = parseFloat(bannerSectionRetail.children(1).children(0).children(0).text()).toFixed(3);
+                    var offerPriceText = parseFloat(bannerSectionOffer.children(1).children(0).eq(1).text()).toFixed(3);
+                    //Disclaimer suffix
+                    var retailPriceSuffix = bannerSectionRetail.children(1).children(0).eq(3).text();
+                    var offerPriceSuffix = bannerSectionOffer.children(1).children(0).eq(3).text();
+                    //Loop through for disclaimers
+                    var disclaimers = $('div[class^="BottomDisclosure__BottomDisclosureContent"');
+                    for(var i = 1; i < disclaimers.length; i ++){
+                        if(disclaimers[i].textContent.includes("["+offerPriceSuffix+"]")){
+                            disclaimersNew_1299.push({'disclaimer_offer':disclaimers[i].textContent});
+                        }else if(disclaimers[i].textContent.includes("["+retailPriceSuffix+"]")){
+                            disclaimersNew_1299.push({'disclaimer_retail':disclaimers[i].textContent});
+                        }
+                    }
+
+
+                    console.dir(disclaimersNew_1299);
+                    //Save
+                    ENV.services.storageHandler.saveData('disclaimers_New', disclaimersNew_1299);
+
+                    
+                          console.log("VehicleInfo before save", vehicleInfo)
+                        if (isNull(vehicleInfo))
+                            return reRun("Vehicle information not captured");
+                        
+
+                        if (!isNull(vehicleInfo.offerPrice) && isNull(vehicleInfo.offerTitle) && isNull(offerPriceLabel))
+                            return reRun("OfferPrice set, but OfferTitle not set");
+                        if (!isNull(vehicleInfo.retailPrice) && isNull(vehicleInfo.retailTitle) && isNull(retailPriceLabel))
+                            return reRun("RetailPrice set, but RetailTitle not set");
+
+                        /*var disclaimersKey = "disclaimers_1299_" + key;
+                        ENV.services.storageHandler.saveData(disclaimersKey, disclaimers_1299);*/
+
+                        console.log("saved vehicleinfo  saved",vehicleInfo)
+
+                        globalInfo = vehicleInfo;
+ 
+                        console.log('DOM SCRAPED:');
+                        console.log("RETAIL TITLE " + retailPriceLabel);
+                        console.log("OFFER TITILE " + offerPriceLabel);
+                        console.log("RETAIL PRICE " + retailPriceText);
+                        console.log("OFFER PRICE  " + offerPriceText);
+
+
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                "profile.id" : key,
+                                'profile.market': "AT",
+                                "profile.ticket" : "OT-1299",
+                                "profile.carName": vehicleInfo.carName,
+                                "profile.date" : vehicleInfo.date,
+                                "profile.img": vehicleInfo.img,
+                                "profile.retailPrice":retailPriceText,
+                                "profile.retailTitle": retailPriceLabel,
+                                "profile.offerPrice" : offerPriceText,
+                                "profile.offerTitle" : offerPriceLabel,
+                                "profile.subName": "Mach-E",
+                                "profile.vehicleType": vehicleInfo.vehicleType,
+                                "profile.contextualiseLink": vehicleInfo.contextualiseLink,
+                               // "profile.emissions":JSON.stringify(vehicleInfo.emissions).replace(/"/g,"'")
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                                dataStored = true;
+                            },
+                            'error': function (status, error) {
+                                overrideLog({message: "Error", status, error});
+                            }
+                        });
+
+                        adobe.target.trackEvent({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                'summary': 'summary-get-data'
+                            }
+                        });
+                    });
+                }
+            }
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+
+
+
+    }());
+</script>

@@ -1,0 +1,90 @@
+<!--
+    This page contains useful snippets I've written previously for GTB.
+-->
+<script>
+    // Gets the ?vehicleCode=XXX ~
+    // Generally only able to use it on the BnP page.
+    function getVehicleCode() {
+        var urlParseRegExp = /catalogID\/([^\/]+).*code\=([^&\/\s]+)/i,
+        codeRegexp = /[^:]+/i;
+
+        var parsedCurrentURL = urlParseRegExp.exec(location.href);
+        if (!parsedCurrentURL || parsedCurrentURL.length < 3)
+            return false;
+        
+        var vehicleObj = $("#bnp-configuration > span.configuration")
+            .data()
+            .nameplatesConfigurations
+            .filter(function(nmp) { 
+                return nmp.defaultModelCode === parsedCurrentURL[2]; 
+            });
+
+        if (vehicleObj.length > 0) {
+            vehicleCode = vehicleObj[0].contextualLinks.form
+        }
+    }
+    
+</script>
+
+<script>
+    //Adding a wrapper around multiple elements for dynamic items:
+	$('.first-element').each(function() {
+        $(this).add($(this).next('.second-element')).wrapAll('<div class="wrapper"></div>')
+    });
+
+</script>
+
+<script>
+    function getDisclaimers() {
+        var disclosureContent = $(findDisclaimerContentClass());
+        // Update these keys with the keys you'd be using on the Popin, but also what's being used on the BP Journey.
+        var keys = ["**", "1"];
+        var disclaimers = [];
+
+        for (var i = 0; i < keys.length; i++) {
+            for (var j = 0; j < disclosureContent.length; j++) {
+                if (disclosureContent[j].innerText.includes(keys[i])) {
+                    disclaimers.push({key: "Disclaimer" + (i+1), content: findDisclaimer(disclosureContent[j])});
+                    break;
+                }
+            }
+        }
+
+        return disclaimers;
+    }
+
+    function findDisclaimer(theContent) {
+        if (theContent.getElementsByTagName('p').length > 0) {
+            return theContent.getElementsByTagName('p')[0].innerHTML;
+        } else {
+            return "Issue Loading Disclaimers Dynamically!!!";
+        }
+    }
+
+    function findDisclaimerContentClass() {
+        var disclosureContent = $('div[class*="DisclosureContent"]');
+
+        var prevClass = "";
+        var currentClass = "";
+
+        for (var i = 0; i < disclosureContent.length; i++) {
+            var classLists = disclosureContent[i].classList;
+            for (var j = 0; j < classLists.length; j++) {
+                currentClass += "." + classLists[j];
+            }
+
+            if (prevClass != "") {
+                if (prevClass == currentClass) {
+                    return currentClass;
+                } else {
+                    prevClass = currentClass;
+                    currentClass = "";
+                }
+            } else {
+                prevClass = currentClass;
+                currentClass = "";
+            }
+        }
+    }
+    getDisclaimers();
+</script>

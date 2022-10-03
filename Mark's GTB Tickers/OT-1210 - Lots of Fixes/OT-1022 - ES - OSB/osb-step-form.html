@@ -1,0 +1,29 @@
+<script>
+    console.log('OT-osbn-dc-1022');
+
+    $(function () {
+        $(document).ready(function () {
+            if (/pide-tu-cita/i.test(window.location.href) && ("${profile.osbpopup.abondoned}" != true)) {
+                adobe.target.getOffer({
+                    'mbox': 'global-mbox',
+                    'params': {
+                        'profile.osbpopup.abondoned': true,
+                    },
+                    'success': function (offer) {
+                        adobe.target.applyOffer({
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function (status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+                console.log("this is osbn page");
+            }
+            else {
+                console.log("not osbn form page");
+            }
+        });
+    });
+</script>

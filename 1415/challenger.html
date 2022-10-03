@@ -1,0 +1,52 @@
+<script>
+  var $ = jQuery; // < 1 > - $ is no longer initialized by Ford. Target has built in jQuery. Most of our scripts use the $.
+  var targetErrors = targetErrors || [];
+  console.log('OT-1415');
+  $(window).on("hashchange", function () {
+    console.log('Checking rules');
+    console.log(window.location.href);
+    if (window.location.href.indexOf('/shop/price-and-locate/bp/ice-inventory?context=showroom#/summary') > 0 || window.location.href.indexOf('/shop/price-and-locate/bp/ice#/summary?') > 0) {
+      console.log('Rules passed');
+      elementLoaded('button[aria-label="Click here to move onto the second step of the order process, selecting a dealer."]', function (el) {
+        $('button[aria-label="Click here to move onto the second step of the order process, selecting a dealer."]')[0].textContent = "CONTINUE";
+        $('button[aria-label="Click here to move onto the second step of the order process, selecting a dealer."]')[1].textContent = "CONTINUE";
+      });
+
+      window.addEventListener('click', function () {
+        try {
+          console.log('This is to force it to stop firing');
+          console.dir(window.targetCampaign);
+          window.targetCampaign.page.campaignName = "";
+          console.log('name is ' + window.targetCampaign.page.campaignName)
+        } catch (ex) {
+          console.log('Ex is');
+          console.dir(ex);
+        }
+      })
+
+      window.targetCampaign = {
+        page: {
+          campaignName: 'tt:nwp:opt-1415:ab:bp:ngc-ice-summary:challenger'
+        }
+      }
+      _satellite.track('genericTestingImpressionIDWorkaround');
+      $('.summaryIntro').click();
+    } else {
+      console.log('rules failed');
+      console.log('Current URL : ' + window.location.href);
+    }
+  });
+
+  function elementLoaded(el, cb) {
+    console.log('checking');
+    if ($(el).length) {
+      // Element is now loaded.
+      cb($(el));
+    } else {
+      // Repeat every 500ms.
+      setTimeout(function () {
+        elementLoaded(el, cb)
+      }, 1000);
+    }
+  }
+</script>

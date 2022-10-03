@@ -1,0 +1,21 @@
+<script>
+    (function () {
+        setTimeout(function () {
+
+            var popUpClick = document.referrer;
+            if (popUpClick.includes(`www.ford.fr/voitures-neuves/puma`)) { //Showroom
+
+                targetCampaign = {
+                        page: {
+                            campaignName: "tt:nwp:opt-1406:xt:vhp:power-days"
+                        }
+                    };
+
+                    _satellite.track("genericTestingImpressionIDWorkaround");
+                    
+            } 
+
+        }, 500);
+
+    })();
+</script>

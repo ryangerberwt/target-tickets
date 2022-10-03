@@ -1,0 +1,711 @@
+<script type="text/javascript">
+    ! function () {
+        var _enabledDebugLog, debugLog = (_enabledDebugLog = -1 !== window.location.search.indexOf("jsDebugEx=") || "localhost" === window.location.hostname, function () {
+            if (_enabledDebugLog)
+                for (var i = 0; i < arguments.length; i++) console.log(arguments[i])
+        });
+
+        function DOMBuilder(obj) {
+            if (obj) {
+                if ($.isArray(obj)) {
+                    var i, arr = [];
+                    for (i = 0; i < obj.length; i++) obj[i] instanceof $ ? arr.push(obj[i]) : arr.push(DOMBuilder(obj[i]));
+                    return arr
+                }
+                if (obj instanceof $) return obj;
+                if ($.isFunction(obj)) return DOMBuilder(obj());
+                if (!obj.type) return obj.html || obj.text || undefined;
+                if (obj.hasOwnProperty("render") && !obj.render) return undefined;
+                var $e = $("<" + obj.type + ">");
+                if (obj.id && $e.prop("id", obj.id), obj.className && $e.addClass(obj.className), $.isPlainObject(obj.data) && obj.data.key && $e.data(obj.data.key, obj.data.value), obj.html ? $e.html(obj.html) : $e.text(obj.text || ""), obj.child && $e.append(DOMBuilder(obj.child)), $.isPlainObject(obj.handlers))
+                    for (var evName in obj.handlers) $e.on(evName, obj.handlers[evName]);
+                if ($.isPlainObject(obj.props))
+                    for (var propName in obj.props) $e.prop(propName, obj.props[propName]);
+                return $.isFunction(obj.callback) && obj.callback($e), $e
+            }
+        }
+        function getDateAsString() {
+
+            var date = new Date();
+            var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            var currentMonth = new Date().getMonth() + 1;
+            var currentYear = new Date(date.getFullYear(), date.getMonth() + 1, 0).getFullYear();
+
+            return lastDay + "/" + currentMonth  + "/" + currentYear;
+
+        }
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            debugLog("TDR PopUp Challenger entered");
+            var translations, Constructions = {},
+                ENV = {
+                    elements: {},
+                    data: {},
+                    MarketConfiguration: {
+                        overlay: "/overlay/content/overlays/target/tdr",
+                        delayBeforeOpenOverlay: 2000,
+                        storageCookieName: "optprg-visited-car-informations-v2",
+                        storageCookieExpiration: 15,
+                        carDataSelector: "#global-ux .summary-wrapper .vehicle-info-view .vehicle-data .vehicle-data-row",
+                        disclaimersSelector: "#global-ux .disclosure-text > ul.disclosure-list",
+                        offerPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-promotional-bnp",
+                        retailPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-retail-with-otr",
+                        summaryPageDataDestinations: [{
+                            query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.right-content > div > img",
+                            prop: "src",
+                            key: "img"
+                        }, {
+                            query: 'a[data-contextual-link="dealer-locator"]',
+                            prop: "href",
+                            key: "findDealer"
+                        }, {
+                            query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.left-content > h3 > strong",
+                            text: !0,
+                            key: "carName"
+                        }]
+                    }
+                },
+                MBOXName = "IT_SummaryPage_tdrV2PopUp_v2";
+            translations = {
+                heading: "È arrivato il momento di metterti al volante, richiedi ora il tuo test drive",
+                offerPricePrefix: "€ ",
+                offerPriceSuffix: "",
+                priceValidText: "",
+                co2Information: "",
+                mainPriceLabel: "Prezzo in promozione",
+                mainPriceLabelNoOfferPrice: "Prezzo di listino ",
+                retailPricePrefix: "",
+                retailPriceSuffix: "",
+                priceTooltipHeading: "",
+                bookTDRButton: "Prenota Test Drive",
+                exVat: "IVA esclusa",
+                disclaimer1: "<b>Tutte le offerte sono valide fino al " + getDateAsString() + "</b> e solo per vetture in pronta consegna, grazie al contributo dei Ford Partner. Prezzo in promozione raccomandato da Ford Italia S.p.A. IPT e contributo per lo smaltimento pneumatici esclusi. Il prezzo in promozione di <b>Fiesta, Tourneo Courier</b>, è valido a fronte del ritiro per rottamazione e/o permuta di una vettura immatricolata entro e non oltre il 31/12/2009 e posseduta da almeno 6 mesi.",
+                disclaimer2: "Il «Prezzo di listino» include gli optional in promozione nel mese. Il vantaggio cliente si riferisce alla vettura configurata con gli optional in promozione nel mese. IPT e contributo per lo smaltimento pneumatici esclusi.",
+                disclaimer3: "Il «Prezzo di listino» è da intendersi IVA, IPT e messa in strada esclusa.",
+                disclaimer4: ""
+            }, ENV.Localisation = {
+                formatDate: function formatDate(date) {
+                    return date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear()
+                },
+                formatMoney: function (amount) {
+                    return Number(amount.toFixed(0)).toLocaleString().replace(/\,/gm, ".")
+                },
+                getTranslation: function getTranslation(key, replacements) {
+                    var tr = translations[key];
+                    if (tr) return replacements && $(Object.keys(replacements)).each(function (i, replace) {
+                        tr = tr.replace("<" + replace + ">", replacements[replace])
+                    }), tr
+                }
+            },
+                function () {
+                    var tooltipInstance, overlay;
+
+                    function docGlobUXOnClick(event) {
+                        "optprg-tdr-pop-up-price-tooltip" === event.target.id || $(event.target).parents("#optprg-tdr-pop-up-price-tooltip").length || (event.preventDefault(), closeTooltip())
+                    }
+
+                    function onResizeOrScrollEvent() {
+                        closeTooltip()
+                    }
+
+                    function closeTooltip(event) {
+                        event && event.preventDefault(), tooltipInstance && (overlay.unbind("mousedown", docGlobUXOnClick), overlay.unbind("scroll", onResizeOrScrollEvent), $(window).unbind("resize", onResizeOrScrollEvent), tooltipInstance.remove(), tooltipInstance = undefined)
+                    }
+                    Constructions.openTooltip = function (options) {
+                        closeTooltip(), tooltipInstance = function tooltip(options, close) {
+                            return DOMBuilder({
+                                type: "div",
+                                className: "gux-tooltip-overlay",
+                                id: "optprg-tdr-pop-up-price-tooltip",
+                                props: {
+                                    tabindex: "0"
+                                },
+                                callback: function (element) {
+                                    element.attr("style", "position: absolute; top: " + options.top + "px; left: " + options.left + "px;right: auto; bottom: auto; z-index: 10001;")
+                                },
+                                child: [{
+                                    type: "h5",
+                                    className: "gux-tooltip-overlay-title",
+                                    text: options.title
+                                }, {
+                                    type: "span",
+                                    className: "gux-tooltip-overlay-text",
+                                    child: [{
+                                        type: "span",
+                                        render: !!options.number,
+                                        text: "[" + options.number + "]"
+                                    }, {
+                                        type: "p",
+                                        html: options.text
+                                    }]
+                                }, {
+                                    type: "a",
+                                    className: "close-icon",
+                                    handlers: {
+                                        click: close
+                                    },
+                                    props: {
+                                        tabindex: "0"
+                                    }
+                                }]
+                            })
+                        }(options, closeTooltip), $("#global-ux").append(tooltipInstance), overlay || (overlay = options.overlay.parent()), overlay.on("mousedown", docGlobUXOnClick), overlay.on("scroll", onResizeOrScrollEvent), $(window).on("resize", onResizeOrScrollEvent)
+                    }
+                }(), Constructions.getPrice = function (options) {
+                return DOMBuilder({
+                    type: "span",
+                    child: [
+                        {
+                            type: "span",
+                            className: "vehicle-attribute-group price-finalPrice-grossRetailWithOTRAndIncentives",
+                            child: [{
+                                type: "span",
+                                className: "optprg-vehicle-attribute-prefix",
+                                text: ENV.Localisation.getTranslation(options.pricePrefixName)
+                            }, {
+                                type: "span",
+                                className: "value",
+                                text: options.price
+                            }, {
+                                type: "span",
+                                className: "optprg-vehicle-attribute-suffix",
+                                text: ENV.Localisation.getTranslation(options.priceSuffixName)
+                            }]
+                        },
+                        {
+                            type: "sup",
+                            render: !!options.text,
+                            props: {
+                                href: "#"
+                            },
+                            child: [{
+                                type: "a",
+                                text: options.number,
+                                handlers: {
+                                    click: function (e) {
+                                        e.preventDefault();
+                                        var position = $(this).offset(),
+                                            size_w = $(this).width(),
+                                            size_h = $(this).height();
+                                        Constructions.openTooltip({
+                                            top: position.top + size_h,
+                                            left: position.left + size_w,
+                                            title: options.heading,
+                                            text: options.text,
+                                            number: options.number,
+                                            overlay: options.overlay
+                                        })
+                                    }
+                                }
+                            }]
+                        },
+                        {
+                            type: "p",
+                            text: "IVA esclusa",
+                            className: "exVatDisclaimer"
+                        }
+                    ]
+                })
+            };
+            var storedData, Storage = {
+                    createCookie: function (name, value, days) {
+                        "undefined" != typeof localStorage && localStorage.setItem(name, value)
+                    },
+                    readCookie: function (name) {
+                        return "undefined" != typeof localStorage ? localStorage.getItem(name) : undefined
+                    },
+                    eraseCookie: function (name) {
+                        "undefined" != typeof localStorage && localStorage.removeCookie(name)
+                    },
+                    readAndParse: function (name) {
+                        var storedData, fromCookie = Storage.readCookie(name);
+                        if (!fromCookie) return !1;
+                        try {
+                            storedData = JSON.parse(fromCookie)
+                        }
+                        catch (e) {
+                            throw "Failed to parse stored data!"
+                        }
+                        return storedData
+                    }
+                },
+                OverlayHelpers = {};
+
+            var Popup = {};
+            Popup.isPopupOpen = false;
+            Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+            Popup.openThreshold = 2; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+            Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+            Popup.setLastClosed = function() {
+                Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+            };
+            Popup.determineIfPopupShows = function() {
+
+                var popupCookie = Storage.readAndParse("popup_information");
+                var timeBool = false;
+                var limitBool = false;
+
+                // ---------------------------------------------
+                // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+                // ---------------------------------------------
+                var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+                if(timeDifference > Popup.showPopupAfter) {
+                    timeBool = true;
+                }
+                else
+                {
+                    console.log("SHOW AFTER FAILED");
+                    console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+                }
+
+                // ---------------------------------------------
+                // LIMIT OPEN THRESHOLD
+                // ---------------------------------------------
+                if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+                    if(popupCookie.popup_last_closed != null) {
+                        // INCREASE OPEN COUNTER BY 1
+                        Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                    }
+
+                    limitBool = true;
+                }
+                console.log("TIMEBOOL : " + timeBool);
+                console.log("LIMITBOOL: " + limitBool);
+
+                return (timeBool && limitBool);
+            };
+            Popup.setKeyValue = function(key, value) {
+
+                var popupCookie = Storage.readAndParse("popup_information");
+                popupCookie[key] = value;
+
+                Storage.createCookie("popup_information",JSON.stringify(popupCookie));
+            };
+
+            ! function () {
+                var isAlreadyOpenCalled = !1;
+
+                function getValueUnit(map) {
+                    var units = Object.keys(map);
+                    return units.length ? {
+                        unit: map[units[0]].unit,
+                        value: map[units[0]].value
+                    } : null
+                }
+                OverlayHelpers.openOverlay = function (overlay, onOverlayOpen) {
+
+                    if (isAlreadyOpenCalled) return !1;
+
+                    isAlreadyOpenCalled = !0;
+
+                    var element = $('<a href="' + overlay + '" style="display: none;"></a>');
+
+                    $("body").append(element), element.on("click", function (e) { e.preventDefault() }),
+
+                        (overlay = guxOverlay["default"].init(element)).getOverlayContent("/overlay/content/overlays/target/tdr"),
+
+
+                        function waitForOverlayOpen(overlay) {
+                            if (!overlay.$overlayContent) return setTimeout(function () {
+                                waitForOverlayOpen(overlay)
+                            }, 50);
+                            onOverlayOpen(overlay)
+                        }(overlay), element.remove()
+                }, OverlayHelpers.fillOverlay = function (overlay, data, closeHandlers, limit) {
+                    var overlayContent = (ENV.overlayInstance = overlay).$overlayContent,
+                        image = overlayContent.find("img.picture-tag-fallback");
+                    return !(100 <= limit) && (image.length ? (function locateAllElements(overlayContent, image, hasOfferPrice) {
+                        ENV.elements.overlayContent = overlayContent.addClass("optprg-tdr-pop-up-ov-content"), ENV.elements.image = image.addClass("optprg-tdr-pop-up-image"), ENV.elements.heading = overlayContent.find("h3").addClass("optprg-tdr-pop-up-heading"), ENV.elements.offerPrice = overlayContent.find("h4").addClass("optprg-tdr-pop-up-price"), ENV.elements.offerPrice.before(DOMBuilder({
+                            type: "p",
+                            className: "optprg-car-name",
+                            child: [{
+                                type: "span",
+                                className: "optprg-car-name-main-name",
+                                callback: function (element) {
+                                    ENV.elements.mainName = element
+                                }
+                            }, {
+                                type: "span",
+                                className: "optprg-car-name-sub-name",
+                                callback: function (element) {
+                                    ENV.elements.subName = element
+                                }
+                            }]
+                        })).before(DOMBuilder({
+                            type: "p",
+                            className: "optprg-main-price-label",
+                            text: hasOfferPrice ? ENV.Localisation.getTranslation("mainPriceLabel") : ENV.Localisation.getTranslation("mainPriceLabelNoOfferPrice")
+                        })), console.log(overlayContent);
+                        $( "<h5></h5>" ).insertAfter( ".optprg-tdr-pop-up-price" );
+
+                        ENV.elements.retailPrice = overlayContent.find("h5").addClass("optprg-tdr-pop-up-price"),
+                            ENV.elements.afterPrices = ENV.elements.retailPrice.next("p"), ENV.elements.secondatyButton = overlayContent.find("a.cta-button.cta-button-secondary"), ENV.elements.primaryButton = overlayContent.find("a.cta-button.cta-button-primary"), ENV.elements.priceInformation = ENV.elements.primaryButton.after(DOMBuilder({
+                            type: "p",
+                            className: "optprg-co2-info"
+                        })).next(), ENV.elements.co2Information = ENV.elements.priceInformation.after(DOMBuilder({
+                            type: "p",
+                            className: "optprg-price-info"
+                        })).next()
+                    }(overlayContent, image, !!data.offerPrice), void
+                        function fillFinishedBnPOverlay(data, closeHandlers) {
+                            ENV.elements.heading.html(ENV.Localisation.getTranslation("heading").replace("<nameplate>", "<b>" + data.carName + "</b> " + data.subName)), data.offerPrice ? ENV.elements.offerPrice.html(Constructions.getPrice({
+                                pricePrefixName: "offerPricePrefix",
+                                priceSuffixName: "offerPriceSuffix",
+                                price: ENV.Localisation.formatMoney(data.offerPrice),
+                                text: ENV.Localisation.getTranslation("disclaimer" + (data.offerPrice ? "1" : data.vehicleType === 'commercial' ? "3" : "**")),
+                                number: data.offerPrice ? "*" : "**",
+                                heading: ENV.Localisation.getTranslation("priceTooltipHeading"),
+                                overlay: ENV.elements.overlayContent
+                            })) : ENV.elements.offerPrice.hide();
+                            console.log(ENV.elements.retailPrice);
+                            data.retailPrice ? ENV.elements.retailPrice.attr("class", "optprg-retail-price-box " + (data.offerPrice ? "optprg-include-offer" : "optprg-not-include-offer")).html(Constructions.getPrice({
+                                pricePrefixName: "retailPricePrefix",
+                                priceSuffixName: "retailPriceSuffix",
+                                price: (data.offerPrice ? "Prezzo di listino " : "") + " €" + ENV.Localisation.formatMoney(data.vehicleType === 'commercial' ? data.exvatPrice : data.retailPrice),
+                                text: data.vehicleType === 'commercial' ?  ENV.Localisation.getTranslation("disclaimer3") : ENV.Localisation.getTranslation("disclaimer2"),
+                                number: data.vehicleType === 'commercial' ? "***" : "**",
+                                heading: ENV.Localisation.getTranslation("priceTooltipHeading"),
+                                overlay: ENV.elements.overlayContent
+                            })) : ENV.elements.retailPrice.hide();
+                            if (data.vehicleType !== 'commercial') {
+                                $('.exVatDisclaimer').hide();
+                            }
+                            ENV.elements.overlayContent.find("source").attr("srcset", data.img), ENV.elements.image.removeAttr("src").attr("src", data.img).attr("alt", data.carName).attr("title", data.carName), ENV.elements.secondatyButton.remove(), ENV.elements.primaryButton.attr("href", "/content/overlays/wizard-overlays/request-a-test-drive" + (data.contextualiseLink || "?vehicleCode=" + data.tdr)).text(ENV.Localisation.getTranslation("bookTDRButton")).removeAttr("data-cta-name").on("click", function () {
+                                closeHandlers.dontShowAgainClose("clicked_TDR_CTA", function () {
+                                    "undefined" === typeof _satellite || ENV.finishTriggered || (_satellite.track("cta-click:tt:nwp:opt-550:xt:ase:rt-popin:bp-start"), ENV.finishTriggered = !0), ENV.overlayInstance.hideOverlay()
+                                })
+                            }), ENV.elements.afterPrices.hide(), ENV.elements.mainName.text(data.carName + " "), ENV.elements.subName.text(data.subName), ENV.elements.priceInformation.text(ENV.Localisation.getTranslation("priceValidText"));
+                            var emissions = getValueUnit(data.emissions.co),
+                                litersToUnit = getValueUnit(data.emissions.lToKm);
+                            emissions && litersToUnit ? ENV.elements.co2Information.html(ENV.Localisation.getTranslation("co2Information", {
+                                coValue: emissions.value,
+                                coUnit: emissions.unit,
+                                ltValue: litersToUnit.value,
+                                ltUnit: litersToUnit.unit
+                            })) : ENV.elements.co2Information.hide()
+                        }(data, closeHandlers)) : setTimeout(function () {
+                        OverlayHelpers.fillOverlay(overlay, data, closeHandlers, limit ? limit++ : 1)
+                    }, 40))
+                }
+            }();
+            try {
+                if (!(storedData = Storage.readAndParse(ENV.MarketConfiguration.storageCookieName))) return console.info("Empty record!")
+            }
+            catch (e) {
+                return console.error(e)
+            }
+            storedData.img && storedData.tdr && storedData.carName && (! function setCookie(name, value, expires, path, domain, secure) {
+                document.cookie = name + "=" + escape(value) + (expires ? "; expires=" + expires : "") + (path ? "; path=" + path : "") + (domain ? "; domain=" + domain : "") + (secure ? "; secure" : "")
+            }("optprg-popups-disable", !0, {
+                expires: 1,
+                path: "/"
+            }),
+
+
+                setTimeout(function () {
+
+                    var excludeVehicles = [
+                        'NUOVA PUMA',
+                        'NUOVA KUGA'
+                    ]
+                    if (!(excludeVehicles.includes(storedData.carName))){
+                        if(!Storage.readAndParse("popup_information"))
+                        {
+                            Storage.createCookie("popup_information", JSON.stringify({
+                                "popup_display_count": 1,
+                                "popup_last_closed": null
+                            }));
+
+                            // OPEN OVERLAY
+                            OverlayHelpers.openOverlay(ENV.MarketConfiguration.overlay, function (overlay)
+                            {
+                                OverlayHelpers.fillOverlay(overlay, storedData, function initializeCloseHandlers(overlay)
+                                {
+                                    function destroy()
+                                    {
+                                        $(document).unbind("keydown", onKeyPress)
+                                    }
+
+                                    var handlers = {
+                                        dontShowAgainClose: function (wayOfDestroy, callback)
+                                        {
+                                            adobe.target.trackEvent({
+                                                mbox: MBOXName,
+                                                params: {
+                                                    release: wayOfDestroy,
+                                                    popup: wayOfDestroy
+                                                },
+                                                success: function ()
+                                                {
+                                                    callback && callback()
+                                                },
+                                                error: function ()
+                                                {
+                                                    callback && callback()
+                                                }
+                                            }), callback && setTimeout(function ()
+                                            {
+                                                callback()
+                                            }, 300), destroy()
+                                        },
+                                        showAgainClose: function (wayOfDestroy)
+                                        {
+                                            adobe.target.trackEvent({
+                                                mbox: MBOXName,
+                                                params: {
+                                                    popup: wayOfDestroy
+                                                }
+                                            }), destroy()
+                                        }
+                                    };
+
+                                    function onKeyPress(e)
+                                    {
+                                        27 == e.keyCode && handlers.dontShowAgainClose("close_escape_keyboard", Popup.setLastClosed())
+                                    }
+
+                                    return $(document).on("keydown", onKeyPress), overlay.find("span.overlay-close").on("click", function (e)
+                                    {
+                                        handlers.dontShowAgainClose("clicked_x", Popup.setLastClosed())
+                                    }), overlay.parent(".overlay-container").on("click", function (e)
+                                    {
+                                        $(e.target).hasClass("overlay-container") && handlers.showAgainClose("clicked_outside_overlay", Popup.setLastClosed())
+                                    }), handlers
+                                }(overlay.$overlayContent)), adobe.target.trackEvent({
+                                    mbox: MBOXName,
+                                    params: {
+                                        open: "pop-up-open"
+                                    }
+                                }), "undefined" !== typeof _satellite && _satellite.track("impression:tt:nwp:opt-550:xt:ase:rt-popin:bp-start")
+                            })
+                        }
+                        else
+                        {
+                            if(Popup.determineIfPopupShows()) {
+
+                                // OPEN OVERLAY
+                                OverlayHelpers.openOverlay(ENV.MarketConfiguration.overlay, function (overlay)
+                                {
+                                    OverlayHelpers.fillOverlay(overlay, storedData, function initializeCloseHandlers(overlay)
+                                    {
+                                        function destroy()
+                                        {
+                                            $(document).unbind("keydown", onKeyPress)
+                                        }
+
+                                        var handlers = {
+                                            dontShowAgainClose: function (wayOfDestroy, callback)
+                                            {
+                                                adobe.target.trackEvent({
+                                                    mbox: MBOXName,
+                                                    params: {
+                                                        release: wayOfDestroy,
+                                                        popup: wayOfDestroy
+                                                    },
+                                                    success: function ()
+                                                    {
+                                                        callback && callback()
+                                                    },
+                                                    error: function ()
+                                                    {
+                                                        callback && callback()
+                                                    }
+                                                }), callback && setTimeout(function ()
+                                                {
+                                                    callback()
+                                                }, 300), destroy()
+                                            },
+                                            showAgainClose: function (wayOfDestroy)
+                                            {
+                                                adobe.target.trackEvent({
+                                                    mbox: MBOXName,
+                                                    params: {
+                                                        popup: wayOfDestroy
+                                                    }
+                                                }), destroy()
+                                            }
+                                        };
+
+                                        function onKeyPress(e)
+                                        {
+                                            27 == e.keyCode && handlers.dontShowAgainClose("close_escape_keyboard", Popup.setLastClosed())
+                                        }
+
+                                        return $(document).on("keydown", onKeyPress), overlay.find("span.overlay-close").on("click", function (e)
+                                        {
+                                            handlers.dontShowAgainClose("clicked_x", Popup.setLastClosed())
+                                        }), overlay.parent(".overlay-container").on("click", function (e)
+                                        {
+                                            $(e.target).hasClass("overlay-container") && handlers.showAgainClose("clicked_outside_overlay", Popup.setLastClosed())
+                                        }), handlers
+                                    }(overlay.$overlayContent)), adobe.target.trackEvent({
+                                        mbox: MBOXName,
+                                        params: {
+                                            open: "pop-up-open"
+                                        }
+                                    }), "undefined" !== typeof _satellite && _satellite.track("impression:tt:nwp:opt-550:xt:ase:rt-popin:bp-start")
+                                })
+                            }
+                        }
+                    }
+                }, ENV.MarketConfiguration.delayBeforeOpenOverlay))
+
+        })
+    }();
+</script>
+
+<style>
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-heading{
+        font-weight:200 !important;
+        line-height:2.7rem !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name{
+        margin-bottom:4px !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name span{
+        font-size:1.4rem
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name .optprg-car-name-main-name{
+        font-size:1.45rem;font-weight:900
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .cta-button.cta-button-primary{
+        margin-bottom:2rem;font-size:.9rem
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-vehicle-attribute-prefix,#global-ux .optprg-tdr-pop-up-ov-content .optprg-vehicle-attribute-suffix{
+        font-size:1.8rem;font-weight:200
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-co2-info,#global-ux .optprg-tdr-pop-up-ov-content .optprg-price-info{
+        font-size:.7rem !important;
+        font-weight:300 !important;
+        margin:0 !important;
+        padding:0 !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-price,#global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box{
+        font-size:1.8rem !important;
+        padding:0 !important;
+        margin:0 !important;
+        border:none !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-price span,#global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box span{
+        font-size:1.8rem !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box.optprg-include-offer{
+        margin-top:-12px !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content .optprg-retail-price-box.optprg-include-offer span{
+        font-size:.75rem !important;
+        font-weight:300 !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-ov-content p.optprg-main-price-label{
+        font-size:.75rem;
+        display:block;
+        padding:0;
+        margin:0
+    }
+
+    @media only screen and (min-width:48em) and (max-width:61.9375em){
+        #global-ux .optprg-tdr-pop-up-ov-content{
+            top:400px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-heading br{
+            display:none
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap{
+            display:block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap .splitter-column.large-6.columns{
+            display:block;
+            float:none;
+            padding:0;
+            width:auto
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-image{
+            width:60%
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name span{
+            display:block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name .optprg-car-name-sub-name{
+            margin-top:-6px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-co2-info,#global-ux .optprg-tdr-pop-up-ov-content .optprg-price-info{
+            font-size:.85rem !important;
+            font-weight:300 !important;
+            margin:0 !important;
+            padding:0 !important
+        }
+    }
+
+    @media only screen and (max-width:30em),only screen and (min-width:30.0625em) and (max-width:47.9375em){
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap{
+            display:block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .splitter-column-wrap .splitter-column.large-6.columns{
+            display:block;
+            float:none;
+            padding:0;
+            width:auto
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-co2-info,#global-ux .optprg-tdr-pop-up-ov-content .optprg-price-info{
+            margin:0 -15px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name{
+            line-height:2rem !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name span{
+            display:block
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-car-name .optprg-car-name-sub-name{
+            margin-top:-6px !important;
+            margin-bottom:15px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-heading{
+            font-weight:300 !important;
+            font-size:1.5rem;
+            line-height:1.5rem !important;
+            margin-top:16px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-tdr-pop-up-price{
+            margin-top:-10px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-ov-content .optprg-main-price-label{
+            margin-bottom:12px !important
+        }
+    }
+
+    @media only screen and (max-width:47.9375em){
+        #global-ux #optprg-tdr-pop-up-price-tooltip{
+            top:0 !important;
+            left:0 !important;
+            height:100%;
+            width:100%
+        }
+    }
+</style>

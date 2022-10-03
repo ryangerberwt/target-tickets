@@ -1,0 +1,217 @@
+<script>
+    var $ = jQuery;
+    console.log('OT-1531 | Control | NPP New Focus / Fiesta');
+    var eventEl;
+    var enableLogs = false;
+    
+ 
+    var _log = console.log;
+        console.log = function(logMsg){
+            if(enableLogs){
+    
+                _log.apply(console,arguments);
+            }
+        }   
+
+
+
+    $(document).ready(function (){
+        if (checkIfRunnable() && (getCookie('dismissThinHeader') === undefined || getCookie('dismissThinHeader') === null || getCookie('dismissThinHeader') === false)) {
+    
+            fireImpressionId();
+            setTimeout(function () {
+
+                setOnClick();
+                if (isMobile === false) {
+                    console.log('clicking');
+                    $('body').click();
+                }
+            }, 750);
+
+            document.cookie = 'dismissThinHeader=true';
+
+        }
+
+    });
+
+    function checkIfRunnable() {
+        if (window.location.href.indexOf('ford.co.uk/cars') >= 0 
+            && window.location.href !== 'https://www.ford.co.uk/cars' 
+            && window.location.href !== 'https://www.ford.co.uk/cars?bnpShowroom=on'
+            && (window.location.href.indexOf('new-fiesta') >= 0
+            || window.location.href.indexOf('new-focus') >= 0)) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1531:ab:hp:floating-banner:control", //Change this to your impressionID
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function (e) {
+            eventEl = e;
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener');
+            _satellite.track('');
+        });
+    }
+
+    //We don't always need this but adding it here for reference
+    function setOnKeyUp() {
+        window.addEventListener('keyUp', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener')
+            _satellite.track('');
+
+        });
+    }
+
+</script>
+
+
+<style>
+
+    .center-me{
+        text-align: center;
+    }
+
+    .noOverflow {
+        overflow-x: hidden;
+    }
+
+    .align-me{
+        left:1235px;
+        top:4.2rem;
+    }
+
+
+    /* GOBAL */
+    .guxFloatingDiv {
+        width: 100%;
+        top: 155px;
+        /*top: 14vh;*/
+        padding-left: 30px;
+        /*margin: 0 0 0 3vw;*/
+        margin: auto;
+        position: absolute;
+        overflow-y: auto;
+        word-break: break-word;
+        z-index: 11;
+        font-family: FordAntenna, Antenna, Arial, Helvetica, sans-serif;
+    }
+
+    .myPaddingClass {
+        /*padding-top: 6vh;*/
+        padding-top: 50px;
+    }
+
+
+    .guxFloatingDiv>.content>.richtext.section.richtext>.initialized.initialized-ctaButton>.icon-info {
+        font-size: 1.3rem;
+        vertical-align: text-bottom;
+    }
+
+    .lowerZIndex {
+        z-index: 1 !important;
+        display: none !important;
+    }
+
+    a.close.icon-close2 {
+        position: relative;
+        top: 1.3rem;
+        /*left: 1012px;*/
+        /*left:66vw;*/
+        vertical-align: text-bottom;
+    }
+
+    a.close.icon-close2::before {
+        font-size: 1rem !important;
+    }
+
+    /* DESKTOP */
+    @media only screen and (min-width:1024px) {
+        .top-margins{
+            margin-top: 40px !important;
+        }
+        .center-me{
+            padding-top: 50px;
+        }
+        a.close.icon-close2 {
+            top: 4.4rem;
+        }
+    }
+
+    /* MOBILE */
+    @media only screen and (max-width:767px) {
+
+        .myPaddingClass > .guxFloatingDiv > .content{
+            padding-bottom: 10px;
+        }
+
+
+        .guxFloatingDiv {
+            top: 0px;
+            width: 95%;
+            position: static;
+            overflow-x: hidden;
+            padding-left: 15px !important;
+        }
+
+        .myPaddingClass {
+            padding-top: 0px !important;
+        }
+
+        .align-me{
+            top:0.3rem !important;
+            /*top: 0.5vh;*/
+            left: 86vw;
+        }
+    }
+
+    /* TABLET */
+    @media only screen and (min-width:768px) and (max-width:1023px) {
+        .main-nav {
+            padding-bottom: 3vh;
+        }
+
+        .guxFloatingDiv {
+            top: 10.5vh !important;
+        }
+
+        .align-me{
+            top: 4vh !important;
+            left: 60vw !important;
+        }
+
+    }
+</style>

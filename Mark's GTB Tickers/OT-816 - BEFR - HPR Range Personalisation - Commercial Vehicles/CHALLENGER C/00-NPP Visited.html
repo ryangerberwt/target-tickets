@@ -1,0 +1,29 @@
+<script>
+    $(document).ready(function() {
+        console.log("OT-816 - C - NPP Visited");
+        
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.hpr.personalization.market" : "BE-FR",
+                "profile.hpr.personalization.action" : "NPP Visited",
+                "profile.hpr.personalization.triggerHomePage" : true,
+                "profile.hpr.personalization.vehicledViewed" : window.location.pathname.split('?')[0],
+                "profile.hpr.personalization.visibleUntil" : d,
+                "profile.hpr.personalization.seen": 0
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+</script>

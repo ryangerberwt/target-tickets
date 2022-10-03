@@ -1,0 +1,107 @@
+<script>
+
+    var snippet = null;
+    var element;
+    var base = document.createElement("base");
+    base.target = "_parent";
+
+    function createIframe() {
+        element = document.createElement("iframe");
+        element.src = "https://www.ford.co.uk/content/snippets/gux-3-0/commercial-vehicles/acc-models-display/reverse-cv-model-display-flat-pd";
+        element.className = "reverse-cv-model-1300";
+        element.id = "reverse-cv-model-1300";
+    }
+
+    window.onload = function () {
+        console.log("OT-1300 REMAKE WITH SNIPPET");
+        async function waitForElm(selector) {
+            return new Promise(resolve => {
+                if (document.querySelector(selector)) {
+                    return resolve(document.querySelector(selector));
+                }
+                const observer = new MutationObserver(mutations => {
+                    if (document.querySelector(selector)) {
+                        resolve(document.querySelector(selector));
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            });
+        }
+
+        waitForElm(".feature-container .snippet").then(result => {
+            createIframe()
+            console.log("results >> ", result);
+            var pElement = result.parentNode;
+            pElement.replaceChild(element, result);
+
+            setTimeout(function () {
+                var iframe = document.querySelector('#reverse-cv-model-1300');
+                var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                if (!iframeDocument) {
+
+                    throw "iframe couldn't be found in DOM.";
+                }
+                // or
+                if (iframeDocument.querySelector('.disclosure-heading') !== undefined && iframeDocument.querySelector('.disclosure-text') !== undefined) {
+                    iframeDocument.querySelector('head').appendChild(base);
+                    if(iframeDocument.querySelector('.disclosure-heading') !== null){
+
+                        iframeDocument.querySelector('.disclosure-heading').style.display = "none";
+                    }
+                    if( iframeDocument.querySelector('.disclosure-text') !== null){
+
+                        iframeDocument.querySelector('.disclosure-text').style.display = "none";
+                    }
+
+                }
+            }, 1500)
+        })
+    }
+
+    window.addEventListener('click', function (e) {
+        console.dir(e.target.dataset.accContextType);
+        if (e.target.dataset.accContextType !== undefined && e.target.dataset.accContextType !== null && e.target.dataset.accContextType !== '' && e.target.dataset.accContextType === 'cookiesAgree') {
+            console.log('a');
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1300:ab:hp:cv-model-order:challenger'
+                }
+            }
+
+            console.log('target camp ');
+            console.dir(window.targetCampaign);
+
+            _satellite.track('genericTestingImpressionIDWorkaround');
+        } else {
+
+
+            try {
+                console.log('This is to force it to stop firing');
+                console.log('Target Camp name ' + window.targetCampaign.page.campaignName);
+                console.dir(window.targetCampaign);
+                window.targetCampaign.page.campaignName = "";
+                console.log('Target Camp Name is ' + window.targetCampaign.page.campaignName)
+            } catch (ex) {
+                console.log('Ex is');
+                console.dir(ex);
+            }
+
+
+
+        }
+    })
+</script>
+
+<style>
+    .reverse-cv-model-1300 {
+        width: 100%;
+        height: 30em;
+        border: 0;
+        background-color: transparent;
+        overflow: hidden;
+    }
+</style>

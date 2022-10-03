@@ -1,0 +1,123 @@
+/* CATEGORY THUMBNAILS - START */
+
+/*NB: RULES WILL ONLY WORK IF !important is included*/
+
+/*##############*/
+/*DESKTOP RULES*/
+/*##############*/
+
+/*This sets the width and height of rows and columns - it should have a higher value than the other rules*/
+.subcategories-img-list.clearfix > div.subcat{
+    width:200px !important;
+    height:200px !important;
+}
+
+/*
+    ORIGINAL VALUES
+    width: 120px;
+    height: 160px
+*/
+
+
+
+
+/*This sets the wrapper/container of the image*/ 
+.subcategories-img-list.clearfix > div.subcat > a > .image-wrapper{
+   height:180px !important;
+}
+
+/*
+    ORIGINAL VALUES
+    height: 120px;
+*/
+
+/*This sets the height of the actual image element.*/
+.subcategories-img-list.clearfix > div.subcat > a > .image-wrapper > div > img{
+    max-height: 180px !important; /*This should be set to the height of the row so it doesn't overlap*/
+}
+
+/*
+ORIGINAL VALUES
+max-height: 120px;
+*/
+
+
+/*##############*/
+/*TABLET RULES*/
+/*##############*/
+@media only screen and (min-width:768px) and (max-width:1024px) { 
+    /*This sets the width and height of rows and columns - it should have a higher value than the other rules*/
+.subcategories-img-list.clearfix > div.subcat{
+    width:200px !important;
+    height:200px !important;
+}
+
+/*
+    ORIGINAL VALUES
+    width: 120px;
+    height: 160px
+*/
+
+/*This sets the wrapper/container of the image*/ 
+.subcategories-img-list.clearfix > div.subcat > a > .image-wrapper{
+   height:180px !important;
+}
+
+/*
+    ORIGINAL VALUES
+    height: 120px;
+*/
+
+/*This sets the height of the actual image element.*/
+.subcategories-img-list.clearfix > div.subcat > a > .image-wrapper > div > img{
+    max-height: 180px !important; /*This should be set to the height of the row so it doesn't overlap*/
+}
+/*
+    ORIGINAL VALUES
+    max-height: 120px;
+*/
+
+
+}
+
+/*##############*/
+/*MOBILE RULES*/
+/*##############*/
+
+@media screen and (max-width:767px){
+    /*This sets the width and height of rows and columns - it should have a higher value than the other rules*/
+.subcategories-img-list.clearfix > div.subcat{
+    width:200px !important;
+    height:200px !important;
+}
+
+/*
+    ORIGINAL VALUES
+    width: 120px;
+    height: 160px
+*/
+
+/*This sets the wrapper/container of the image*/ 
+.subcategories-img-list.clearfix > div.subcat > a > .image-wrapper{
+   height:180px !important;
+}
+
+/*
+    ORIGINAL VALUES
+    height: 120px;
+*/
+
+/*This sets the height of the actual image element.*/
+.subcategories-img-list.clearfix > div.subcat > a > .image-wrapper > div > img{
+    max-height: 180px !important; /*This should be set to the height of the row so it doesn't overlap*/
+}
+/*
+    ORIGINAL VALUES
+    max-height: 120px;
+*/
+
+
+}
+
+/* CATEGORY THUMBNAILS - END */
+

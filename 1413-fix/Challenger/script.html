@@ -1,0 +1,58 @@
+<script>
+    console.log("OT-1413-2");
+
+
+    var $ = jQuery;
+
+
+    let str2 = '';
+    let elements2 = "";
+    $(document).ready(function() {
+           /* $('.thin-nav:visible > li > a').eq(0).load('/content/dam/guxeu/global-shared/target/OT-1413/Van.svg');
+            $('.thin-nav:visible > li > a').eq(1).load('/content/dam/guxeu/global-shared/target/OT-1413/wheel.svg');
+            $('.thin-nav:visible > li > a').eq(2).load('/content/dam/guxeu/global-shared/target/OT-1413/map.svg');*/
+
+
+            /*$('.thin-nav:visible > li > a').eq(0).addClass('xxx');
+            $('.thin-nav:visible > li > a').eq(1).addClass('yyy');
+            $('.thin-nav:visible > li > a').eq(2).addClass('zzz');*/
+
+
+
+            $('.thin-nav:visible > li > a').eq(0).append('<embed data="/content/dam/guxeu/global-shared/target/OT-1413/Van.svg" type="image/svg+xml"></embed>');
+            $('.thin-nav:visible > li > a').eq(1).append('<embed data="/content/dam/guxeu/global-shared/target/OT-1413/wheel.svg" type="image/svg+xml"></embed>');
+            $('.thin-nav:visible > li > a').eq(2).append('<embed data="/content/dam/guxeu/global-shared/target/OT-1413/map.svg" type="image/svg+xml"></embed>');
+   
+            /*$.get('/content/dam/guxeu/global-shared/target/OT-1413/Van.svg',function(data){
+                console.dir(data);
+            });
+
+            $.get('/content/dam/guxeu/global-shared/target/OT-1413/wheel.svg',function(data){
+                console.dir(data);
+            });
+            
+            $.get('/content/dam/guxeu/global-shared/target/OT-1413/map.svg',function(data){
+                console.dir(data);
+            });*/
+            /*$('.xxx').append('<img src="/content/dam/guxeu/global-shared/target/OT-1413/Van.svg"/>');
+
+            $('.yyy').append('<img src="/content/dam/guxeu/global-shared/target/OT-1413/wheel.svg"/>');
+            
+            $('.zzz').append('<img src="/content/dam/guxeu/global-shared/target/OT-1413/map.svg"/>');*/$
+
+            /*$('.xxx').load('/content/dam/guxeu/global-shared/target/OT-1413/Van.svg');
+            $('.yyy').load('/content/dam/guxeu/global-shared/target/OT-1413/wheel.svg');
+            $('.zzz').load('/content/dam/guxeu/global-shared/target/OT-1413/map.svg');*/
+
+
+        $('.icon-hamburger').on('click', function() {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1413:ab:nav:action-design:challenger"
+                }
+            }
+            console.log('firing impression');
+            _satellite.track("impression-xt-popin")
+        });
+    })
+</script>

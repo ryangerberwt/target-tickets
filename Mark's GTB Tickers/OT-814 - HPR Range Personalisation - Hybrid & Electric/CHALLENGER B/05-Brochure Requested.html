@@ -1,0 +1,36 @@
+<script>
+    $(window).on('hashchange', function(e) {
+        if (window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/ford-transit-custom") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/ford-tourneo-custom") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/der-neue-ford-explorer-plug-in-hybrid") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/ford-mondeo") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/der-neue-ford-kuga") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/ford-puma")) {
+
+                console.log("OT-814 - B - Brochure Requested");
+
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.hpr.personalization.market" : "DE",
+                        "profile.hpr.personalization.action" : "Brochure Requested",
+                        "profile.hpr.personalization.triggerHomePage" : true,
+                        "profile.hpr.personalization.visibleUntil" : d,
+                        "profile.hpr.personalization.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+        }
+    });
+</script>

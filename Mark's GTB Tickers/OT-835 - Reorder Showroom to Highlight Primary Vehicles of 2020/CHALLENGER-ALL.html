@@ -1,0 +1,57 @@
+<script>
+    // This runs on every page.
+    console.log("OT-835 - ALL");
+
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-835:ab:vsr:primary-vehicles:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    // Mini Showroom - This is on every page
+    setTimeout(function(){
+
+        var run = true;
+
+        while (run) {
+            if ($('.site-link-title:contains("Gamma")').length > 0) {
+                $('.site-link-title:contains("Gamma")')[0].onmouseover = function() {
+                    executeChanges();
+                };
+                $('.vehicle-menu-item:contains("Tutte le vetture")')[0].onclick = function() {
+                    executeChanges();
+                };
+                run = false;
+            }
+        }
+
+        function executeChanges() {
+            if ($('.vehicle-menu-item.is-active:contains("Tutte le vetture")').length > 0) {
+                setTimeout(function() {
+                    getAndMove("KUGA");     // Third
+                    getAndMove("MACH-E");   // Second
+                    getAndMove("PUMA");     // First
+                }, 250);
+            }
+        }
+
+        function getAndMove(car) {
+            moveVehicle(getVehicle(car));
+        }
+
+        function moveVehicle(object) {
+            if (object.length > 0) {
+                object[0].parentNode.insertBefore(object[0], object[0].parentNode.children[0]);
+            }
+        }
+
+        function getVehicle(car) {
+            return $('.vehicle-tiles > div:contains("'+ car + '")');
+        }
+
+    }, 1000);
+</script>

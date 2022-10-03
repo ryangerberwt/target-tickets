@@ -1,0 +1,28 @@
+<script>
+
+    var $ = jQuery;
+    console.log('Mach-e Summary 1');
+    $(document).ready(function () {
+
+        console.log('firing impression ID')
+
+        window.targetCampaign =  {
+            page: {
+                campaignName: 'tt:nwp:opt-1507:ab:bp:remove-smartctas:challenger'
+            }
+        }
+
+        _satellite.track('genericTestingImpressionIDWorkaround');
+
+    });
+
+
+    /*
+    
+    Action type: Remove
+    CSS Element Selector: 
+    #root > DIV.ngc-react-parsys:eq(1) > DIV.box:eq(0) > DIV.box-content:eq(0) > DIV.feature-container:eq(0) > DIV.multipleCta:eq(0) > DIV.ngc-main-parsys:eq(0) > DIV:nth-of-type(3) > DIV.richtext:eq(0) > DIV.richtext-content:eq(0) > P:nth-of-type(1) > A.ngc-button-primary-outline:eq(0)
+    
+    */
+
+</script>

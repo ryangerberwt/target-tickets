@@ -1,0 +1,262 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1516 | CHALLENGER | NGC');
+    var deepLinkCode;
+    var id;
+    var shortUrl = '&shortUrl=www.ford.co.uk%2Fs%2F5Rnf&longUrl=https%3A%2F%2Fwww.ford.co.uk%2Fshop%2Fprice-and-locate%2Fbp%2Fice%23%2Fsummary%3F';
+    var configString;
+    var ctaSelector = 'a[data-acc-context-type="FormsNGC"]';
+    var enableLogs = false;
+    var _log = console.log;
+    console.log = function(logMsg){
+        if(enableLogs){
+ 
+            _log.apply(console,arguments);
+        }
+    }    
+
+
+    //Cannot find new fiesta, new focus or all-new tourneo connect
+
+    var vehicles = {
+        'puma': {
+            'vCode': "?vehicleCode=00O",
+            'keys': [
+                "WAEGB-CF7-2020-PumaGBR202225",
+                "WAEGB-CF7-2020-PumaGBR202250"
+            ]
+        },
+        //This doesn't work
+        'new puma st': {
+            'vCode': "?vehicleCode=CF701",
+            'keys': [
+                "WAEGB-CF7-2020-BX726GBR202075",
+                "WAEGB-CF7-2020-PUMAGBR202175",
+                "WAEGB-CF7-2020-BX726GBR202025"
+
+            ]
+        },
+        'kuga': {
+            'vCode': "?vehicleCode=CBS07-01_12",
+            'keys': [
+                "WAEGB-CTD-2019-KugaGBR202150",
+                "WAEGB-CTD-2019-KugaGBR202125",
+                "WAEGB-CTD-2019-KugaGBR202200"
+            ]
+        },
+        //Does not work
+        'tourneo custom': {
+            'vCode': "?vehicleCode=SU_EV",
+            'keys': [
+                "WAEGB-TTF-2018-TourneoCustomGBR202175",
+                "WAEGB-TTF-2018-TourneoCustomGBR202250",
+            ]
+        },
+        'mustang mach-e': {
+            "vCode": "?vehicleCode=CGW02",
+            "keys": [
+                "WAEGB-CGW-2021-CX727BEVSUVGBR202100",
+
+            ]
+        },
+
+        //Does not work
+        'transit custom': {
+            'vCode': "?vehicleCode=SU_SS",
+            'keys': [
+                "WAEGB-TTF-2018-TransitCustomGBR202175"
+            ]
+        },
+
+        'ranger': {
+            'vCode': "?vehicleCode=00G",
+            'keys': [
+                "WAEGB-TKE-2018-RangerSAfricaGBR202200"
+            ]
+        },
+
+        //Does not work
+        'transit custom': {
+            'vCode': "?vehicleCode=SU_SS",
+            'keys': [
+                "WAEGB-TTF-2018-TransitCustomGBR202175"
+            ]
+        },
+    }
+
+
+
+    function checkUrl() {
+        return window.location.href.indexOf('ford.co.uk/shop/price-and-locate/bp/ice#/summary') >= 0;
+    }
+
+    function runLogic() {
+        //We'll use a custom data attribute to check if we've run this before
+        console.log('runLogic');
+        if (checkUrl()) {
+            if (waitForElement($(ctaSelector)), 20) {
+                id = getIdFromUrl();
+                if (checkForNullOrUndefined(id) && (getCookie('kmiCtaClick') === undefined || getCookie('kmiCtaClick') === null || getCookie('kmiCtaClick') === false)) {
+                    checkIfCarHasKMI();
+                    if (checkIfCarHasKMI() !== false) {
+                        console.log('addingClickEvent');
+                        //Add click event
+                        $(ctaSelector).on('click', function () {
+                            console.log('Clicked CTA -- setting cookie val...');
+                            document.cookie = 'kmiCtaClick=true';
+                            console.log('Cookie val is set to ' + getCookie('kmiCtaClick'));
+                        });
+                        fireImpressionId();
+                        setTimeout(function () {
+                            console.log('clicking');
+                            setOnClick();
+                            $('body').click();
+                        }, 750);
+                    } else {
+                        console.log('Car does NOT have KMI promo')
+                    }
+
+
+
+                } else {
+                    console.log('id ' + id + ' not found and cookie is missing ');
+                }
+            }
+        } else {
+            console.log('not on correct page');
+        }
+    }
+
+
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        console.log('adding hashchange');
+        $(window).on("hashchange", runLogic);
+        runLogic();
+    });
+
+    function getIdFromUrl() {
+        return window.location.href.substring(window.location.href.indexOf('?catalogId='), window.location.href.indexOf('&')).replace('?catalogId=', '');
+    }
+
+    function checkForNullOrUndefined(elementToCheck) {
+        if (elementToCheck !== undefined && elementToCheck !== null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function getCookie(name) {
+        console.log('checking cookie')
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function checkIfCarHasKMI() {
+        //TODO:CHECK IF THIS CAR HAS KMI
+        $.each(vehicles, function (ix, vl) {
+            $.each(vl.keys, function (ixi, vli) {
+                if (vli === id) {
+                    console.log('found v code');
+                    getConfigString();
+                    var deepLinkCode = vl.vCode;
+                    updateHref($(ctaSelector), ('https://www.ford.co.uk/shop/research/keep-me-informed' + deepLinkCode + shortUrl + configString));
+                    $(ctaSelector).text('Keep me informed');
+                }
+            });
+
+            return false;
+        });
+
+    }
+
+    function getConfigString() {
+        configString = window.location.href.substring(window.location.href.indexOf('catalogId'), window.location.href.length);
+    }
+
+    /*function loadJsonModel() {
+        modelsJson = $.getJSON("https://www.ford.co.uk/content/guxeu/uk/en_gb/configuration/applications-and-services/ngc-configuration-bev.model.json", function (data) {
+            console.dir(data);
+            $.each(data.nameplateConfig.labels, function (key, val) {
+                if (id.includes(val.key) && val.formsContext !== null) {
+                    console.log('found v code');
+                    getConfigString();
+                    var deepLinkCode = val.formsContext;
+                    updateHref($(ctaSelector), ('https://www.ford.co.uk/shop/research/keep-me-informed' + deepLinkCode + shortUrl + configString));
+                    $(ctaSelector).text('Keep me informed');
+                }
+            });
+        });
+    }*/
+
+    function updateHref(targetElement, updatedHref) {
+        if (checkForNullOrUndefined(targetElement) && targetElement !== 0 && checkForNullOrUndefined(updatedHref)) {
+            targetElement.attr('href', updatedHref);
+            console.log('updated href');
+        } else {
+            console.log('Unable to update href :: element is null');
+        }
+    }
+
+
+    function waitForElement(element, limit) {
+        let localLimit = 0;
+        let waitForMe = setInterval(function () {
+            if (element !== undefined && element.length > 0 && localLimit <= limit) {
+                console.log('element found');
+                clearInterval(waitForMe);
+                return true;
+            } else if (localLimit > limit) {
+                console.log('limit reached');
+                return false;
+            }
+
+            localLimit++;
+
+        }, 500)
+    }
+
+
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1516:ab:bp:kmi-pers:challenger", //Change this to your impressionID
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            _satellite.track('');
+
+        });
+    }
+
+    //We don't always need this but adding it here for reference
+    function setOnKeyUp() {
+        window.addEventListener('keyUp', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            _satellite.track('');
+
+        });
+    }
+
+
+
+</script>

@@ -1,0 +1,31 @@
+<script>
+
+    var $ = jQuery; // < 1 > - $ is no longer initialized by Ford. Target has built in jQuery. Most of our scripts use the $.
+    var targetErrors = targetErrors || [];
+    console.log('OT-1344');
+    $(window).on("hashchange",function() {
+        console.log('Checking rules');
+        console.log(window.location.href);
+        if (window.location.href.indexOf('/kaufberatung/kaufen/bp/ice-inventory?context=showroom#/summary') > 0 ||
+            (window.location.href.indexOf('/kaufberatung/kaufen/bp/ice#/') > 0 && window.location.href.indexOf('/summary?')>0)) {
+            console.log('Rules passed');
+
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: 'tt:nwp:opt-1344:ab:bp:ngc-ice-summary:control'
+                }
+            }
+            _satellite.track('genericTestingImpressionIDWorkaround');
+
+        } else {
+            console.log('rules failed');
+            console.log('Current URL : ' + window.location.href);
+        }
+    });
+
+
+
+
+
+
+</script>

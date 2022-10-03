@@ -1,0 +1,19 @@
+=== JSON ===
+https://www.ford.co.uk/content/guxeu/uk/en_gb/configuration/applications-and-services/ngc-configuration-bev.model.json
+
+=== AJAX REQUEST === (This works)
+curl 'https://www.servicescache.ford.com/api/ShortURLService/v1/communication/shortenURL/shortURL' \
+  -H 'Connection: keep-alive' \
+  -H 'sec-ch-ua: "Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36' \
+  -H 'Content-Type: application/json;charset=UTF-8' \
+  -H 'Origin: https://www.ford.de' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Referer: https://www.ford.de/' \
+  -H 'Accept-Language: en-GB,en;q=0.9' \
+  --data-raw '{"locale":"de_DE","longURL":"https://www.ford.de/kaufberatung/kaufen/bp/ice#/summary?catalogId=WAEDX-CF7-2020-BX726PUMADEU202125&series=ACMAA_VS-DF&powertrain=DGADE_DR--A_EN-M0_TR-EW&paint=PN3JV&trim=122ZH_FS--Bincluded"}' \
+  --compressed

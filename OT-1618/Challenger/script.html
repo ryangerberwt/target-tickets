@@ -1,0 +1,353 @@
+<script>
+    console.log('OT-1618 | Challenger');
+    var $;
+    var enableLogs = false;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                // You can place the rest of your script(s) here
+                runLogic();
+            }
+        }, 500);
+    }
+
+    function runLogic() {
+        console.log('Running Logic');
+        fireImpressionID();
+        getBillboardSlides();
+    }
+
+
+    function getBillboardSlides() {
+        var slides = $('.billboard-content');
+        //Init Slider
+        $('#gux3').prepend('<div class="mySlick"></div')
+        $('.mySlick').eq(0).slick({
+            dots: true,
+            infinite: true,
+            speed: 500,
+            slidesToShow: 1,
+            fade: true,
+            cssEase: 'linear'
+        });
+        console.log('slides');
+        console.dir(slides);
+
+        for (var x = 0; x < slides.length; x++) {
+            $('.mySlick').slick('slickAdd', slides[x]);
+        }
+
+        //StyleFixs
+        $('.billboard-paragraph').addClass('mySlickHeading');
+        $('ul.slick-dots').eq(0).addClass('dots-fix');
+        $('.slick-dots.dots-fix').children().children().addClass('slider-index-button-fix')
+        $('.slider-index-button-fix').text('');
+        for (var z = 0; z < 4; z++) {
+            $('#gux3 > .box')[0].remove();
+        }
+        $('.mySlick > .slick-next.slick-arrow').addClass('slick-next-fix');
+        $('.mySlick > .slick-prev.slick-arrow').addClass('slick-prev-fix');
+        $('.slick-prev-fix').text('');
+        $('.slick-next-fix').text('');
+        //Set hover state to show buttons
+        $('.mySlick').on('mouseenter', function () {
+            var prevArrow = $('.mySlick > .slick-prev.slick-arrow');
+            var nextArrow = $('.mySlick > .slick-next.slick-arrow');
+            console.log('Show');
+            prevArrow.removeClass('slick-hidden-la');
+            nextArrow.removeClass('slick-hidden-ra');
+        });
+        $('.mySlick').on('mouseleave', function () {
+            var prevArrow = $('.mySlick > .slick-prev.slick-arrow');
+            var nextArrow = $('.mySlick > .slick-next.slick-arrow');
+            console.log('Show');
+            prevArrow.addClass('slick-hidden-la');
+            nextArrow.addClass('slick-hidden-ra');
+        });
+
+
+    }
+
+    function fireImpressionID() {
+        var theCookie = getCookie('1618-impression-challenger-fired');
+        console.log('FIREIMPRESSIONID - ' + theCookie);
+        if (theCookie === undefined || theCookie === null) {
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1618:ab:hp:stacked-carousel:challenger'
+                }
+            };
+            //_satellite.track('');
+            _satellite.track("genericTestingImpressionIDWorkaround");
+            console.log('done firing -- first pass');
+            setCookieForImpressionID(24, '/', '1618-impression-challenger-fired', true);
+            console.log('We fired the impressionID ' + window.targetCampaign.page.campaignName);
+            setTimeout(function () {
+                setOnClick();
+                console.log('setOnClick done');
+                $('body').click();
+            }, 500);
+
+        }
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            if (window.targetCampaign !== undefined) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('blocking impression on event listener')
+            //_satellite.track('');
+
+        });
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+            console.log("no cookie set --- setting now");
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            console.log("cookie is set");
+            return true;
+        } else {
+            console.log("Cookie is still valid");
+            return false;
+        }
+    }
+
+
+</script>
+
+<style>
+    /*Common*/
+
+
+    ul.slick-dots.dots-fix > li.slick-active{
+        background:#102b4e !important;
+    }
+
+    ul.slick-dots.dots-fix>li {
+        background: #fff;
+        margin: 0 5px;
+        width: 33px !important;
+    }
+
+    /*Previous arrow*/
+    .slick-hidden-la {
+        left: -50px !important;
+        opacity: 0;
+    }
+
+    /*Next arrow*/
+    .slick-hidden-ra {
+        opacity: 0;
+        right: -50px !important;
+    }
+
+
+    .slick-next-fix::after {
+        content: "";
+        border-bottom: 2px solid #fff;
+        border-right: 2px solid #fff;
+        height: 25px;
+        left: 5%;
+        top: 25%;
+        transform: rotate(-45deg);
+        width: 25px;
+        content: "";
+        display: inline-block;
+        width: 25px;
+        position: relative;
+        vertical-align: middle;
+        margin: 5px 10px 5px -5px;
+    }
+
+
+    .slick-prev-fix::before {
+        border-bottom: 2px solid #fff;
+        border-left: 2px solid #fff;
+        height: 25px;
+        left: 40%;
+        top: 25%;
+        transform: rotate(45deg);
+        width: 25px;
+        content: "";
+        display: inline-block;
+        height: 25px;
+        margin: 5px 10px 5px -5px;
+        position: relative;
+        vertical-align: middle;
+    }
+
+    .slick-prev-fix {
+        z-index: 99;
+        top: 50%;
+        background-color: #102b4e;
+        left: 0px;
+        position: absolute;
+        transition: all .2s ease, -webkit-all .2s ease;
+    }
+
+    .slick-next-fix {
+        z-index: 99;
+        top: 50%;
+        background-color: #102b4e;
+        position: absolute;
+        right: 0px;
+        transition: all .2s ease, -webkit-all .2s ease;
+
+    }
+
+    .dots-fix {
+        display: inline-flex !important;
+        position: absolute !important;
+        top: 550px !important;
+        left: 40vw !important;
+        list-style: none !important;
+        height: 3px !important;
+    }
+
+    .slider-index-button-fix {
+        border: 0 !important;
+        opacity: 0 !important;
+        display: block !important;
+        height: 40px !important;
+        margin: 19px 5px !important;
+        padding: 0 !important;
+        width: 30px !important;
+    }
+
+
+    .slick-active-fix {
+        background: #102b4e !important;
+    }
+
+    .slick-arrow-fix {
+        background: #8c8c8c !important;
+        display: inline-block !important;
+        height: 2px !important;
+        margin: 19px 5px !important;
+        width: 32px !important;
+    }
+
+
+    /*Desktop*/
+    @media screen and (min-width:900px) {
+        .mySlickHeading {
+            position: fixed !important;
+            margin: 105px 95px !important;
+            top: 0px !important;
+            left: 0px !important;
+        }
+    }
+
+
+    /*Mobile*/
+    @media screen and (max-width:640px) {
+
+        .slick-next-fix,
+        .slick-prev-fix {
+            display: none !important;
+        }
+
+        .mySlickHeading {
+            position: fixed !important;
+            margin: 100px 35px !important;
+            top: 0px !important;
+            left: 0px !important;
+        }
+
+        .mySlickHeading>div>.richtext.richtext-white.hidden-desktop {
+            height: auto !important;
+            left: 0 !important;
+            margin: 45px 0 0 !important;
+            padding: 0 !important;
+            position: absolute !important;
+            top: 0 !important;
+            z-index: 9 !important;
+            text-align: center !important;
+        }
+
+        .mySlickHeading>div>.richtext.richtext-white.hidden-desktop>div.richtext-content>p>a.cta-pill.cta-pill-white.initialized-anchor {
+            margin: 0px 20vw;
+            width: max-content !important;
+        }
+
+        .mySlickHeading>div>.richtext.richtext-white.hidden-desktop>div.richtext-content>h2 {
+            font-size: 1.875rem !important;
+            letter-spacing: 2px !important;
+            line-height: 1.4 !important;
+            margin-bottom: 8px !important;
+            margin-top: 3.2px !important;
+        }
+
+        .dots-fix{
+            top:350px !important;
+            left: 55px !important;
+        }
+
+        
+
+    }
+
+    /*Tablet*/
+
+    @media screen and (min-width:750px) and (max-width:1023px) {
+
+
+        .dots-fix{
+            left: 32vw !important;
+        }
+
+        .mySlickHeading {
+            position: fixed;
+            margin: 100px 35px;
+            top: 0px;
+            left: 0px;
+        }
+
+        .mySlickHeading>div>.richtext.richtext-white.hidden-desktop>div.richtext-content>h2 {
+            font-size: 1.875rem !important;
+            letter-spacing: 2px !important;
+            line-height: 1.4 !important;
+        }
+
+        .mySlickHeading>div>.richtext.richtext-white.hidden-desktop>div.richtext-content {
+            margin: 32px;
+            padding: 0;
+        }
+    }
+</style>

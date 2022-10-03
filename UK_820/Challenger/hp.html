@@ -1,0 +1,92 @@
+<script>
+    var storedData_820;
+    var promo_list;
+    var str = '';
+    $(document).ready(function () {
+        setTimeout(function () {
+            var billboard_paragraph = null;
+
+
+            storedData_820 = {
+                carName: "${profile.carName}",
+                subName: "${profile.subName}",
+                vehicleType: "${profile.vehicleType}",
+                promo: getPromo(),
+            }
+
+            function getPromo() {
+                if (localStorage.getItem("promo") != undefined && localStorage.getItem("promo") != null && localStorage.getItem("promo") != '') {
+                    return JSON.parse(localStorage.getItem("promo"))
+
+                }
+                return '';
+            }
+
+            var promo_pages = {
+                //PROMOTIONAL PAGES - PV
+                Fiesta: "https://www.ford.co.uk/cars/new-fiesta/promotions/personal",
+                EcoSport: "https://www.ford.co.uk/cars/ecosport/promotions/personal",
+                Puma: "https://www.ford.co.uk/cars/puma/promotions/personal",
+                Focus: "https://www.ford.co.uk/cars/focus/promotions/personal",
+                "Tourneo Connect": "https://www.ford.co.uk/cars/tourneo-connect/promotions/personal",
+                Kuga: "https://www.ford.co.uk/cars/new-kuga-promotions/promotions/personal",
+                Mondeo: "https://www.ford.co.uk/cars/mondeo/promotions/personal",
+                Mustang: "https://www.ford.co.uk/cars/mustang-promotions/promotions/personal",
+                "S-Max": "https://www.ford.co.uk/cars/s-max/promotions/personal",
+                Galaxy: "https://www.ford.co.uk/cars/galaxy/promotions/personal",
+                "Tourneo Custom": "https://www.ford.co.uk/cars/tourneo-custom/promotions/personal",
+                //PROMOTIONAL PAGES - CV
+                "Fiesta Van": "https://www.ford.co.uk/vans-and-pickups/new-fiesta-van/promotions/personal",
+                "Transit Courier": "https://www.ford.co.uk/vans-and-pickups/transit-courier/promotions/personal",
+                "Transit Connect": "https://www.ford.co.uk/vans-and-pickups/transit-connect/promotions/personal",
+                "Transit Custom": "https://www.ford.co.uk/vans-and-pickups/transit-custom/promotions/personal",
+                "Transit Van": "https://www.ford.co.uk/vans-and-pickups/transit/promotions/personal",
+                "Transit Minibus": "https://www.ford.co.uk/new-vans-and-pickups/transit-minibus/promotions/personal",
+                "Ranger": "https://www.ford.co.uk/vans-and-pickups/ranger/promotions/personal",
+                "Transit Chassis": "https://www.ford.co.uk/vans-and-pickups/transit-chassis-cab/promotions/personal",
+            }
+
+            function getLink(storedData) {
+                if (storedData.vehicleType == "PV" || storedData.vehicleType == "CV") {
+
+                    promo_list = storedData_820.promo;
+
+
+
+                    if (promo_list !== undefined && promo_list !== null) {
+                        for (let i = 0; i < promo_list.length; i++) {
+                            for (let val in promo_list[i]) {
+                                if (storedData.carName.toUpperCase().indexOf(promo_list[i].name) > -1) {
+                                    for (let prop in promo_pages) {
+                                        if (storedData.carName.includes(prop)) {
+                                            str = promo_pages[prop];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            getLink(storedData_820);
+
+            console.log("OT-820");
+
+            let x = setInterval(function () {
+                if (storedData_820.carName != '' && str != '') {
+                    if ($('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2') !== undefined && $('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2').length > 0) {
+                        $('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2').text("Discover the latest " + storedData_820.carName + " promotions");
+                        $('.billboard-link-layer.at-element-click-tracking.initialized.initialized-contextualLinks').attr('href', str)
+                        //$('.cta-button.cta-button-primary.initialized.initialized-contextualLinks[data-cta-name="view promotions"]').attr('href',str)
+                        clearInterval(x);
+                    }
+                } else {
+                    clearInterval(x);
+                }
+            }, 250)
+        }, 1000)
+
+    })
+
+</script>

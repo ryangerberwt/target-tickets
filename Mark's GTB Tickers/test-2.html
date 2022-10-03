@@ -1,0 +1,39 @@
+<script>
+    var $ = jQuery;
+    var targetErrors = targetErrors || [];
+    console.log('OT-1218');
+    //Click 'Select' on first result (Which is automatically the closest dealer)
+    $(document).ready(function () {
+         if (window.location.href.indexOf('shop/price-and-locate/bp/preferred-dealer') > 0) {
+              window.targetCampaign = window.targetCampaign || {
+                   page: {
+                        campaignName: "tt:nwp:opt-1218:ab:ecom:deafault-dealer-mess:var-b"
+                   }
+              }
+              _satellite.track("genericTestingImpressionIDWorkaround");
+              $('button[data-automation="dealer-summary-action-button"]').first().trigger('click');
+              //Change text on the second 'back' button
+              //From 'Back' to 'Choose My Own Dealer'
+              if ($('button[data-automation="back-to-results-button"]').length == 1) {
+                   $('button[data-automation="back-to-results-button"]').text('Choose My Own Dealer');
+              }
+         }
+    });
+</script>
+And for contol I have this:
+<script>
+   var $ = jQuery;
+   var targetErrors = targetErrors || [];
+   console.log('OT-1218');
+   //Click 'Select' on first result (Which is automatically the closest dealer)
+   $(document).ready(function () {
+       if (window.location.href.indexOf('shop/price-and-locate/bp/preferred-dealer') > 0) {
+           window.targetCampaign = window.targetCampaign || {
+               page: {
+                   campaignName: "tt:nwp:opt-1218:ab:ecom:deafault-dealer:control"
+               }
+           }
+           _satellite.track("genericTestingImpressionIDWorkaround");
+       }
+   });
+</script>

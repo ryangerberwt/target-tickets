@@ -1,0 +1,74 @@
+<script>
+    var enableLogs = true;
+    var $;
+    var bannerHtmlSnippet =
+    `
+    <div class="stickyBanner section">
+        <div data-ng-app="sticky-banner" data-ng-controller="StickyBannerController as vm" class="ng-scope">
+           <!-- ngIf: vm.isVisible -->
+           <div class="sticky-banner ng-scope" data-ng-if="vm.isVisible">
+              <button data-ng-click="vm.close()" class="close icon-close2" tabindex="1"></button>
+              <div class="content">
+                 <div class="richtext section">
+                    <div class="richtext initialized initialized-ctaButton">
+                       <span class="configuration" data-analytics-downloads="[]" data-analytics-nameplates="[]"></span>
+                       <div class="regular  richtext-inner" data-analytics-content-sub-type="sticky banner">
+                          <h5 style="text-align: center;">Due to semi-conductor shortages across Europe it is likely your configuration will be out of stock. Please check again later.</h5>
+                         </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+           <!-- end ngIf: vm.isVisible -->
+        </div>
+     </div>
+    `;
+
+
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+               run();
+                clearInterval(waitForJquery);  
+            } else {
+                // jQuery is not loaded
+                console.log("Not loaded - will check again in 500ms");
+            }
+        }, 250);
+
+
+    
+
+
+    function run() {
+        let wait = setInterval(function () {
+            $('main[role="main"]') !== undefined &&  $('main[role="main"]').length > 0 ? appendAndClear(wait) : console.log('waiting for global ux');
+        }, 250);
+    }
+
+    function addClickClose(){
+        console.log('Adding click close');
+        $('div.sticky-banner.ng-scope > button.close.icon-close2').on('click', function () {
+            console.log('Clicked Close');
+            $('div.sticky-banner.ng-scope > button.close.icon-close2')[0].parentElement.remove()
+            
+        });
+    }
+
+    function appendAndClear(_wait) {
+        $('main[role="main"]').append(bannerHtmlSnippet);
+        addClickClose();
+        clearInterval(_wait)
+    }
+
+</script>

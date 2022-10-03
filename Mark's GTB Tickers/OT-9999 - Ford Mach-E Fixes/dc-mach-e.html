@@ -1,0 +1,60 @@
+<script>
+    var parseRegExp = /catalogID\=([^\/]+)/i;
+    
+
+    function getCarIDs() {
+        var parsedCurrentURL = parseRegExp.exec(location.href);
+
+        var id, code, features = "";
+
+        if (!/catalogID/i.test(location.href)) {
+            return getMachIDs();
+        }
+
+        if (parsedCurrentURL == null)
+            return undefined;
+        else if (parsedCurrentURL.length == 0)
+            return undefined;
+
+        var tempList = parsedCurrentURL[1].split('&');
+
+        for (var i = 0; i < tempList.length; i++) {
+            var key_value = tempList[i].split('=');
+            if (key_value.length == 1) {
+                id = tempList[i];
+            } else if (key_value[0] == "series") {
+                code =  key_value[1];  
+            } else {
+                features += features == "" ? key_value[1] : "," + key_value[1];   
+            }
+        }
+        return {id, code, features};
+    }
+    var parseRegNoCatalogIDExp = /\?[^\#\/]+/i;
+    function getMachIDs() {
+        var id = 'WAEIX-CGW-2021-CX727BEVSUVITA202100';
+        var code, features = "";
+
+        var parsedCurrentHash = parseRegNoCatalogIDExp.exec(location.hash);
+
+        if (parsedCurrentHash == null) {
+            return {id, code, features};
+        } 
+        
+        var tempList = parsedCurrentHash[0].split('&');
+
+        for (var i = 0; i < tempList.length; i++) {
+            var key_value = tempList[i].split('=');
+            if (key_value[0].includes('series')) {
+                code = key_value[1];
+            } else {
+                features += features == "" ? key_value[1] : "," + key_value[1];
+            }
+        }
+        return {id, code, features};
+    }
+
+    function isNull(obj) {
+        return obj == undefined || obj == "";
+    }
+</script>

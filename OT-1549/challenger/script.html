@@ -1,0 +1,48 @@
+<script>
+    window.addEventListener("load",function(){
+        
+    
+         console.log('OT-1549');
+        let acc_closed,acc_sub,acc_third = null;
+        let searchInt = setInterval(function(){
+          //console.log('searching');
+           acc_closed = document.querySelector('.vehicle-detail-accordion.opened');
+           acc_sub = document.querySelector('.accordion-title');
+           acc_third = document.querySelector('#accordion-panels--0.panel')
+           stopSearch(acc_closed,acc_sub,acc_third);
+           
+        },50)
+        function stopSearch(a,b,c){
+            
+            if(a != null && b != null && c != null){
+                
+  
+                window.targetCampaign ={
+                    page: {
+                        campaignName: 'tt:nwp:opt-1549:ab:osb:collapse-vin:challenger'
+                    }
+                }
+                
+                _satellite.track('genericTestingImpressionIDWorkaround');
+               
+               clearInterval(searchInt);
+               //console.log('search interval cleared');
+                 if(a.classList.contains('opened')){
+                    
+                    a.classList.remove('opened');
+                    b.classList.remove('header-color')
+                    c.classList.remove('expanded');
+                    
+                 }
+                 else{
+                    a.classList.add('opened');
+                    b.classList.add('header-color')
+                    c.classList.add('expanded');
+                 }
+                 
+               
+            }
+        }
+        
+    })
+    </script>

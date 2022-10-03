@@ -1,0 +1,21 @@
+<script>
+    function displayPopup(storedData) {
+        var vehicle = [
+            "kuga",
+            "ecosport",
+            "puma"
+        ];
+
+        var func_data = [];
+        func_data.carName = storedData.carName.toLowerCase();
+        func_data.subName = storedData.subName.toLowerCase();
+
+        for (var i = 0; i < vehicle.length; i++) {
+            if (func_data.carName.includes(vehicle[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+</script>

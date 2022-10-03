@@ -1,0 +1,79 @@
+<script>
+    var $ = jQuery;
+    var checkForElements;
+    var impressionFired = false;
+    console.log('OT-1370 Challenger');
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        if (window.location.href.indexOf('ford.co.uk/shop/price-and-locate/bp/preferred-dealer') > 0) {
+            console.log('On Dealer Locator Page')
+            checkForElements = setInterval(function () {
+                if ($('.MuiInputBase-input.MuiOutlinedInput-input.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd') !== undefined && $('div[data-testid="main-subheading"]') !== undefined) {
+                    $('.MuiInputBase-input.MuiOutlinedInput-input.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd').attr('placeholder', 'Enter your town or postcode');
+                    $('div[data-testid="main-subheading"]').text('Select a Ford Dealer to see the available delivery options for your vehicle.');
+                    if ($('div[data-testid="main-subheading"]').text() == "Select a Ford Dealer to see the available delivery options for your vehicle.") {
+                        $('div[data-testid="main-subheading"]').attr('style', 'text-transform:none !important')
+                        console.log('fired ' + impressionFired);
+                        if (impressionFired === false || impressionFired == false) {
+                            $(function () {
+                                window.targetCampaign = {
+                                    page: {
+                                        campaignName: 'tt:nwp:opt-1370:ab:lad:search-input:challenger'
+                                    }
+                                }
+                                console.log('firing impression')
+                                _satellite.track('genericTestingImpressionIDWorkaround');
+                                impressionFired = true;
+                            });
+                        }
+                        $('.MuiInputBase-input.MuiOutlinedInput-input.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd').on('blur', function () {
+                            if ($(this).val() == undefined || $(this).val() == "") {
+                                $(this).attr('placeholder', 'Enter your town or postcode');
+                            }
+                        });
+                    }
+
+                }
+            }, 125);
+
+            /* Fix To Prevent multiple re-fires of impression ID*/
+            window.addEventListener('keyup', function () {
+                if (window.targetCampaign.page.campaignName !== "") {
+                    window.targetCampaign = {
+                        page: {
+                            campaignName: ""
+                        }
+                    }
+                }
+                console.log('firing impression on event listner')
+                _satellite.track('genericTestingImpressionIDWorkaround');
+
+            });
+
+
+
+
+
+
+        }
+
+    });
+
+</script>
+
+<style>
+    .MuiInputBase-input::-moz-placeholder {
+
+        font-size: 11px !important;
+    }
+
+    .MuiInputBase-input::-webkit-input-placeholder {
+
+        font-size: 11px !important;
+    }
+
+    .MuiInputBase-input::placeholder {
+        font-size: 11px !important;
+    }
+</style>

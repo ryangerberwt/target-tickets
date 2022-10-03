@@ -1,0 +1,99 @@
+<script>
+    console.log("OT-875");
+    $(window).on("hashchange", filterCheck);
+
+    var lastURL = "";
+    var theData = undefined;
+    var regExr = /dealer-Ford([\w\d]+)  ITA/i;
+
+    function filterCheck() {
+        var runAgain = true;
+
+        if ($('.locator-dealer-results:first div[id*="dealer-"]').length > 0) {
+
+            var script = $('script[src*="spatial.virtualearth.net"]').last();
+
+            if (script.length > 0) {
+                if (script[0].src != lastURL || theData == undefined) {
+
+                    lastURL = script[0].src;
+
+                    $.ajax({
+                        url: lastURL.replace("&Jsonp=collectResults", ""),
+                        xhrFields: {
+                            withCredentials: false
+                        }
+                    }).done(function (response) {
+                        if (response)
+                            return setData(response.d.results);
+                    }).fail(function (fail) {
+                        console.log(fail);
+                    });
+                } else {
+                    runAgain = false;
+                    setData();
+                }
+            }
+        }
+        if (runAgain) {
+            return setTimeout(filterCheck, 250);
+        }
+        
+    }
+
+    function setData(response) {
+        if (response != undefined)
+            theData = response;
+        if (theData != undefined) {
+            addEmails();
+            $('.dl-button:contains("Visualizza più risultati")').on('click', function() {
+                addEmails();
+            });
+            $('.dl-button:contains("Applica")').on('click', function() {
+                setTimeout(addEmails, 1000);
+            });
+        }
+    }
+
+    function addEmails() {
+        var objs = $('.locator-dealer-results:first > div .dl-telephone');
+
+        for (var i = 0; i < objs.length; i++) {
+            if (objs[i].nextElementSibling == null) {
+                var objID = regExr.exec(objs[i].parentNode.parentNode.parentNode.parentNode.parentNode.id);
+
+                if (objID.length == 2) {
+                    var data = theData.filter(function(x) { return x.DealerID == objID[1]; });
+
+                    var mail = (data[0].PrimaryEmail == "" ? "N/A" : data[0].PrimaryEmail);
+   
+                    var mailObj = mail == "N/A" 
+                                    ? mail 
+                                    : "<a href='mailto:" + mail + "' onclick='viewMBOX()'>" + mail + "</a>";
+
+                    $("<p class='dl-mail ng-binding'><span class='icon-open-mail'></span>" + mailObj + "</p>").appendTo(objs[i].parentElement);
+                }
+            }
+        }
+    }
+
+    function viewMBOX() {
+        adobe.target.trackEvent({
+            'mbox': "OT_875_IT_DL_Email_Clicked",
+            'params': {
+                'clicked': 'true'
+            }
+        });
+    }
+</script>
+
+<style>
+    .dl-mail {
+        color: #626466 !important;
+    }
+
+    .icon-open-mail {
+        margin-right: 7px;
+        font-size: 22px !important;
+    }
+</style>

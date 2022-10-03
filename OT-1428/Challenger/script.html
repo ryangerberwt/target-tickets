@@ -1,0 +1,99 @@
+<script>
+
+    var $ = jQuery;
+
+    console.log('OT-1428');
+    console.log('Challenger');
+
+    var personalCvRedirect = 'https://www.ford.co.uk/shop/price-and-locate/promotions/personal-cv';
+    var businessCvRedirect = 'https://www.ford.co.uk/shop/price-and-locate/promotions/business-cv';
+
+
+    var personalCvUrls = [
+        'https://www.ford.co.uk/vans-and-pickups/new-fiesta-van/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-courier/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-connect/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-custom/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/transit-minibus/promotions/personal',
+        'https://www.ford.co.uk/vans-and-pickups/ranger/promotions/personal'
+    ];
+
+    var businessCvUrls = [
+        'https://www.ford.co.uk/vans-and-pickups/transit-courier/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit-connect/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit-custom/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/ranger/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/ranger/promotions/business',
+        'https://www.ford.co.uk/vans-and-pickups/transit-minibus/promotions/business'
+    ];
+
+    var myHtml;
+
+    $(document).ready(function(){
+
+        var urlToUse;
+
+        if(personalCvUrls.includes(window.location.href))
+        {
+            urlToUse = personalCvRedirect;
+            console.log('using personalCvRedirect'); 
+        }
+        else if(businessCvUrls.includes(window.location.href))
+        {
+            urlToUse = businessCvRedirect;
+            console.log('using businessCvRedirect');
+        }
+        else
+        {
+            console.log('URL Not found in either array');
+            return;
+        }
+
+        //Fire impression
+        fireImpression();
+
+        console.log('building');
+        //Build
+        var myHtml = 
+        `<p style="text-align:center">
+            <a class="cta-secondary-chevron-right initialized-anchor initialized-contextualLinks" href="` + urlToUse + 
+            `" data-analytics-link-type="cta" data-analytics-direct-call-rule="moduleInternalCtaClick" data-analytics-cta-name="looking for another vehicle?">
+                Looking for another vehicle?
+            </a>
+        </p>`
+
+
+        $('.offersAccordion').append(myHtml);
+
+    });
+
+    function fireImpression(){
+        console.log('firing impression id');
+        window.targetCampaign = {    
+            page:{
+                campaignName: "tt:nwp:opt-1428:ab:psr:view-others:challenger"
+            }
+        }
+
+        _satellite.track('genericTestingImpressionIDWorkaround');
+
+
+    }
+
+    function blockImpressionId(){
+        console.log('blocking impression id')
+        window.targetCampaign = {    
+            page:{
+                campaignName: ""
+            }
+        }
+    }
+
+    window.addEventListener('click',blockImpressionId());
+
+
+
+
+</script>

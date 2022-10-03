@@ -1,0 +1,621 @@
+<script>
+
+    console.log('OT-1042');
+ 
+    $(function(){
+     
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1024:xt:lad:whisbi-geo'
+            }
+        }
+         
+        _satellite.track('genericTestingImpressionIDWorkaround');
+     
+    });
+
+    var whisbiId = 'wb_drag_wrapper1604587806585';
+
+    var userInfo = {
+        'country': '${profile.geolocation.country}',
+        'state': '${profile.geolocation.state}',
+        'city': '${profile.geolocation.city}',
+        'zip': '${profile.geolocation.zip}'
+    };
+
+    var dealerList = [
+        {
+            dealership: 'Dreux',
+            lat: 48.7313426,
+            lng: 1.3680093
+        },
+        {
+            dealership: 'Épinal',
+            lat: 48.1636463,
+            lng: 6.4166427
+        },
+        {
+            dealership: 'Remiremont',
+            lat: 48.0037546,
+            lng: 6.5459746
+        },
+        {
+            dealership: 'Saint-Dié',
+            lat: 48.2815201,
+            lng: 6.9429912
+        },
+        {
+            dealership: 'Lisieux',
+            lat: 49.1473377,
+            lng: 0.2076251
+        },
+        {
+            dealership: 'Caen',
+            lat: 49.1846226,
+            lng: -0.4072784
+        },
+        {
+            dealership: 'Le Mans',
+            lat: 47.9818762,
+            lng: 0.1256527
+        },
+        {
+            dealership: 'Bayonne',
+            lat: 43.4843942,
+            lng: -1.4960841
+        },
+        {
+            dealership: 'Dax',
+            lat: 43.7025432,
+            lng: -1.0987386
+        },
+        {
+            dealership: 'Albi',
+            lat: 43.9289852,
+            lng: 2.0972809
+        },
+
+        {
+            dealership: 'Castres',
+            lat: 43.6131801,
+            lng: 2.1747755
+        },
+        {
+            dealership: 'Armentières',
+            lat: 50.6924952,
+            lng: 2.861104
+        },
+        {
+            dealership: 'Belfort',
+            lat: 47.6456258,
+            lng: 6.8061361
+        },
+        {
+            dealership: 'Fréjus',
+            lat: 43.4508711,
+            lng: 6.7211085
+        },
+        {
+            dealership: 'Toulon',
+            lat: 43.1363557,
+            lng: 5.8984116
+        },
+        {
+            dealership: 'Toulon Est Judo',
+            lat: 43.1230742,
+            lng: 5.9542219
+        },
+        {
+            dealership: 'Toulon ouest judo',
+            lat: 43.1284459,
+            lng: 5.9430285
+        },
+        {
+            dealership: 'Draguignan',
+            lat: 43.5345617,
+            lng: 6.430529
+        },
+        {
+            dealership: 'Lys-lez-Lannoy',
+            lat: 50.6729296,
+            lng: 3.2010898
+        },
+        {
+            dealership: 'Bordeaux Lormont',
+            lat: 44.869596,
+            lng: -0.5280552
+        },
+        {
+            dealership: 'La Flèche',
+            lat: 47.6907668,
+            lng: -0.1305803
+        },
+        {
+            dealership: 'Saint-Denis',
+            lat: 48.9267902,
+            lng: 2.330664
+        },
+        {
+            dealership: 'Lille-Sud',
+            lat: 50.6087502,
+            lng: 3.0333783
+        },
+        {
+            dealership: 'Blois',
+            lat: 47.5812357,
+            lng: 1.2348556
+        },
+        {
+            dealership: 'Vendôme',
+            lat: 47.7994932,
+            lng: 0.9945367
+        },
+        {
+            dealership: 'Cavaillon',
+            lat: 43.8485457,
+            lng: 4.99827
+        },
+        {
+            dealership: 'Grenoble',
+            lat: 45.1841602,
+            lng: 5.680523
+        },
+
+        {
+            dealership: 'Voiron',
+            lat: 45.3804685,
+            lng: 5.5519286
+        },
+        {
+            dealership: 'Lyon Vénissieux',
+            lat: 45.7050292,
+            lng: 4.852613
+        },
+        {
+            dealership: 'Limonest',
+            lat: 45.8266497,
+            lng: 4.7331611
+        },
+        {
+            dealership: 'Bourgoin-Jallieu',
+            lat: 45.6025342,
+            lng: 5.2397
+        },
+        {
+            dealership: 'Mâcon',
+            lat: 46.3265226,
+            lng: 4.7382981
+        },
+        {
+            dealership: 'Bourg-en-Bresse',
+            lat: 46.2027027,
+            lng: 5.2118921
+        },
+        {
+            dealership: 'Chalon-sur-Saône',
+            lat: 46.7896397,
+            lng: 4.815426
+        },
+        {
+            dealership: 'Mantes-la-Jolie',
+            lat: 48.9961091,
+            lng: 1.673688
+        },
+        {
+            dealership: 'Vernon',
+            lat: 49.0919503,
+            lng: 1.4125457
+        },
+        {
+            dealership: 'Bagnols-sur-Cèze',
+            lat: 44.1622137,
+            lng: 4.5893536
+        },
+        {
+            dealership: 'Vesoul',
+            lat: 47.6323072,
+            lng: 6.134775
+        },
+        {
+            dealership: 'Nîmes',
+            lat: 43.8320735,
+            lng: 4.2027694
+        },
+        {
+            dealership: 'Avignon',
+            lat: 43.9415356,
+            lng: 4.7632125
+        },
+        {
+            dealership: 'Carpentras',
+            lat: 44.0628567,
+            lng: 5.0234246
+        },
+        {
+            dealership: 'Orange',
+            lat: 44.1264201,
+            lng: 4.7336521
+        },
+        {
+            dealership: 'Alès',
+            lat: 44.1251672,
+            lng: 4.0554226
+        },
+        {
+            dealership: 'Gap',
+            lat: 44.5795854,
+            lng: 5.9214999
+        },
+        {
+            dealership: 'Montauban',
+            lat: 44.0216736,
+            lng: 1.294515
+        },
+        {
+            dealership: 'Annecy',
+            lat: 45.9023911,
+            lng: 6.0563761
+        },
+        {
+            dealership: 'Chambéry',
+            lat: 45.5822142,
+            lng: 5.871334
+        },
+        {
+            dealership: 'Sallanches',
+            lat: 45.9322402,
+            lng: 6.5340796
+        },
+        {
+            dealership: 'Annemasse',
+            lat: 46.1890332,
+            lng: 6.2301015
+        },
+        {
+            dealership: 'Albertville',
+            lat: 45.6647036,
+            lng: 6.3749311
+        },
+        {
+            dealership: 'Thonon-les-Bains',
+            lat: 46.3744931,
+            lng: 6.4425851
+        },
+        {
+            dealership: 'Gex',
+            lat: 46.3514526,
+            lng: 6.0138301
+        },
+        {
+            dealership: 'Lille Est',
+            lat: 50.6254192,
+            lng: 3.0179089
+        },
+        {
+            dealership: 'Saint-Ouen-l`Aumône',
+            lat: 49.0449892,
+            lng: 2.0942712
+        },
+        {
+            dealership: 'Cergy-Pontoise',
+            lat: 49.0383953,
+            lng: 1.9886563
+        },
+        {
+            dealership: 'Beauvais',
+            lat: 49.4435493,
+            lng: 2.0181418
+        },
+        {
+            dealership: 'Compiègne',
+            lat: 49.4005952,
+            lng: 2.8198381
+        },
+        {
+            dealership: 'Sarcelles',
+            lat: 48.9924697,
+            lng: 2.3507481
+        },
+        {
+            dealership: 'Saint-Maximin',
+            lat: 49.2265333,
+            lng: 2.4202091
+        },
+        {
+            dealership: 'Laon',
+            lat: 49.5710709,
+            lng: 3.5428823
+        },
+        {
+            dealership: 'Saint-Quentin',
+            lat: 49.8476282,
+            lng: 3.2440441
+        },
+        {
+            dealership: 'Amiens',
+            lat: 49.8985408,
+            lng: 2.2145977
+        },
+        {
+            dealership: 'Abbeville',
+            lat: 50.1100842,
+            lng: 1.7962242
+        },
+        {
+            dealership: 'Saint-Gaudens',
+            lat: 43.1209606,
+            lng: 0.6903625
+        },
+        {
+            dealership: 'Saintes',
+            lat: 45.7461817,
+            lng: -0.7147529
+        },
+        {
+            dealership: 'Laval',
+            lat: 48.0577756,
+            lng: -0.8041199
+        },
+        {
+            dealership: 'Muret',
+            lat: 43.4406996,
+            lng: 1.2286805
+        },
+        {
+            dealership: 'Foix',
+            lat: 42.9701462,
+            lng: 1.5739246
+        },
+        {
+            dealership: 'Pamiers',
+            lat: 43.1278602,
+            lng: 1.5817596
+        },
+        {
+            dealership: 'Tours Sud',
+            lat: 45.783177,
+            lng: 3.8599643
+        },
+        {
+            dealership: 'Tours-Nord',
+            lat: 45.7820653,
+            lng: 3.8545858
+        },
+        {
+            dealership: 'Mulhouse',
+            lat: 47.7526806,
+            lng: 7.2906051
+        },
+        {
+            dealership: 'Colmar',
+            lat: 48.1115912,
+            lng: 7.3223642
+        },
+        {
+            dealership: 'Saint-Louis',
+            lat: 47.5986337,
+            lng: 7.5079371
+        },
+        {
+            dealership: 'Saint-Germain-en-Laye',
+            lat: 48.9309273,
+            lng: 2.0351812
+        },
+        {
+            dealership: 'Versailles',
+            lat: 48.8038627,
+            lng: 2.0841591
+        },
+        {
+            dealership: 'Villefranche-sur-Saone',
+            lat: 45.9837077,
+            lng: 4.708449
+        },
+        {
+            dealership: 'Chelles',
+            lat: 48.8862531,
+            lng: 2.5603231
+        },
+        {
+            dealership: 'Clermont-Ferrand',
+            lat: 45.7870591,
+            lng: 3.0777066
+        },
+        {
+            dealership: 'Le Puy',
+            lat: 45.0284087,
+            lng: 3.8620796
+        },
+        {
+            dealership: 'Vichy',
+            lat: 46.1322146,
+            lng: 3.3904325
+        },
+        {
+            dealership: 'Chartres',
+            lat: 48.4480452,
+            lng: 1.4696086
+        },
+    ]
+
+    $(document).ready(function() {
+
+        checkUserCountry();
+
+    });
+
+    function checkUserCountry() {
+
+        if (/targetDebug=1042/i.test(window.location.href)) {
+
+            console.log('In Test Debug');
+            injectScript();
+
+        } else {
+            
+            if (userInfo.country == 'france') {
+                getLocation();
+            }
+
+        }
+
+    }
+
+    function getLocation() {
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(checkUserLocation);
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+      
+    }
+    
+    function checkUserLocation(position) {
+        
+        var checkPosition = false;
+
+        var userCoords = {
+            'lat': position.coords.latitude,
+            'lng': position.coords.longitude
+        }
+
+        for (var i = 0; i < dealerList.length; i++) {
+
+            checkPosition = arePointsNear(userCoords, dealerList[i], 10);
+
+            if (checkPosition === true) {
+
+                console.log('User within radius!');
+                console.log('User Coords: ', userCoords);
+                console.log('Area Coords: ', dealerList[i]);
+
+                injectScript();
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    function arePointsNear(checkPoint, centerPoint, km) {
+
+        var ky = 40000 / 360;
+        var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
+        var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
+        var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
+
+        return Math.sqrt(dx * dx + dy * dy) <= km;
+
+    }
+
+    function injectScript() {
+
+        console.log('Display Whisbi! ', document.getElementById(whisbiId));
+
+        document.getElementById(whisbiId).style.display = 'block';
+ 
+        /*
+        var target = document.querySelector('body');
+        var newScript = document.createElement('script');
+
+        newScript.setAttribute('type', 'text/javascript');
+        newScript.setAttribute('defer', 'defer');
+        newScript.src = "//static.whisbi.com/c3384db3-59f1-4fe9-8a16-7efd0a7ecbe b/connect.js?origin=default&mode=chatbot&lang=EN";
+        target.appendChild(newScript);
+        */
+        
+    }
+
+</script>
+
+
+<script>
+    var $ready
+
+    function ready() {
+
+        /*$ready = $.get("https://fordlc-uk.sophus3.com/s3api/checkop.php?operator=UK_Advisors");
+        console.log(" Sphohs" + $ready.responseText);
+        return $ready;*/
+        $ready = "false"
+        var myVar = setInterval(myTimer, 1000);
+
+        function myTimer() {
+            if (window.matchMedia("(max-width: 767px)").matches) {
+                // The viewport is less than 768 pixels wide
+                $(".fb_dialog_content iframe").css("transform", "translateY(-160px)");
+            } else {
+                // The viewport is at least 768 pixels wide
+                $(".fb_dialog_content iframe").css("transform", "translateY(-150px)");
+            }
+
+        }
+
+    }
+
+    function checkSophus() {
+
+        if ($ready == "false") {
+            var chatdiv = document.createElement('div');
+            chatdiv.className = 'fb-customerchat';
+            chatdiv.setAttribute('page_id', '184377348315163');
+            chatdiv.setAttribute('ref', 'b64:Z3V4');
+            chatdiv.setAttribute('greeting_dialog_display', 'hide');
+            chatdiv.setAttribute('logged_in_greeting', 'Our Ford UK help bot is here to help answer your questions.');
+            chatdiv.setAttribute('logged_out_greeting', 'Our Ford UK help bot is here to help answer your questions.');
+            document.body.appendChild(chatdiv);
+            window.fbMessengerPlugins = window.fbMessengerPlugins || {
+                init: function () {
+                    FB.init({
+                        appId: '1678638095724206',
+                        autoLogAppEvents: true,
+                        xfbml: true,
+                        version: 'v3.3'
+                    });
+                },
+                callable: []
+            };
+            window.fbAsyncInit = window.fbAsyncInit || function () {
+                window.fbMessengerPlugins.callable.forEach(function (item) {
+                    item();
+                });
+                window.fbMessengerPlugins.init();
+            };
+            setTimeout(function () {
+                (function (d, s, id) {
+                    var js, fjs = d.getElementsByTagName(s)[0];
+                    if (d.getElementById(id)) {
+                        return;
+                    }
+                    js = d.createElement(s);
+                    js.id = id;
+                    js.src = "//connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
+                    fjs.parentNode.insertBefore(js, fjs);
+                }(document, 'script', 'facebook-jssdk'));
+            }, 0);
+        }
+
+    }
+    $.when(ready()).then(checkSophus);
+
+</script>
+
+<script type="text/javascript"
+    src="//static.whisbi.com/c3384db3-59f1-4fe9-8a16-7efd0a7ecbeb/connect.js?origin=default&mode=chatbot&lang=EN" defer>
+</script>
+
+<style type="text/css">
+
+    #wb_drag_wrapper1604587806585 {
+        display: none;
+    }
+
+    div.fb-customerchat>iframe {
+        position: absolute !important;
+        bottom: 100px !important;
+    }
+
+</style>

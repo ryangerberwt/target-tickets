@@ -1,0 +1,91 @@
+<script>
+    console.log('OT-1550 | Control | NPP');
+    window.onload = function() {
+        let waitForJquery = setInterval(function(){
+            console.log('Checking for jQuery');
+            if (window.jQuery) { 
+                run();
+                clearInterval(waitForJquery);
+ 
+            } else {
+                // jQuery is not loaded
+                console.log("Not loaded - will check again in 500ms");
+            }
+        },500);
+    }
+
+    function run(){
+        var $ = jQuery;
+        var enableLogs = false;
+        var _log = console.log;
+        console.log = function (logMsg) {
+            if (enableLogs) {
+                _log.apply(console, arguments);
+            }
+        }
+
+        $(document).ready(function () {
+            if (checkIfRunnable()) {
+            fireImpressionId();
+               setTimeout(function () {
+                   console.log('clicking');
+                   setOnClick();
+                   $('body').click();
+               }, 750);
+            }
+           });
+       
+           function fireImpressionId() {
+               console.log('firing impression id');
+               window.targetCampaign = {
+                   page: {
+                       campaignName: "tt:nwp:opt-1550:ab:hp:floating-banner:control", //Change this to your impressionID
+                   },
+               };
+        
+               _satellite.track("genericTestingImpressionIDWorkaround");
+           }
+
+           function checkIfRunnable() {
+            console.log('checking if runnable')
+            if (window.location.href.indexOf('https://www.ford.de/fahrzeuge/') >= 0 && window.location.href !== 'https://www.ford.de/fahrzeuge' && window.location.href !== 'https://www.ford.de/fahrzeuge?bnpShowroom=on') {
+                console.log('is runnable');
+                return true;
+            }
+            console.log('is NOT runnable');
+            return false;
+        }
+        
+           function setOnClick() {
+               window.addEventListener('click', function () {
+                   window.targetCampaign = {
+                       page: {
+                           campaignName: ""
+                       }
+                   }
+                   console.dir(window.targetCampaign);
+                   console.log('firing impression on event listener');
+                   _satellite.track('');
+        
+               });
+           }
+        
+           //We don't always need this but adding it here for reference
+           function setOnKeyUp() {
+               window.addEventListener('keyUp', function () {
+                   window.targetCampaign = {
+                       page: {
+                           campaignName: ""
+                       }
+                   }
+                   console.dir(window.targetCampaign);
+                   console.log('firing impression on event listener')
+                   _satellite.track('');
+        
+               });
+           }
+    }
+
+
+ 
+</script>

@@ -1,0 +1,29 @@
+<!-- C - Brochure Requested -->
+<script>
+    window.addEventListener('load', function(e) {
+        console.log("OT-1032 - kmi");
+
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.market" : "UK",
+                        "profile.action" : "NPP Visited",
+                        "profile.triggerHomePage" : true,
+                        
+
+                        "profile.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+        
+    });
+</script>

@@ -1,0 +1,249 @@
+<script type="text/javascript">
+    console.log("OT-826");
+    var p_Market = "IT";
+    $('<div style="display:none" id="hdnDataLoadHere" />').appendTo("body");
+    $('#hdnDataLoadHere').load('/guida-allacquisto/ricerca/richiedi-test-drive .wizard > .configuration');
+    var dataStored = false, isRunning = false;
+    var globalInfo = undefined;
+
+    !function () {
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            var ENV = {
+                services: {}
+            };
+            !function (services) {
+
+                var urlParseRegExp = /catalogID\/([^\/]+).*code\=([^&\/\s]+)/i;
+
+                var conf, getEndPointConfiguration = function () {
+                    return conf || (conf = $("#bsl-endpoints-configuration > .configuration").data())
+                };
+
+                function getNameplate(usc) {
+                    var nameplate = $("#bnp-configuration > span.configuration").data().nameplatesConfigurations.filter(function (nmp) {
+                        return nmp.nameplateCode === usc
+                    });
+                    return !(!nameplate || !nameplate.length) && nameplate[0]
+                }
+
+                function getVehicleCode(car) {
+                    if ($('#hdnDataLoadHere').find('.configuration')[0] == undefined) {
+                        return "";
+                    }
+
+                    var fullJson = JSON.parse($('#hdnDataLoadHere').find('.configuration')[0].dataset.vehicleAnalytics);
+                    var tdrCodeKeys = Object.keys(fullJson);
+                    var tdrCodeValues = Object.values(fullJson);
+
+                    var tdrIndex = 0;
+                    var genericCodeIndex = -1;
+                    var specificCodeIndex = -1;
+                    var maybeCodeIndex = -1;
+                    var anotherMaybeCodeIndex = -1;
+                    for (tdrIndex = 0; tdrIndex < tdrCodeValues.length; tdrIndex++) {
+                        if (genericCodeIndex == -1) {
+                            if (car.name.trim().toLowerCase() == tdrCodeValues[tdrIndex].nameplate.trim().toLowerCase() && tdrCodeValues[tdrIndex].modelSeries.trim().toLowerCase() == "") {
+                                genericCodeIndex = tdrIndex;
+                            }
+                        }
+
+                        if (maybeCodeIndex == -1) {
+                            if (car.name.trim().toLowerCase().includes(tdrCodeValues[tdrIndex].nameplate.trim().toLowerCase()) ||
+                            tdrCodeValues[tdrIndex].nameplate.trim().toLowerCase().includes(car.name.trim().toLowerCase())) {
+                                maybeCodeIndex = tdrIndex;
+                            }
+                        }
+
+                        if (anotherMaybeCodeIndex == -1) {
+                            var splitCarName = car.name.split(' ');
+                            var numberMatch = 0;
+                            for (var aMCI = 0; aMCI < splitCarName.length; aMCI++) {
+                                if (tdrCodeValues[tdrIndex].nameplate.trim().toLowerCase().includes(splitCarName[aMCI].trim().toLowerCase())) {
+                                    numberMatch++;
+                                }
+                            }
+
+                            if (numberMatch >= (splitCarName.length / 2)) {
+                                anotherMaybeCodeIndex = tdrIndex;
+                            }
+                        }
+                        
+                        if (car.subname.trim().toLowerCase() == tdrCodeValues[tdrIndex].modelSeries.trim().toLowerCase()) {
+                            specificCodeIndex = tdrIndex;
+                            tdrIndex = tdrCodeValues.length + 1000;
+                        }
+                    }
+                    if (specificCodeIndex != -1) {
+                        return "?vehicleCode=" + tdrCodeKeys[specificCodeIndex];
+                    } else if (genericCodeIndex != -1) {
+                        return "?vehicleCode=" + tdrCodeKeys[genericCodeIndex];
+                    } else if (maybeCodeIndex != -1) {
+                        return "?vehicleCode=" + tdrCodeKeys[maybeCodeIndex];
+                    } else {
+                        return "?vehicleCode=" + tdrCodeKeys[anotherMaybeCodeIndex];
+                    }
+                }
+
+                services.sanitizeAPIResponse = function sanitizeAPIResponse(data, nameplate, IDs) {
+                    var fuelPerformance = "undefined" !== typeof data.specs && "undefined" !== typeof data.specs.fuel_and_performance ? data.specs.fuel_and_performance.children : {};
+                    var currentUrl = window.location.href;
+                    var carType = "passenger";
+                    if (currentUrl.indexOf('cv') > -1 || currentUrl.indexOf('ranger') > -1)   {
+                        carType = 'commercial';
+                    }
+                    return {
+                        carName: nameplate.name,
+                        vehicleType: carType,
+                        date: (new Date).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ? fuelPerformance.co2_emission.unitTypes : fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined,
+                            lToKm: "undefined" != typeof fuelPerformance.fuel_consumption_combined ? fuelPerformance.fuel_consumption_combined.unitTypes : undefined
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: data.price.finalPrice.grossRetailWithOTR,
+                        offerPrice: data.price.finalPrice.grossRetailWithOTRAndIncentives,
+                        exvatPrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: ENV.services.getCarName().subname,
+                        tdr: IDs.usc,
+                        contextualiseLink: nameplate.contextualLinks.form,
+                        tdrVehicleCode: getVehicleCode(ENV.services.getCarName())
+                    }
+                }, services.describeCall = function getCarConfiguration(serviceVersion, IDs, callback) {
+                    var url = [getEndPointConfiguration().endpoint, "/vehicleModel/", serviceVersion || "v0", "/load?locale=", getEndPointConfiguration().locale, "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=", "default", "&config=", IDs.usc, "~", IDs.codeWithFeatures.replace(/\:/g, ",")].join("");
+
+                    console.log(url);
+
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: !!getEndPointConfiguration().cookieToBsl
+                        }
+                    }).done(function (response) {
+                        if (response.status && 200 === response.status.statusCode) return callback(undefined, response.data);
+                        callback("Bad response status")
+                    }).fail(function () {
+                        callback("Request failed")
+                    })
+                }, services.getCarIDs = function getCarIDs() {
+                    var parsedCurrentURL = urlParseRegExp.exec(location.href);
+                    return !(!parsedCurrentURL || parsedCurrentURL.length < 3) && (function getCurrentCarCode(allCarCodes, codeWithFeatures) {
+                        for (var splitedCWF = codeWithFeatures.split(":"), i = 0; i < allCarCodes.length; i++)
+                            if (-1 !== splitedCWF.indexOf(allCarCodes[i])) return allCarCodes[i];
+                        return !1
+                    }(function getAllModelCodes(usc) {
+                        var nameplate = getNameplate(usc),
+                            codes = [];
+                        if (!nameplate) return !1;
+                        for (var i = 0; i < nameplate.models.length; i++) codes.push(nameplate.models[i].code);
+                        return codes;
+                    }(parsedCurrentURL[1]), parsedCurrentURL[2]), {
+                        usc: parsedCurrentURL[1],
+                        codeWithFeatures: parsedCurrentURL[2]
+                    })
+                }, services.getCarSchema = function getCarSchema(usc, code) {
+                    var nameplate = getNameplate(usc);
+                    return !!nameplate && (model = nameplate.models.filter(function (model) {
+                        return model.code === code
+                    }), !(!model || !model.length) && {
+                        nameplate: nameplate,
+                        model: model[0]
+                    })
+                }, services.getNameplate = getNameplate
+            }(ENV.services)
+            
+            var Storage = {};
+
+            function runInformationsGathering() {
+                if (/scegli-la-tua-ford/i.test(window.location.href)) {
+                    var currentIDs = ENV.services.getCarIDs(),
+                    currentNameplate = ENV.services.getNameplate(currentIDs.usc);
+                    if (!currentNameplate) return console.log("Nameplate not found!");
+                    ENV.services.describeCall(currentNameplate.serviceVersion, currentIDs, function (err, result) {
+                        if (err) return console.log(err);
+                        
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentNameplate, currentIDs);
+                        
+                        if (globalInfo == undefined)
+                            console.log(vehicleInfo);
+                        else if (globalInfo.tdr != vehicleInfo.tdr)
+                            console.log(vehicleInfo);
+
+                        adobe.target.getOffer({
+                                'mbox': 'global-mbox',
+                                'params': {
+                                    'profile.market': p_Market,
+                                    "profile.carName" : vehicleInfo.carName,
+                                    "profile.vehicleType" : vehicleInfo.vehicleType,
+                                    "profile.date" : vehicleInfo.date,
+                                    "profile.emissions" : JSON.stringify(vehicleInfo.emissions).replace(/"/g, "'"),
+                                    "profile.img" : vehicleInfo.img,
+                                    "profile.retailPrice" : vehicleInfo.retailPrice,
+                                    "profile.offerPrice" : vehicleInfo.offerPrice,
+                                    "profile.dutyFreePrice" : vehicleInfo.dutyFreePrice,
+                                    "profile.subName" : vehicleInfo.subName,
+                                    "profile.tdr" : vehicleInfo.tdr,
+                                    "profile.contextualiseLink" : (vehicleInfo.contextualiseLink != "" ? vehicleInfo.contextualiseLink : vehicleInfo.tdrVehicleCode),
+                                },
+                                'success': function(offer) {
+                                    adobe.target.applyOffer( {
+                                        'mbox': 'global-mbox',
+                                        'offer': offer
+                                    });
+                                    dataStored = true;
+                                },
+                                'error': function(status, error) {
+                                    console.log('Error', status, error);
+                                }
+                            });
+
+                        adobe.target.trackEvent({
+                            mbox: "IT_SummaryPage_tdrV2PopUp_v2",
+                            params: {
+                                summary: "summary-get-data"
+                            }
+                        })
+                    })
+                }  
+            }
+
+            (function (bundle) {
+                function isSummaryPage() {
+                    return /\/summary\//i.test(window.location.href)
+                }
+
+                bundle.isSummaryPage = isSummaryPage, bundle.getCarName = function getCarName() {
+                    var wrapper;
+                    return isSummaryPage() ? {
+                        name: ((wrapper = $("#build-price-configurator > div.app-view div.vehicle-view-content.left-content > h3").find("strong")).text() || "").trim(),
+                        subname: (wrapper[0].nextSibling.nodeValue || "").trim()
+                    } : {
+                        name: ((wrapper = $("#build-price-configurator > div.app-view div.bp-header-wrapper div.bp-configurator-header-wrap > h3")).find("strong").text() || "").trim(),
+                        subname: (wrapper.find("span").text() || "").trim()
+                    }
+                }
+            }(ENV.services)), $(window).on("hashchange", runInformationsGathering), runInformationsGathering()
+
+            function reRun() {
+                isRunning = true;
+                setTimeout(function() {
+                    runInformationsGathering();
+                    isRunning = false;
+                }, 250);
+            }
+
+            var reRunInterval;
+
+            reRunInterval = setInterval(function() {
+                if (!isRunning) {
+                    if (!dataStored) {
+                        reRun();
+                    } else {
+                        console.log('stopped looping');
+                        clearInterval(reRunInterval);
+                    }
+                }
+                
+            }, 100);
+        })
+    }();
+</script>

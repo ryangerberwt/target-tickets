@@ -1,0 +1,54 @@
+<script>
+
+    console.log('OT-1463 Challenger');
+
+    var $ = jQuery;
+    var loadOnPages = [
+        'https://www.ford.es/compra/encuentra/prueba-de-vehiculo',
+        'https://www.ford.es/soporte/pide-tu-cita/detalles-personales'
+    ]
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        if (loadOnPages.includes(window.location.href) === true) {
+            console.log('on page ' + window.location.href);
+
+            setTimeout(fireImpressionId(), 250);
+            setTimeout(function () {
+                registerOnClick();
+                $('body').click();
+            }, 500);
+
+            $('.textfield.medium-12').each(function (i, v) {
+                $(this).css('height', '70px')
+            });
+        }
+    });
+
+    function registerOnClick() {
+        window.addEventListener('click', function () {
+            console.log('clicked');
+            blockImpressionId();
+        });
+    }
+
+    function fireImpressionId() {
+        window.targetCampaign = {
+            page: {
+                campaignName: 'tt:nwp:opt-1328:ab:rac:permissions:challenger' //Remember to change this
+            }
+        }
+        console.log('firing impression ID');
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    }
+
+    function blockImpressionID() {
+        console.log('blocking impressionID')
+        window.targetCampaign = {
+            page: {
+                campaignName: ''
+            }
+        }
+        _satellite.track('');
+    }
+</script>

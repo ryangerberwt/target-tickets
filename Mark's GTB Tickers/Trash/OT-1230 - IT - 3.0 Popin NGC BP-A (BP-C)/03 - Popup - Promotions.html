@@ -1,0 +1,20 @@
+<script>
+    function displayPopup(storedData) {
+        var func_data = [];
+        func_data.carName = storedData.carName.toLowerCase();
+        func_data.subName = storedData.subName.toLowerCase();
+
+        var models = $('.model-name');
+
+        for (var i = 0; i < models.length; i++) {
+            if (models[i].innerText.toLowerCase().includes(func_data.carName) || models[i].innerText.toLowerCase().includes(func_data.carName + ' ' + func_data.subName)) {
+                return true;
+            }
+            if (models[i].innerText.toLowerCase().includes(func_data.carName.replace("ford", "")) || models[i].innerText.toLowerCase().includes(func_data.carName.replace("ford", "") + ' ' + func_data.subName)) {
+                return true;
+            } 
+        }
+
+        return false;
+    }
+</script>

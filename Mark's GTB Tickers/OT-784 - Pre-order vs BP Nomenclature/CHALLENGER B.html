@@ -1,0 +1,25 @@
+<script>
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-784:ab:vhp:bp-nomenclature:varb"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    setTimeout(function() {
+        var objs = $('.initialized-anchor.initialized-BEVcta');
+
+        for (var i = 0; i < objs.length; i++) {
+            if (objs[i].innerText.trim().toLowerCase() == "pre-order") {
+                objs[i].innerText = 'Configure';
+            } else if (objs[i].innerText.trim().toLowerCase() == 'pre-order now') {
+                objs[i].innerText = 'CONFIGURE NOW';
+            }
+        }
+
+        $('h3:contains("Pre-order now")')[0].innerHTML = $('h3:contains("Pre-order now")')[0].innerHTML.replace('Pre-order','Configure');
+    }, 0);
+</script>

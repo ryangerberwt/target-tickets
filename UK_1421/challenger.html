@@ -1,0 +1,72 @@
+<script>
+    var $ = jQuery;
+    var checkForElements;
+    var impressionFired = false;
+    $(document).ready(function () {
+        console.log('document ready');
+        if (window.location.href.indexOf('ford.co.uk/shop/research/request-a-contact') > 0) {
+            checkForElements = setInterval(function () {
+                //New code
+                if (jQuery('.form-wizard-wrapper').children().eq(1).children().eq(0).children().filter('p') !== undefined && jQuery('.form-wizard-wrapper').children().eq(1).children().eq(0).children().filter('p').length === 2) {
+
+                    if (impressionFired === false || impressionFired == false) {
+                        $(function () {
+                            window.targetCampaign = {
+                                page: {
+                                    campaignName: 'tt:nwp:opt-1421:ab:tdr:legal-copy:challenger'
+                                }
+                            }
+                            console.log('firing impression')
+                            _satellite.track('genericTestingImpressionIDWorkaround');
+                            impressionFired = true;
+                        });
+                    }
+                    jQuery('.form-wizard-wrapper').children().eq(1).children().eq(0).children().filter('p').eq(0).text('Ford Motor Company Limited will share your details with your selected dealer to enable them to contact you.')
+                    jQuery('.form-wizard-wrapper').children().eq(1).children().eq(0).children().filter('p').eq(1).html('For further information see our <a href="https://www.ford.co.uk/useful-information/terms-and-privacy-policy-hub/privacy-policy">Privacy Policy Details</a>');
+
+                    window.addEventListener('click', function (e) {
+                        window.targetCampaign = {
+                            page: {
+                                campaignName: ""
+                            }
+                        }
+
+                        _satellite.track('genericTestingImpressionIDWorkaround');
+                    })
+                    //$('body').click();
+                    clearInterval(checkForElements);
+                }
+            }, 125);
+
+            setTimeout(function () {
+
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+                _satellite.track('genericTestingImpressionIDWorkaround');
+                console.log('done firing -- second pass');
+            }, 250)
+
+        }
+    });
+
+
+</script>
+
+<style>
+    .MuiInputBase-input::-moz-placeholder {
+
+        font-size: 11px !important;
+    }
+
+    .MuiInputBase-input::-webkit-input-placeholder {
+
+        font-size: 11px !important;
+    }
+
+    .MuiInputBase-input::placeholder {
+        font-size: 11px !important;
+    }
+</style>

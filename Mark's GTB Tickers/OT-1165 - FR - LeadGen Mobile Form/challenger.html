@@ -1,0 +1,23 @@
+<script>
+    $(document).ready(function() {
+        if (window.innerWidth <= 767) {
+            var interval_1165 = setInterval(function() {
+                if ($('.model').length > 0) {
+                    clearInterval(interval_1165);
+                    $('.model').on('click', function() {
+                        if ($('.cta-button:contains("Continuer")').length > 0) {
+                            window.targetCampaign = window.targetCampaign || {
+                                page: {
+                                    campaignName: "tt:nwp:opt-1165:ab:tdr:mob-auto-progress:var-b"
+                                }
+                            };
+
+                            _satellite.track("genericTestingImpressionIDWorkaround");
+                            $('.cta-button:contains("Continuer")').click();
+                        }
+                    });
+                }
+            }, 250);
+        }
+    });
+</script>

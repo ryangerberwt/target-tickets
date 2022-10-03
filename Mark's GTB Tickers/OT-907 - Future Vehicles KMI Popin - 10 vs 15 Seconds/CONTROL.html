@@ -1,0 +1,17 @@
+<!-- CONTROL -->
+<script>
+    var display = window.location.href.split(/[?#]/)[0] !== 'https://www.ford.es/' && window.location.href.split(/[?#]/)[0] !== 'https://www.ford.es/proximos-lanzamientos';
+    
+    if (!display)
+        return;
+        
+    console.log('OT-907');
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-907:ab:vhp:fv-popup-ctrl:control"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+</script>

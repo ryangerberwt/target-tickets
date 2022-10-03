@@ -1,0 +1,91 @@
+<script>
+
+    var $ = jQuery;
+    console.log('Market configuration script');
+    storedData_1458.contextualiseLink = 'holding value for now';
+
+    var configuration = {
+
+        translations:{
+            heading: "Möchten Sie Ihr Wunschfahrzeug bestellen?",
+                            pricePrefix: "Fr.",
+                            priceSuffix: "",
+                            retailpricePrefix: "",
+                            retailpriceSuffix: "",
+                            dutyFree: "",
+                            priceValidText: "",
+                            mainPriceLabel: "",
+                            mainPriceLabelNoOfferPrice: "",
+                            retailPriceLabel: "",
+                            priceTooltipHeading: "",
+                            bookTDRButton: "Jetzt bestellen",
+                            buttonURL: storedData_1458.contextualiseLink,
+                            retailDisclaimer: "",
+                            retailKey: "",
+                            retailLabel: "Listenpreis",
+                            offerDisclaimer: "",
+                            offerKey: "",
+                            offerLabel: "",
+        },
+        popinType:{
+            type:'3.0',
+            selector:'#global-ux'
+        },
+
+        exclusions:{
+            exclusion_list:{
+                'duplicate_car_sub_name':false, //For example when Mach-E repeats
+                'retail_price':false,
+                'offer_price':true,
+                'disclaimers':{
+                    'offer':true,
+                    'retail':false
+                },
+            }
+        },
+
+        selectors:{
+            'offer_price':'.optprg-offer-price',
+            'retail_price':'.optprg-retail-price',
+            'disclaimer_sup':'.optprg-sup',
+            'offer_price_label': '.optprg-offer-price > .value.optprg-main-price-value',
+            'retail_price_label': '.optprg-retail-price > .value.optprg-main-price-value',
+            'car_name':'.optprg-carname',
+            'car_sub_name':'.optprg-subname'
+        }
+
+
+
+    }
+
+
+    function cleanUpHtml(){
+
+        //Look for exclusions.
+
+
+        $.each(configuration.exclusions.exclusion_list,function(i,v){
+
+            console.log('v ' + v);
+            console.log('i ' + i);
+            if(v === true){
+                console.log('We will remove ');
+                console.dir($(''+configuration.selectors[i]+''));
+                $(configuration.selectors[i]).remove();
+            }
+
+
+
+        });
+
+
+    }
+
+
+
+
+
+
+
+
+</script>

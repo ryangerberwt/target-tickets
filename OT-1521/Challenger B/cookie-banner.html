@@ -1,0 +1,126 @@
+<script>
+    var $;
+    var enableLogs = true;
+    var bannerSettingsPageHtml;
+    var bannerSettingsPageUrl = 'https://www.ford.it/informazioni-utili/termini-e-privacy/preferenze-cookie';
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    console.log('OT-1521 | Cookie Banner | Challenger B')
+
+    //TODO:
+    //Use mutator on accordion-body and check for class "active"
+
+
+    window.onload = function () {
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                console.log('jQuery loaded');
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                run();
+            } else {
+                console.log("Not loaded - will check again in 500ms");
+            }
+        }, 500);
+    }
+
+    function run() {
+        console.log('In run!');
+        fireImpressionId();
+        cloneBannerSettingsPage();
+        /* Fix To Prevent multiple re-fires of impression ID*/
+        window.addEventListener('keyup', blockImpressionId());
+        window.addEventListener('click', blockImpressionId());
+
+    }
+
+    function cloneBannerSettingsPage() {
+
+        $('<div id="banners" />').appendTo("body");
+        $('#banners').load(bannerSettingsPageUrl + " .content.clearfix");
+        //TODO, wrap this in a div with a custom class and convert it to an overlay
+
+        let waitForPopulation =  setInterval(function(){
+            console.log('waiting');
+            if($('#banners') !== undefined && $('#banners') !== null && $('#banners').length > 0){
+                clearInterval(waitForPopulation);
+               $('#banners').wrap('<div class="cookie-banner-wrapper-outer"/>').wrap('<div class="cookie-banner-wrapper-inner"/>');
+            }
+        
+        },150);
+    }
+
+    function fireImpressionId() {
+        //console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1521:ab:as:cookie-banner:var-b",
+            },
+        };
+
+        _satellite.track("");
+    }
+    function blockImpressionId() {
+        if (window.targetCampaign.page.campaignName !== "") {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+        }
+        console.log('firing impression on event listener')
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    }
+
+
+</script>
+
+
+<style>
+
+    .cookie-banner-wrapper-outer{
+        background-color:rgba(0,0,0,.7);
+        bottom: 0;
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 9999;
+        display: block;
+        overflow-y: scroll;
+        width: 100%;
+
+    }
+
+    
+    .cookie-banner-wrapper-inner{
+        position: relative;
+        text-align: center;
+        background-color: white;
+        margin:32px 64px;
+    
+    }
+
+    .userCookieConfiguration > div.box.page-mode > div > div.ng-scope > div > div.userCookieToggle.section >.component-content {
+        flex-direction: column !important;
+    }
+
+
+    .userCookieConfiguration > div.box.page-mode > div > div.ng-scope > div > div.userCookieToggle.section >.component-content > div.description.regular{
+        margin-left: 32px !important;
+        margin-right: 32px !important;
+    }
+
+    .userCookieConfiguration > div.box.page-mode > div > div.ng-scope > div > div.userCookieToggle.section >.component-content > div.description.regular > p{
+        padding: 0 !important;
+    }
+
+
+
+</style>

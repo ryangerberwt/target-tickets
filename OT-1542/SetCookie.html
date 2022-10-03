@@ -1,0 +1,83 @@
+<script>
+  console.log('OT-1542 | SET COOKIE');
+  // Vehicle Info
+  var contextualiseLink;
+  var enableLogs = false;
+  var _log = console.log;
+    console.log = function(logMsg){
+        if(enableLogs){
+ 
+            _log.apply(console,arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function(dirMsg){
+        if(enableLogs){
+            _dir.apply(console,arguments);
+        }
+    }
+
+  var $;
+
+  function getCookie(name) {
+    console.log('gettingCookie');
+    function escape(s) {
+      return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, "\\$1");
+    }
+    var match = document.cookie.match(
+      RegExp("(?:^|;\\s*)" + escape(name) + "=([^;]*)")
+    );
+    return match ? match[1] : null;
+  }
+
+  function setMyCookie(expireInHours, path, cookieName, cookieValue) {
+    console.log("setting cookie " + cookieName);
+    if (
+      getCookie(cookieName) === undefined ||
+      getCookie(cookieName) === "" ||
+      getCookie(cookieName) === null
+    ) {
+      console.log("no cookie set --- setting now");
+      var now = new Date();
+      now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+      document.cookie =
+        cookieName +
+        "=" +
+        cookieValue +
+        ";path=" +
+        path +
+        ";expires=" +
+        now.toUTCString();
+      console.log("cookie is set");
+      return true;
+    } else {
+      console.log("Cookie is still valid");
+      return false;
+    }
+  }
+
+  window.onload = function () {
+    let waitForJquery = setInterval(function () {
+      console.log("Checking for jQuery");
+      if (window.jQuery) {
+        // jQuery is loaded
+        $ = jQuery;
+        clearInterval(waitForJquery);
+
+        contextualiseLink = "${profile.contextualiseLink}";
+
+        console.log("Stored Data");
+        console.dir(contextualiseLink);
+        if (
+          contextualiseLink !== undefined &&
+          contextualiseLink !== null &&
+          contextualiseLink !== ""
+        ) {
+          //Update contextuilizeLink via a cookie
+          setMyCookie(24, "/", "contextLink", window.location.href);
+        }
+      }
+    }, 1000);
+  };
+</script>

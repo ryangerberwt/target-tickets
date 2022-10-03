@@ -1,0 +1,70 @@
+<script>
+    console.log('OT-1573 Control');
+    var $;
+    var enableLogs = false;
+
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function(dirMsg){
+        if(enableLogs){
+            _dir.apply(console,arguments);
+        }
+    }
+
+    window.onload = function () {
+        let jWait = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(jWait);
+                console.log('jQuery loaded');
+                runScript();
+                
+            } else {
+                // jQuery is not loaded
+                console.log("Not loaded - will check again in 500ms");
+            }
+        }, 500);
+    }
+
+    function runScript() {
+        console.log('runScript called');
+        fireImpressionId();
+        setTimeout(function(){
+            $(document).on('click', blockImpressionId());
+            $(document).on('keyup', blockImpressionId());
+        },1000);
+
+    }
+
+    function blockImpressionId() {
+        window.targetCampaign = {
+            page: {
+                campaignName: ""
+            }
+        }
+        console.log('firing impression on event listener');
+        _satellite.track('');
+    }
+
+
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1573:ab:tdr:header-copy-repo:control" //Change this to your impressionID
+            },
+        };
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+    
+
+
+</script>

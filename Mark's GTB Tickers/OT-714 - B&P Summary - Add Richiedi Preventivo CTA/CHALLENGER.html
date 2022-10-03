@@ -1,0 +1,174 @@
+<script>
+    console.log('OT-714');
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-714:ab:bp:preventivo:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    var prevPage = '';
+
+    setInterval(function() {
+        if (document.URL.indexOf('/summary/') > 0) {
+            if (prevPage != 'summary') {
+                prevPage = 'summary';
+                executeSevenOneFourChanges(0);
+            }
+        } else if (prevPage != 'other') {
+            prevPage = 'other';
+        }
+    }, 500);
+
+    // Global Variables
+    var btnFoundAndUpdatedDesktop, btnFoundAndUpdatedMobile;
+    var btnFoundAndSwappedDesktop, btnFoundAndSwappedMobile;
+
+    var intervalFoundAndSwappedDesktop, intervalFoundAndSwappedMobile;
+
+    function executeSevenOneFourChanges(time) {
+
+        // Initialize
+        btnFoundAndUpdatedDesktop = false, btnFoundAndUpdatedMobile = false;
+        btnFoundAndSwappedDesktop = false, btnFoundAndSwappedMobile = false;
+
+        intervalFoundAndSwappedDesktop = null, intervalFoundAndSwappedMobile = null;
+
+        setTimeout(function() {
+            console.log('OT-714-Timeout');
+
+            var buttonsDesktop = $(returnSelector(true)).children();
+            var buttonsMobile = $(returnSelector(false)).children();
+
+            updateButtons(buttonsDesktop, true);
+            updateButtons(buttonsMobile, false);
+
+            var cloningDivDesktop = $(returnSelector(true)).clone();
+
+            if (cloningDivDesktop[0].children[0].classList.contains('cta-button-primary')) {
+                cloningDivDesktop[0].children[0].style.display ='none';
+            }
+
+            cloningDivDesktop = updateExtraButtons(cloningDivDesktop);
+
+            cloningDivDesktop[0].style.display = 'block';
+            cloningDivDesktop[0].style.marginTop = '100px';
+            cloningDivDesktop[0].style.float = 'right';
+            cloningDivDesktop[0].style.marginRight = '15px';
+
+            var cloningDivMobile = $(returnSelector(false)).clone();
+
+            if (cloningDivMobile[0].children[0].classList.contains('cta-button-primary')) {
+                cloningDivMobile[0].children[0].style.display ='none';
+            }
+
+            cloningDivMobile = updateExtraButtons(cloningDivMobile);
+
+            var divElement = $('.pricing-finance-wrapper').children().last();
+            divElement.html(cloningDivDesktop);
+            divElement.last().append(cloningDivMobile);
+
+            if (!btnFoundAndSwappedDesktop) {
+                intervalFoundAndSwappedDesktop = setInterval(notFoundAndSwapped, 100, true);
+            }
+
+            if (!btnFoundAndSwappedMobile) {
+                intervalFoundAndSwappedMobile = setInterval(notFoundAndSwapped, 100, true);
+            }
+
+            function updateButtons(buttons, isDesktop) {
+                buttons.each(function(i) {
+                    if (buttons[i].classList.contains('cta-button-primary')) {
+                        // Sometimes this button appears only after our code runs.
+                        updateBooleans('update', isDesktop);
+                    }
+
+                    if (buttons[i].innerText.trim().toLowerCase() == 'Richiedi Preventivo'.toLowerCase()) {
+                        if (!returnUpdatedBool(isDesktop)) {
+                            buttons[i].parentNode.insertBefore(buttons[i], buttons[i].parentNode.children[0])
+                        } else {
+                            buttons[i].parentNode.insertBefore(buttons[i], buttons[i].parentNode.children[1])
+                        }
+                        updateBooleans('swap', isDesktop);
+                    }
+                })
+            }
+
+            function updateExtraButtons(buttons) {
+                for (counter = 0; counter < buttons[0].children.length; counter++) {
+                    if (buttons[0].children[counter].innerText.trim().toLowerCase() == "Richiedi preventivo".trim().toLowerCase()) {
+                        buttons[0].children[counter].classList.remove('cta-button-secondary');
+                        buttons[0].children[counter].classList.add('cta-button-primary');
+                    }
+                }
+
+                return buttons;
+            }
+
+            function notFoundAndSwapped(isDesktop) {
+                if (returnSwappedBool(isDesktop)) {
+                    clearInterval(returnSwappedHandler(isDesktop))
+                } else {
+                    var buttons = $(returnSelector(isDesktop)).children();
+                    buttons.each(function(i) {
+                       if (buttons[i].innerText.trim().toLowerCase() == 'Richiedi Preventivo'.toLowerCase())  {
+                           buttons[i].parentNode.insertBefore(buttons[i], buttons[i].parentNode.children[1])
+                           updateBooleans('swap', isDesktop);
+                       }
+                    });
+                }
+            }
+
+            function updateBooleans(type, isDesktop) {
+                if (type == 'update') {
+                    if (isDesktop) {
+                        btnFoundAndUpdatedDesktop = true;
+                    } else {
+                        btnFoundAndUpdatedMobile = true;
+                    }
+                } else if (type == 'swap') {
+                    if (isDesktop) {
+                        btnFoundAndSwappedDesktop = true;
+                    } else {
+                        btnFoundAndSwappedMobile = true;
+                    }
+                }
+            }
+
+            function returnSelector(isDesktop) {
+                if (isDesktop) {
+                    return '.vehicle-view-cta.show-for-large-up';
+                } else {
+                    return '.vehicle-view-cta.hide-for-large-up';
+                }
+            }
+
+            function returnUpdatedBool(isDesktop) {
+                if (isDesktop) {
+                    return btnFoundAndUpdatedDesktop;
+                } else {
+                    return btnFoundAndUpdatedMobile;
+                }
+            }
+
+            function returnSwappedBool(isDesktop) {
+                if (isDesktop) {
+                    return btnFoundAndSwappedDesktop;
+                } else {
+                    return btnFoundAndSwappedMobile;
+                }
+            }
+
+            function returnSwappedHandler(isDesktop) {
+                if (isDesktop) {
+                    return intervalFoundAndSwappedDesktop;
+                } else {
+                    return intervalFoundAndSwappedMobile;
+                }
+            }
+        }, time);
+    }
+</script>

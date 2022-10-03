@@ -1,0 +1,12 @@
+<script>
+    var $ = jQuery;
+    $(document).ready(function () {
+        console.log('OT-1187')
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "tt:nwp:opt-1187:ab:bp:extras-interior:control"
+            }
+        }
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    });
+</script>

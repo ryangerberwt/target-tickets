@@ -1,0 +1,305 @@
+<script type="text/javascript">
+
+    console.log('OT-1088');
+
+    !(function () {
+        var bundle,
+            ENV = { services: {}, constructions: {} },
+            counter = 0,
+            targetErrors = targetErrors || [];
+
+        function debugActive() {
+            return /targetDebug=1088/i.test(window.location.href);
+        }
+
+        function overrideLog(error) {
+            if (debugActive()) {
+                console.log(error);
+            }
+
+            targetErrors.push({ ticket: "1088", error });
+        }
+
+        function checkUserCountry() {
+
+            if (debugActive()) {
+                overrideLog('In Test Debug');
+                initialize();
+            } else if (userInfo.country == 'france') {
+                getLocation();
+            }
+
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(checkUserLocation);
+            } else {
+                overrideLog('Geolocation is not supported by this browser.');
+            }
+        }
+
+        function checkUserLocation(position) {
+
+            var checkPosition = false;
+
+            var userCoords = {
+                'lat': position.coords.latitude,
+                'lng': position.coords.longitude
+            }
+
+            for (var i = 0; i < dealerList.length; i++) {
+
+                checkPosition = arePointsNear(userCoords, dealerList[i], 50);
+
+                if (checkPosition === true) {
+
+                    overrideLog('User within radius!');
+                    overrideLog('User Coords: ', userCoords);
+                    overrideLog('Area Coords: ', dealerList[i]);
+
+                    initialize();
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+        function arePointsNear(checkPoint, centerPoint, km) {
+
+            var ky = 40000 / 360;
+            var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
+            var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
+            var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
+
+            return Math.sqrt(dx * dx + dy * dy) <= km;
+
+        }
+
+        function initialize() {
+
+            // Hide FB Messenger
+            var Style_1042_HideFB = document.createElement('style');
+            Style_1042_HideFB.id = 'Style_1042_HideFB';
+            Style_1042_HideFB.innerHTML = '#fb-root { display:none; }';
+            document.body.appendChild(Style_1042_HideFB);
+
+            function waitForBillboard(billboardURI) {
+                if (billboardURI) {
+                    var billboard = $("div.carousel.carousel-billboard-homepage.active").data("flexslider");
+                    if (!billboard)
+                        return setTimeout(function () {
+                            waitForBillboard(billboardURI);
+                        }, 50);
+
+                    ((function realInitialize(billboardURI, flexslider) {
+                        flexslider.addSlide(ENV.constructions.createMockUp(), 0),
+                            ENV.services.remoteOffer(billboardURI, function (err) {
+                                err && (flexslider.removeSlide(0), debugLog(err));
+                            });
+                    })(billboardURI, billboard));
+
+                    // Is Showing
+                }
+            }
+            waitForBillboard("/content/snippets/target/video-call-hpr");
+
+        }
+
+        // Adding Required Variables
+        var dealerList = [
+            {
+                dealership: 'Albi',
+                lat: 43.9289852,
+                lng: 2.0972809
+            },
+            {
+                dealership: 'Castres',
+                lat: 43.6131801,
+                lng: 2.1747755
+            },
+            {
+                dealership: 'Armentières',
+                lat: 50.6924952,
+                lng: 2.861104
+            },
+            {
+                dealership: 'Lys-lez-Lannoy',
+                lat: 50.6729296,
+                lng: 3.2010898
+            },
+            {
+                dealership: 'Lille-Sud',
+                lat: 50.6087502,
+                lng: 3.0333783
+            },
+            {
+                dealership: 'Lyon Vénissieux',
+                lat: 45.7050292,
+                lng: 4.852613
+            },
+            {
+                dealership: 'Annecy',
+                lat: 45.9023911,
+                lng: 6.0563761
+            },
+            {
+                dealership: 'Chambéry',
+                lat: 45.5822142,
+                lng: 5.871334
+            },
+            {
+                dealership: 'Sallanches',
+                lat: 45.9322402,
+                lng: 6.5340796
+            },
+            {
+                dealership: 'Annemasse',
+                lat: 46.1890332,
+                lng: 6.2301015
+            },
+            {
+                dealership: 'Albertville',
+                lat: 45.6647036,
+                lng: 6.3749311
+            },
+            {
+                dealership: 'Thonon-les-Bains',
+                lat: 46.3744931,
+                lng: 6.4425851
+            },
+            {
+                dealership: 'Gex',
+                lat: 46.3514526,
+                lng: 6.0138301
+            },
+            {
+                dealership: 'Lille Est',
+                lat: 50.6254192,
+                lng: 3.0179089
+            },
+            {
+                dealership: 'Saint-Gaudens',
+                lat: 43.1209606,
+                lng: 0.6903625
+            },
+            {
+                dealership: 'Aulnay Sous Bois',
+                Lat: 48.9412,
+                Lng: 2.4971
+            },
+            {
+                dealership: 'Muret',
+                lat: 43.4406996,
+                lng: 1.2286805
+            },
+            {
+                dealership: 'Foix',
+                lat: 42.9701462,
+                lng: 1.5739246
+            },
+            {
+                dealership: 'Saint Etienne',
+                Lat: 45.4397,
+                Lng: 4.3872
+            },
+            {
+                dealership: 'Villefranche-sur-Saone',
+                lat: 45.9837077,
+                lng: 4.708449
+            },
+            {
+                dealership: 'Chelles',
+                lat: 48.8862531,
+                lng: 2.5603231
+            }
+        ];
+
+        var userInfo = {
+            'country': '${profile.geolocation.country}',
+            'state': '${profile.geolocation.state}',
+            'city': '${profile.geolocation.city}',
+            'zip': '${profile.geolocation.zip}'
+        };
+
+        ((ENV.constructions.createMockUp = function () {
+            return (function DOMBuilder(obj) {
+                if (obj) {
+                    if ($.isArray(obj)) {
+                        var i,
+                            arr = [];
+                        for (i = 0; i < obj.length; i++)
+                            obj[i] instanceof $
+                                ? arr.push(obj[i])
+                                : arr.push(DOMBuilder(obj[i]));
+                        return arr;
+                    }
+                    if (obj instanceof $) return obj;
+                    if ($.isFunction(obj)) return DOMBuilder(obj());
+                    if (!obj.type) return obj.html || obj.text || undefined;
+                    if (obj.hasOwnProperty("render") && !obj.render) return undefined;
+                    var $e = $("<" + obj.type + ">");
+                    if (
+                        (obj.id && $e.prop("id", obj.id),
+                            obj.className && $e.addClass(obj.className),
+                            $.isPlainObject(obj.data) &&
+                            obj.data.key &&
+                            $e.data(obj.data.key, obj.data.value),
+                            obj.html ? $e.html(obj.html) : $e.text(obj.text || ""),
+                            obj.child && $e.append(DOMBuilder(obj.child)),
+                            $.isPlainObject(obj.handlers))
+                    )
+                        for (var evName in obj.handlers)
+                            $e.on(evName, obj.handlers[evName]);
+                    if ($.isPlainObject(obj.props))
+                        for (var propName in obj.props)
+                            $e.prop(propName, obj.props[propName]);
+                    return $.isFunction(obj.callback) && obj.callback($e), $e;
+                }
+            })({
+                type: "article",
+                className: "carousel-slide slider-model-detail target-slide",
+                id: "optprg-returning-slide-billboard",
+                child: [
+                    {
+                        type: "div",
+                        className: "carousel-content",
+                        child: [{ type: "div", className: "content" }]
+                    }
+                ]
+            });
+        }),
+            (function (bundle) {
+                FordPersonalisation &&
+                    FordPersonalisation.target &&
+                    "function" == typeof FordPersonalisation.target.getRemoteTargetOffer
+                    ? (bundle.remoteOffer = function remoteOffer(remoteURL, cb) {
+                        FordPersonalisation.target.getRemoteTargetOffer(
+                            remoteURL,
+                            "#optprg-returning-slide-billboard .content",
+                            function () {
+                                cb();
+                            },
+                            function () {
+                                cb("Error");
+                            },
+                            !1,
+                            !1,
+                            !0,
+                            !1
+                        );
+                    })
+                    : (bundle.remoteOffer = function () {
+                        debugLog(
+                            "ERROR: FordPersonalisation.target.getRemoteTargetOffer is not function!"
+                        );
+                    });
+            })(ENV.services),
+            FordPersonalisation.guxFrameworkDeferred.then(function () {
+                (FordPersonalisation.ptemplate.set("return"), checkUserCountry());
+            }));
+    })();
+</script>

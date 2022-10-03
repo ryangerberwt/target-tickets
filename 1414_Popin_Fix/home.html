@@ -1,0 +1,1654 @@
+<script>
+    var $ = jQuery;
+    var targetErrors = targetErrors || [];
+    var disclosureData;
+    var enumerators;
+    var disclosuresObj;
+    var myEnumerator;
+    var existingSups;
+
+
+    function cleanUpHtml(){
+        $('.hors-taxe + h5 ').remove();
+        $('.hors-taxe + p ').remove();
+        $('.splitter-column.columns.xlarge-6.large-6>.column-content>.image>.component-content>picture>source').attr('srcSet','https:'+storedData_1414.img);
+        $('.optprg-tdr-pop-up-image').attr('title',storedData_1414.carName + ' ' + storedData_1414.subName);
+        $('.optprg-tdr-pop-up-image').attr('alt',storedData_1414.carName + ' ' + storedData_1414.subName);
+        $('a:contains("Request a Test Drive")').attr('href',storedData_1414.contextualiseLink);
+        $('a:contains("Request a Test Drive")').text('Clicca qui');
+        let formattedCarName = storedData_1414.carName.replace('Ford','');
+        $('.optprg-tdr-pop-up-heading').html($('.optprg-tdr-pop-up-heading').html().replace(formattedCarName, '<b>' + formattedCarName + '</b>'));
+    }
+
+    function buildDisclosures() {
+
+        console.log('building 3.0 disclosures');
+
+        if ($('span[data-disclosures-json]') !== undefined) {
+            disclosureData = $('span[data-disclosures-json]').data('disclosures-json');
+            enumerators = disclosureData.enumerators;
+            myEnumerator = Number(enumerators[enumerators.length - 1]);
+            disclosuresObj = JSON.parse(localStorage.getItem('3.0_disclaimers'));
+            for (var y = 0; y < disclosuresObj.length; y++) {
+                disclosuresObj[y].suffix_key = (myEnumerator + (y + 1)).toString();
+            }
+
+            for (var x = 0; x < disclosuresObj.length; x++) {
+                let counter = Number(x + 1)
+                disclosureData.enumerators.push((Number(myEnumerator) + counter).toString());
+                disclosureData.disclosures.push({
+                    name: 'disclaimer_' + x,
+                    text: '<p>' + disclosuresObj[x].disclaimer_content + '</p>'
+                });
+
+            }
+
+            $('span[data-disclosures-json]').attr('data-disclosures-json', JSON.stringify({
+                disclosures: disclosureData.disclosures,
+                enumerators: disclosureData.enumerators
+            }));
+            console.log('Done building 3.0 Disclosures');
+        }
+    }
+
+
+    function addToPopin() {
+        console.log('adding 3.0 disclaimers to popin');
+        existingSups = $('.optprg-sup');
+        for (var i = 0; i < disclosuresObj.length; i++) {
+            if (disclosuresObj[i].disclaimer_content.length > 0) {
+                existingSups.eq(i).text(disclosuresObj[i].suffix_key);
+                let myId = 'opt-gux3-' + (Number(myEnumerator) + 1);
+                existingSups.eq(i).attr('id', myId);
+                existingSups.eq(i).attr('data-acc-disclosure', 'disclaimer_' + i);
+                //Init
+                accDisclosures.default.initOne($('#' + myId));
+            }
+
+            console.log('Done adding 3.0 Disclosures to popin');
+        }
+    }
+
+    function storePopinState(last_closed, display_count) {
+        let objs = {
+            last_closed_time: last_closed, alert_display_count: display_count 
+        }
+        localStorage.setItem('popinState', JSON.stringify(objs));
+        console.log('local storage');
+        console.log(JSON.parse(localStorage.getItem('popinState')));
+    }
+
+    function compareLastClosed() {
+        let popupState = JSON.parse(localStorage.getItem('popinState'));
+        let current_timestamp = Math.floor(Date.now() / 1000);
+        let last_closed_current = Math.floor(popupState.last_closed_time / 1000);
+        var minuteDifference = (current_timestamp / 60) - (last_closed_current / 60);
+        console.log('Popin was last displayed ' + minuteDifference + ' minutes ago');
+        if (minuteDifference >=15) {
+
+            //It's been 15 days, clear LS
+            if(minuteDifference  >= 21600){
+                storePopinState(null,Number(0));
+                return true;
+            }
+
+            if (popupState.alert_display_count < 3) {
+                return true;
+            } else {
+                console.log('Waiting');
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    try {
+        console.log('OT-1414 - HP');
+
+        // Vehicle Info*
+        var storedData_1414 = {
+            id: "${profile.id}",
+            market: "${profile.market}",
+            ticket: "${profile.ticket}",
+            carName: "${profile.carName}",
+            date: "${profile.date}",
+            emissions: "${profile.emissions}" == "" ? "" : JSON.parse("${profile.emissions}".replace(/'/g, '"')),
+            img: "${profile.img}",
+            retailPrice: "${profile.retailPrice}",
+            retailTitle: "${profile.retailTitle}",
+            offerPrice: "${profile.offerPrice}",
+            offerTitle: "${profile.offerTitle}",
+            subName: "${profile.subName}",
+            vehicleType: "${profile.vehicleType}",
+            contextualiseLink: "${profile.contextualiseLink}",
+            vehicleCode: "${profile.tdrVehicleCode}"
+        }
+
+        // Popup Data
+        var popupData_1414 = {
+            popup_last_closed: Number("${profile.it.popup_last_closed}"),
+            popup_display_count: Number("${profile.it.popup_display_count}")
+        };
+
+        // Just in case data from a different Market gets through
+        // Also checks if a vehicleCode is available, if it doesn't it won't display.
+        var display_1414 = "IT" == storedData_1414.market && "OT-1414" == storedData_1414.ticket && !storedData_1414.contextualiseLink.toLowerCase().includes('undefined');
+
+        if (display_1414) {
+
+            if (storedData_1414.contextualiseLink.indexOf('bodystyle') > 0) {
+                storedData_1414.contextualiseLink = storedData_1414.contextualiseLink.replace('bodystyle', 'colour');
+            } else if (storedData_1414.contextualiseLink.indexOf('colour') > 0) {
+                storedData_1414.contextualiseLink = storedData_1414.contextualiseLink.replace('colour', 'interior');
+            } else if (storedData_1414.contextualiseLink.indexOf('interior') > 0) {
+                storedData_1414.contextualiseLink = storedData_1414.contextualiseLink.replace('interior', 'extras');
+            }
+
+
+
+            $(document).ready(function () {
+
+                function overrideLog(error) {
+                    if (/targetDebug=1414/i.test(window.location.href)) {
+                        console.log(error);
+                    }
+
+                    targetErrors.push({ ticket: "1414", error });
+                }
+                /**
+                *
+                *	DOM builder
+                *	(requires jQuery)
+                *
+                * #def name DOMBuilder
+                *
+                *	SYNTAX:
+                *	jQueryobject DOMbuilder(srcObject);
+                *
+                *	srcObject = DOMobject || [array of DOMobject] || jQueryObject || [array of jQueryObject] || function (returning srcObject);
+                *
+                *	DOMobject = {
+                *		type: 'div',
+                *		id: 'elm-id' || null,
+                    render: boolean, // You can decide if element will be rendered
+                *		className: 'elm-class' || 'elm-class-1 elm-class-2' || null,
+                *		data: { key: key, value: value } || null,
+                *		text: 'Text content' || null,
+                *		html: 'HTML content' || null,		// if html provided, text is ignored
+                *		child: srcObject || null
+                *		handlers: { eventID: function, ... } || null,
+                *		callback: function($element) || null
+                *		} || [ array of DOMobj ]
+                *
+                */
+                function DOMBuilder(obj) {
+                    if (!obj) return;
+                    if (Object.prototype.toString.call(obj)) {
+                        var i, arr = [];
+                        for (i = 0; i < obj.length; i++) {
+                            (obj[i] instanceof $) ? arr.push(obj[i]) : arr.push(DOMBuilder(obj[i]));
+                        }
+                        return arr;
+                    } else if (obj instanceof $) return obj;
+                    else if ($.isFunction(obj)) return DOMBuilder(obj());
+                    else {
+                        if (!obj.type) return obj.html || obj.text || undefined;
+                        if (obj.hasOwnProperty("render") && !obj.render)
+                            return undefined;
+                        var $e = $('<' + obj.type + '>');
+                        if (obj.id) $e.prop('id', obj.id);
+                        if (obj.className) $e.addClass(obj.className);
+                        if ($.isPlainObject(obj.data) && obj.data.key) $e.data(obj.data.key, obj.data.value);
+                        obj.html ? $e.html(obj.html) : $e.text(obj.text || '');
+                        if (obj.child) $e.append(DOMBuilder(obj.child));
+                        if ($.isPlainObject(obj.handlers)) {
+                            for (var evName in obj.handlers) $e.on(evName, obj.handlers[evName]);
+                        }
+                        if ($.isPlainObject(obj.props)) {
+                            for (var propName in obj.props) $e.prop(propName, obj.props[propName]);
+                        }
+                        if ($.isFunction(obj.callback)) obj.callback($e);
+                        return $e;
+                    }
+                }
+
+                /**
+                * JS VARIANT "Challenger" - Create testdrive popin or similar approach to generate additional testdrive leads
+                */
+
+                $(document).ready(function () {
+                    var Constructions = {};
+                    var ENV = {
+                        elements: {},
+                        data: {}
+                    };
+
+                    // 3.0 Fix
+                    buildDisclosures();
+
+                    // Configurations
+                    /* Market configuration */
+
+                    (function (environment) {
+                        environment.MarketConfiguration = {
+                            // Define overlay URL
+                            overlay: "/overlay/content/overlays/target/acc-tdr",
+                            // Define delay in ms before opening overlay
+                            delayBeforeOpenOverlay: 10000,
+
+                            // Panel with informations like CO2
+                            carDataSelector: "#global-ux .summary-wrapper .vehicle-info-view .vehicle-data .vehicle-data-row",
+                            // Selectors to disclaimers in summary page
+                            disclaimersSelector: "#global-ux .disclosure-text > ul.disclosure-list",
+                            // Selector to offer price (if exists)
+                            offerPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-promotional-bnp",
+                            // Selector to retail price (if exists)
+                            retailPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-retail-with-otr",
+
+                            // Determine which data will be grabed from summary page
+                            summaryPageDataDestinations: [{
+                                // Image of car
+                                query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.right-content > div > img",
+                                prop: "src",
+                                key: "img"
+                            }, {
+                                // Find a dealer link
+                                query: "a[data-contextual-link=\"dealer-locator\"]",
+                                prop: "href",
+                                key: "findDealer"
+                            }, {
+                                // Car nameplate name
+                                query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.left-content > h3 > strong",
+                                text: true,
+                                key: "carName"
+                            }]
+                        };
+                    }(ENV));
+
+                    var MBOXName = "IT_BP_A_Popin";
+                    var MBOXFallbackTimeout = 300;
+
+                    var timer = setInterval(function () {
+
+                        var thisOverlay = document.querySelector('.overlay');
+                        if (thisOverlay.classList.contains('is-active')) {
+
+                            overrideLog('run impression id');
+
+                            //run impressions
+                            adobe.target.trackEvent({
+                                "mbox": MBOXName,
+                                "params": {
+                                    "open": "pop-up-open"
+                                }
+                            });
+
+                            window.targetCampaign = window.targetCampaign || {
+                                page: {
+                                    campaignName: "tt:nwp:opt-1414:xt:ase:ngc-bpa-bpc"
+                                }
+                            }
+                            _satellite.track("genericTestingImpressionIDWorkaround");
+
+                            clearInterval(timer);
+                        }
+                    }, 200);
+
+                    /* Define texts - easily move across markets */
+
+                    function returnSupThree() {
+                        return "<sup class='supThreeClick'><a style='text-decoration: unset'>3</a></sup>";
+                    }
+
+                    $(document).ready(function (environment) {
+
+                        var translations = {
+                            heading: "Completa la configurazione della tua prossima <nameplate>?",
+                            pricePrefix: "€",
+                            priceSuffix: "",
+                            retailpricePrefix: "",
+                            retailpriceSuffix: "",
+                            dutyFree: "",
+                            priceValidText: "",
+                            mainPriceLabel: "",
+                            mainPriceLabelNoOfferPrice: "",
+                            retailPriceLabel: "",
+                            priceTooltipHeading: "Belangrijke informatie",
+                            bookTDRButton: "Clicca qui",
+                            buttonURL: storedData_1414.contextualiseLink,
+                            retailDisclaimer: "",
+                            retailKey: "",
+                            retailLabel: "",
+                            offerDisclaimer: "",
+                            offerKey: "",
+                            offerLabel: "",
+                        };
+
+
+                        environment.Localisation = {
+                            formatDate: formatDate,
+                            formatMoney: function (amount) {
+                                return Number(Number(amount).toFixed(0)).toLocaleString().replace(/\,/gm, ".")
+                            },
+                            getTranslation: getTranslation,
+                            updateTranslations: updateTranslations,
+                            requiredLabelsExist: requiredLabelsExist
+                        };
+
+                        function isNull(obj) {
+                            return obj == undefined || obj == null || obj == "";
+                        }
+
+                        function requiredLabelsExist() {
+                            if (!isNull(storedData_1414.offerPrice))
+                                if (isNull(getTranslation("offerLabel")))
+                                    return false;
+
+                            if (!isNull(storedData_1414.retailPrice))
+                                if (isNull(getTranslation("retailLabel")))
+                                    return false;
+
+                            return true;
+                        }
+
+
+                        function getTranslation(key, replacements) {
+                            var tr = translations[key];
+                            if (!tr)
+                                return;
+                            if (replacements) {
+                                $(Object.keys(replacements)).each(function (i, replace) {
+                                    tr = tr.replace("<" + replace + ">", replacements[replace]);
+                                });
+                            }
+
+                            overrideLog(key + ": " + tr);
+                            return tr;
+                        }
+
+                        function updateTranslations(key, replacements) {
+                            try {
+                                if (replacements) {
+                                    translations[key] = replacements;
+                                }
+                            } catch (e) {
+                                // assume key doesn't exist.
+                                overrideLog(e);
+                            }
+
+                        }
+
+                        function formatDate(date) {
+                            return date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
+                        }
+                    }(ENV));
+
+                    var StorageHandler = {};
+                    StorageHandler.cookie = "opt-gux-it"; // opt-gux-MARKET ~ for countries with multiple locales, name it MARKET_LANG ~ Always lower case.
+                    StorageHandler.getData = function () {
+                        var current = JSON.parse(localStorage.getItem(StorageHandler.cookie));
+                        if (current == null)
+                            return [];
+                        else
+                            return current;
+                    };
+                    StorageHandler.saveData = function (key, data) {
+                        var current = StorageHandler.getData();
+
+                        var exists = StorageHandler.getSpecificData(key);
+
+                        if (exists.length > 0) {
+                            for (var i = 0; i < current.length; i++) {
+                                if (current[i].key == key) {
+                                    current[i].data = data;
+                                }
+                            }
+                        } else {
+                            current.push({ key, data });
+                        }
+                        localStorage.setItem(StorageHandler.cookie, JSON.stringify(current));
+                    };
+                    StorageHandler.getSpecificData = function (key) {
+                        var current = StorageHandler.getData();
+                        return current.filter(function (each) {
+                            return each.key == key;
+                        });
+                    };
+
+
+                    // Elements builder
+                    function loadInfo() {
+                        ENV.Localisation.updateTranslations("offerLabel", storedData_1414.offerTitle);
+                        ENV.Localisation.updateTranslations("retailLabel", storedData_1414.retailTitle);
+                        var key = "disclaimers_1414_" + storedData_1414.id;
+
+                        var data = StorageHandler.getSpecificData(key);
+
+                        if (data.length == 0) {
+                            return;
+                        }
+
+                        var disclaimerObj = data[0].data;
+
+                        for (var i = 0; i < disclaimerObj.length; i++) {
+                            if (disclaimerObj[i].type == "Retail") {
+                                ENV.Localisation.updateTranslations("retailDisclaimer", disclaimerObj[i].content);
+                                ENV.Localisation.updateTranslations("retailKey", disclaimerObj[i].symbol);
+                            } else if (disclaimerObj[i].type == "Offer") {
+                                ENV.Localisation.updateTranslations("offerDisclaimer", disclaimerObj[i].content);
+                                ENV.Localisation.updateTranslations("offerKey", disclaimerObj[i].symbol);
+                            }
+                        }
+                    }
+                    loadInfo();
+
+                    /* Generate tooltip */
+                    $(document).ready(function () {
+
+                        var tooltipInstance;
+                        var overlay;
+
+                        function docGlobUXOnClick(event) {
+                            if (event.target.id === "optprg-tdr-pop-up-price-tooltip" || $(event.target).parents("#optprg-tdr-pop-up-price-tooltip").length)
+                                return;
+                            event.preventDefault();
+                            closeTooltip();
+                        }
+                        function onResizeOrScrollEvent() {
+                            closeTooltip();
+                        }
+                        function closeTooltip(event) {
+                            if (event)
+                                event.preventDefault();
+                            if (!tooltipInstance)
+                                return;
+                            overlay.unbind("mousedown", docGlobUXOnClick);
+                            overlay.unbind("scroll", onResizeOrScrollEvent);
+                            $(window).unbind("resize", onResizeOrScrollEvent);
+                            tooltipInstance.remove();
+                            tooltipInstance = undefined;
+                        }
+                        function tooltip(options, close) {
+                            return DOMBuilder({
+                                type: "div",
+                                className: "gux-tooltip-overlay",
+                                id: "optprg-tdr-pop-up-price-tooltip",
+                                props: {
+                                    tabindex: "0"
+                                },
+                                callback: function (element) {
+                                    element.attr("style", "position: absolute; top: " + options.top + "px; left: " + options.left + "px;right: auto; bottom: " + (options.bottom == undefined ? "auto" : options.bottom + "px") + "; z-index: 10001;");
+                                },
+                                child: [{
+                                    type: "h5",
+                                    className: "gux-tooltip-overlay-title",
+                                    text: options.title
+                                }, {
+                                    type: "span",
+                                    className: "gux-tooltip-overlay-text",
+                                    child: [{
+                                        type: "span",
+                                        render: options.number ? true : false,
+                                        text: options.number
+                                    }, {
+                                        type: "p",
+                                        html: options.text
+                                    }]
+                                }, {
+                                    type: "a",
+                                    className: "close-icon",
+                                    handlers: {
+                                        click: close
+                                    },
+                                    props: {
+                                        tabindex: "0"
+                                    }
+                                }]
+                            });
+                        }
+                        Constructions.openTooltip = function (options) {
+                            closeTooltip();
+
+                            tooltipInstance = tooltip(options, closeTooltip);
+                            document.querySelector("#global-ux").append(tooltipInstance);
+                            if (!overlay)
+                                overlay = options.overlay.parent();
+                            overlay.on("mousedown", docGlobUXOnClick);
+                            overlay.on("scroll", onResizeOrScrollEvent);
+                            $(window).on("resize", onResizeOrScrollEvent);
+                        };
+                    }());
+
+                    /* Component for show easily price - !this file has connection to tooltip definition */
+
+                    Constructions.getPrice = function (options) {
+                        return DOMBuilder({
+                            type: "span",
+                            child: [{
+                                type: "span",
+                                className: "vehicle-attribute-group price-finalPrice-grossRetailWithOTRAndIncentives",
+                                child: [{
+                                    type: "p",
+                                    className: "optprg-carname",
+                                    text: options.carName,
+                                    child: [{
+                                        type: "span",
+                                        className: "optprg-subname",
+                                        html: options.subName
+                                    }]
+                                },
+                                {
+                                    type: "p",
+                                    className: "optprg-main-price-label",
+                                    text: options.recPrice,
+                                    id: "id-optprg-main-price-label"
+                                }, {
+                                    type: "span",
+                                    className: "optprg-vehicle-attribute-prefix",
+                                    text: ENV.Localisation.getTranslation(options.pricePrefixName)
+                                }, {
+                                    type: "span",
+                                    className: "value optprg-main-price-value",
+                                    text: options.price
+                                }, {
+                                    type: "span",
+                                    className: "duty-free",
+                                    text: options.dutyPrice
+                                }, {
+                                    type: "span",
+                                    className: "optprg-vehicle-attribute-suffix",
+                                    text: ENV.Localisation.getTranslation(options.priceSuffixName)
+                                }
+                                ]
+                            }, {
+                                type: "sup",
+                                className: "optprg-sup",
+                                render: options.text ? true : false,
+                                props: {
+                                    href: "#"
+                                },
+                                child: [{
+                                    type: "a",
+                                    className: "optprg-a",
+                                    text: options.number,
+                                    handlers: {
+                                        click: function (e) {
+                                            e.preventDefault();
+                                            var position = document.querySelector(this).offset();
+                                            var size = {
+                                                w: document.querySelector(this).width(),
+                                                h: document.querySelector(this).height()
+                                            };
+                                            Constructions.openTooltip({
+                                                top: position.top + size.h,
+                                                left: position.left + size.w,
+                                                title: options.heading,
+                                                text: options.text,
+                                                number: options.number,
+                                                overlay: options.overlay
+                                            });
+                                        }
+                                    }
+                                }]
+                            }]
+                        });
+                    };
+
+
+                    // Handlers
+                    /* Handle close events */
+
+                    function initializeCloseHandlers(overlay) {
+                        function destroy() {
+                            $(document).unbind("keydown", onKeyPress);
+                            destroyOverlay();
+                        }
+                        function destroyOverlay() {
+                            var content = $('.optprg-tdr-pop-up-1414-content'); // Replace 1041 to match the ticket you're on.
+                            if (content.length > 0) {
+                                var contentParent = content[0].parentElement;
+                                if (contentParent !== undefined && contentParent.classList.value.includes('overlay-container')) {
+                                    //popupData_1414.popup_display_count ++;
+                                    console.log("Popup Data count is " + popupData_1414.popup_display_count);
+                                    contentParent.remove();
+                                }
+                            }
+                        }
+                        var handlers = {
+                            dontShowAgainClose: function (wayOfDestroy, callback, mbox) {
+                                adobe.target.trackEvent({
+                                    mbox: mbox,
+                                    params: {
+                                        release: wayOfDestroy,
+                                        popup: wayOfDestroy
+                                    },
+                                    success: function () {
+                                        if (callback)
+                                            callback();
+                                    },
+                                    error: function () {
+                                        if (callback)
+                                            callback();
+                                    }
+                                });
+                                if (callback)
+                                    setTimeout(function () {
+                                        callback();
+                                    }, MBOXFallbackTimeout);
+                                destroy();
+                            },
+                            showAgainClose: function (wayOfDestroy, mbox) {
+                                adobe.target.trackEvent({
+                                    mbox: mbox,
+                                    params: {
+                                        popup: wayOfDestroy
+                                    }
+                                });
+                                destroy();
+                            }
+                        };
+                        function onKeyPress(e) {
+                            if (e.keyCode == 27) {
+                                let cPopinState = JSON.parse(localStorage.getItem('popinState'));
+                                let num = Number(cPopinState.alert_display_count + 1);
+                                handlers.dontShowAgainClose("close_escape_keyboard", storePopinState(Math.floor(Date.now()),num), "IT_1414_close_cta_ctr");
+                            }
+                        }
+
+                        document.addEventListener('keydown', function (e) {
+                            onKeyPress(e);
+                        });
+
+                        var divOverlayClose = document.querySelector('span.overlay-close-button');
+                        divOverlayClose.addEventListener('click', function (e) {
+                            let cPopinState = JSON.parse(localStorage.getItem('popinState'));
+                            let num = Number(cPopinState.alert_display_count + 1);
+                            handlers.dontShowAgainClose("clicked_x",  storePopinState(Math.floor(Date.now()),num), "IT_1414_close_cta_ctr");
+                        });
+                        var divOverlayParent = document.querySelector('.overlay').parentNode;
+
+                        var elementWrapper = document.querySelector('.overlay-content-wrapper');
+
+                        divOverlayParent.addEventListener('click', function (e) {
+                            if (event.target.classList.contains('.overlay-content-wrapper')) {
+                                handlers.showAgainClose("clicked_outside_overlay", storePopinState(Math.floor(Date.now()),num), "IT_1414_close_cta_ctr");
+                            }
+                        });
+                        return handlers;
+                    }
+
+                    function updatePopupData(popup_last_closed, popup_display_count) {
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                'profile.it.popup_last_closed': popup_last_closed,
+                                'profile.it.popup_display_count': popup_display_count
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                            },
+                            'error': function (status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+                    }
+
+                    var Popup = {};
+
+     
+
+                    Popup.determineIfPopupShows = function () {
+                        if (!ENV.Localisation.requiredLabelsExist()) {
+                            overrideLog("Price labels, not populated");
+                            return false;
+                        }
+
+                        if(compareLastClosed() === false){
+                            console.log('determineIfPopupShows is false')
+                            return false;
+                        }
+
+                        console.log('determineIfPopupShows is true [probably]')
+                        return (compareLastClosed()) || /targetDebug=1414/i.test(window.location.href);
+                        
+
+                    };
+                    Popup.setKeyValue = function (key, value) {
+
+                        popupData_1414[key] = value;
+
+                        updatePopupData(popupData_1414.popup_last_closed, popupData_1414.popup_display_count)
+                    };
+
+                    /* Open TDR Overlay */
+                    var OverlayHelpers = {};
+
+                    $(document).ready(function () {
+                        if(localStorage.getItem('popinState') === undefined || localStorage.getItem('popinState') === null){
+                            storePopinState(null, Number(0));
+                        }
+                        OverlayHelpers.openOverlay = function (overlay, onOverlayOpen) {
+                            if (compareLastClosed() === false){
+                                return false;
+                            }
+
+                            // create overlay anchor tag
+                            var overlayLink = document.createElement('a');
+                            overlayLink.className = "link-overlay popin-1414 acc-pd-overlay initialized-overlay initialized-bevLinkOverlay"
+                            "link-overlay popin-1414 acc-pd-overlay initialized-overlay initialized-bevLinkOverlay";
+                            overlayLink.href = "/overlay/content/overlays/target/acc-tdr";
+                            overlayLink.setAttribute("role", "button");
+                            overlayLink.innerText = "POPIN OT-1414";
+                            document.body.appendChild(overlayLink);
+
+                            var element = document.querySelector(".popin-1414");
+
+                            function waitForOverlayOpen(overlay) {
+                                if (!accOverlay.default.$overlay[0])
+                                    return setTimeout(function () {
+                                        waitForOverlayOpen(overlay);
+                                    }, 50);
+                                onOverlayOpen(overlay);
+                            }
+
+                            element.addEventListener('click', function (e) {
+                                e.preventDefault();
+                            });
+
+                            var overlay = accOverlay.default.init(element);
+
+                            element.click();
+
+                            if (!popupData_1414) {
+                                console.log('!popupData_1414 hit');
+                                overrideLog('1. popupData_1414');
+                                updatePopupData(0, 1);
+
+                                var overlay = accOverlay.default.init(element);
+                                overrideLog("Trigger Popup");
+                                let popupState = JSON.parse(localStorage.getItem('popinState'));
+                                //overlay.getOverlayContent('/overlay/content/overlays/target/tdr');
+                                waitForOverlayOpen(overlay);
+                                Popup.isPopupOpen = true;
+                            }
+                            else {
+
+                                if (Popup.determineIfPopupShows()) {
+                                    console.log('Determine if popup shows');
+                                    console.log(popupData_1414.popup_display_count, popupData_1414.popup_last_closed);                    
+                                    let popupState = JSON.parse(localStorage.getItem('popinState'));
+                                    var overlay = accOverlay.default.init(element);
+                                    overrideLog("Trigger Popup");
+                                    //overlay.getOverlayContent('/overlay/content/overlays/target/tdr');
+                                    waitForOverlayOpen(overlay);
+
+                                    overrideLog('2. here');
+
+                                }
+                            }
+                            
+                            //storePopinState(Math.floor(Date.now()), (Number(popupState.alert_display_count) + 1));
+                            element.remove();
+                        };
+
+                        /* Fill overlay with data */
+                        OverlayHelpers.fillOverlay = function (overlay, data, closeHandlers, limit) {
+                            ENV.overlayInstance = accOverlay.default.instances[7];
+                            var overlayContent = accOverlay.default.$overlay[0];
+                            console.log('calling fillOverlay');
+                            overlayContent.id = "global-ux";
+                            
+                            var image = overlayContent.querySelector(".overlay .splitter .image img");
+                            
+                            if (limit >= 100)
+                                return false;
+
+                            if ($('.splitter-column.columns.xlarge-6.large-6>.column-content>.image>.component-content>picture>img').length === 0)
+                                return setTimeout(function () {
+                                    OverlayHelpers.fillOverlay(overlay, data, closeHandlers, limit ? limit++ : 1);
+                                }, 40);
+
+                            locateAllElements(overlayContent, image, data.offerPrice ? true : false);
+                            fillFinishedBnPOverlay(data, closeHandlers);
+
+                        };
+
+                        function locateAllElements(overlayContent, image, hasOfferPrice) {
+                            ENV.elements.overlayContentWrapper = overlayContent.querySelector('.overlay-content-wrapper'); 
+                            ENV.elements.overlayContentWrapper.classList.add("optprg-tdr-pop-up-1414-content");
+
+                            ENV.elements.image = image.classList.add("optprg-tdr-pop-up-image");
+                            ENV.elements.heading = overlayContent.querySelector("h3").classList.add("optprg-tdr-pop-up-heading");
+                            ENV.elements.offerPrice = overlayContent.querySelector("h4").classList.add("optprg-tdr-pop-up-price");
+
+                            var elemPrice = overlayContent.querySelector(".optprg-tdr-pop-up-price");
+                            elemPrice.innerHTML = "";
+                            var clonedPrice = elemPrice.cloneNode(true);
+                            //clonedPrice[0].outerHTML = clonedPrice[0].outerHTML.replaceAll("h4", "h5");
+
+                            ENV.elements.retailPrice = elemPrice.parentNode.insertBefore(clonedPrice, elemPrice.nextSibling);
+                            // ENV.elements.retailPrice = ENV.elements.offerPrice.after(clonedPrice).next();
+                            ENV.elements.retailPrice.outerHTML = ENV.elements.retailPrice.outerHTML.replaceAll('h4', 'h5');
+                            ENV.elements.retailPrice = overlayContent.querySelector("h5");
+
+                            var vehicleAttrContainer = document.createElement('span');
+                            // Add class and HTML content
+                            vehicleAttrContainer.className = 'vehicle-attribute-group';
+                            vehicleAttrContainer.innerHTML =
+                                '<span class="vehicle-attribute-group"> <span class="vehicle-attribute-group price-finalPrice-grossRetailWithOTRAndIncentives"> ' +
+                                '<p class="optprg-carname-tag"><span class = "optprg-carname"> '+ storedData_1414.carName +' </span> <span class="optprg-subname"> '+storedData_1414.subName+' </span> </p>' +
+                                '<p class="optprg-main-price-label" id="id-optprg-main-price-label"> ' +storedData_1414.offerTitle+ '  </p>' +
+                                '<span class="optprg-vehicle-attribute-prefix"> € </span>' +
+                                '<span class="value optprg-main-price-value"> ' + storedData_1414.offerPrice +' </span>' +
+                                '<span class="duty-free"> </span>' +
+                                '<span class="optprg-vehicle-attribute-suffix"> </span>' +
+                                '<sup class="optprg-sup" href="#"><a class="optprg-a">' + ENV.Localisation.getTranslation("offerKey") + '</a></sup></span></span>';
+
+                            elemPrice.appendChild(vehicleAttrContainer, elemPrice);
+
+                            var nextVehicleAttrContainer = document.createElement('span');
+
+                            nextVehicleAttrContainer.className = "optprg-retail-price-box";
+                            nextVehicleAttrContainer.innerHTML =
+                                '<span class="vehicle-attribute-group price-finalPrice-grossRetailWithOTRAndIncentives"></span>' +
+                                '<p class="optprg-carname"><span class="optprg-subname"></span></p>' +
+                                '<p class="optprg-main-price-label" id="id-optprg-main-price-label"> '+storedData_1414.retailTitle+'</p>' +
+                                '<span class="optprg-vehicle-attribute-prefix"> € </span>' +
+                                '<span class="value optprg-main-price-value"> ' + storedData_1414.retailPrice + ' </span>' +
+                                '<span class="duty-free"> </span>' +
+                                '<span class="optprg-vehicle-attribute-suffix"> </span>' +
+                                '<sup class="optprg-sup" href="#"><a class="optprg-a">' + ENV.Localisation.getTranslation("retailKey") + '</a></sup>';
+
+                            ENV.elements.retailPrice.appendChild(nextVehicleAttrContainer, ENV.elements.retailPrice);
+
+
+                            ENV.elements.secondaryButton = overlayContent.querySelector("a.cta-button.cta-button-secondary");
+                            ENV.elements.primaryButton = overlayContent.querySelector("a.cta-button.cta-button-primary");
+
+
+
+                            ENV.elements.horsTaxe = document.createElement('p');
+                            ENV.elements.horsTaxe.className = 'hors-taxe';
+                            ENV.elements.retailPrice.parentNode.insertBefore(ENV.elements.horsTaxe, ENV.elements.retailPrice.nextSibling);
+
+                            /*ENV.elements.priceInformation = document.createElement('p');
+                           
+
+                            ENV.elements.priceInformation.className = 'optprg-price-info';
+                            ENV.elements.primaryButton.parentNode.insertBefore(ENV.elements.priceInformation, ENV.elements.primaryButton.nextSibling);
+
+                            ENV.elements.co2Information = document.createElement('p');
+                            ENV.elements.co2Information.className = 'optprg-co2-info';
+                            ENV.elements.priceInformation.parentNode.insertBefore(ENV.elements.co2Information, ENV.elements.priceInformation.nextSibling);
+                            ENV.elements.co2Information = $('.optprg-co2-info');*/
+                        }
+
+                        function fillFinishedBnPOverlay(data, closeHandlers) {
+
+                            try {
+                                var i = 0;
+                                ENV.elements.heading = document.querySelector("h3.optprg-tdr-pop-up-heading");
+                                ENV.elements.priceInformation = document.querySelector("p.optprg-price-info");
+                                ENV.elements.offerPrice = $(".vehicle-attribute-group h4.optprg-tdr-pop-up-price");
+                                ENV.elements.pricePrefix = document.querySelector(".vehicle-attribute-group span.optprg-vehicle-attribute-prefix");
+                                ENV.elements.carName = document.querySelector(".vehicle-attribute-group .optprg-carname");
+                                ENV.elements.subName = document.querySelector(".vehicle-attribute-group span.optprg-subname");
+                                ENV.elements.price = document.querySelector(".vehicle-attribute-group .optprg-main-price-value");
+                                ENV.elements.recPrice = document.querySelector(".vehicle-attribute-group .optprg-main-price-label");
+                                ENV.elements.horsTaxe = document.querySelector(".hors-taxe");
+                                ENV.elements.dutyFree = document.querySelector(".duty-free");
+
+                                // RETAIL
+                                ENV.elements.retailPricePrefix = document.querySelector(".optprg-retail-price-box span.optprg-vehicle-attribute-prefix");
+                                ENV.elements.retailpriceSuffixName = document.querySelector(".optprg-retail-price-box .optprg-vehicle-attribute-suffix");
+                                ENV.elements.retailcarName = document.querySelector(".optprg-retail-price-box .optprg-carname");
+                                ENV.elements.retailsubName = document.querySelector(".optprg-retail-price-box .optprg-subname");
+                                ENV.elements.retailPrice = $(".optprg-retail-price-box");
+                                ENV.elements.retailPriceValue = document.querySelector(".optprg-retail-price-box .optprg-main-price-value");
+                                ENV.elements.retailPriceLabel = document.querySelector(".optprg-retail-price-box  .optprg-main-price-label");
+                                ENV.elements.heading.innerHTML = ENV.Localisation.getTranslation("heading").replace("<nameplate>", data.carName + ' ' + data.subName);
+                             
+                                var imgNodelist = document.querySelectorAll('div.image.section > div.component-content source');
+                                var i = 0;
+                                for (; i < imgNodelist.length; i++) {
+                                    imgNodelist[i].remove();
+                                }
+                                ENV.elements.popinVehicleImage = document.querySelector('.optprg-tdr-pop-up-image');
+                                ENV.elements.popinVehicleImage.src = 'https:' + storedData_1414.img;
+                                
+                                ENV.elements.primaryButton.href = ENV.Localisation.getTranslation("buttonURL") + data.vehicleCode;
+                                ENV.elements.primaryButton.innerHTML = ENV.Localisation.getTranslation("bookTDRButton");
+                                ENV.elements.primaryButton.removeAttribute("data-cta-name");
+                                ENV.elements.primaryButton.classList.add("optprg-primary-button");
+                                ENV.elements.primaryButton.addEventListener('click', function (e) {
+
+                                    closeHandlers.dontShowAgainClose("clicked_TDR_CTA", function () {
+
+                                        adobe.target.trackEvent({
+                                            "mbox": MBOXName,
+                                            "params": {
+                                                "linkClicked": "true"
+                                            }
+                                        });
+
+                                        window.addEventListener('load', function () {
+                                            _satellite.track("impression-xt-popin")
+                                        });
+
+                                        ENV.overlayInstance.hideOverlay();
+                                    }, "IT_1414_main_cta_ctr");
+
+                                });
+
+                                // MachE being the only vehicle with a visible price.
+
+                                if (!storedData_1414.retailPrice) {
+                                    overrideLog('Hide Retail Price');
+                                    ENV.elements.retailPrice.hide();
+                                }
+                                else {
+                                    overrideLog('2. Got here');
+
+                                    ENV.elements.retailPricePrefix.innerHTML = ENV.Localisation.getTranslation("pricePrefix");
+                                    ENV.elements.retailpriceSuffixName.innerHTML = ENV.Localisation.getTranslation("priceSuffix");
+                                    ENV.elements.retailcarName.innerHTML = !data.offerPrice ? data.carName + " " : "";
+                                    ENV.elements.retailsubName.innerHTML = !data.offerPrice ? data.subName : "";
+                                    ENV.elements.retailPriceValue.innerHTML = ENV.Localisation.formatMoney(data.retailPrice);
+                                    ENV.elements.retailPriceLabel.innerHTML = ENV.Localisation.getTranslation("retailLabel");
+                                }
+
+                                if (!storedData_1414.offerPrice) {
+                                    overrideLog('Hide Offer Price');
+                                    ENV.elements.offerPrice.hide();
+                                }
+                                else {
+                                    overrideLog('1. Got here');
+
+                                    ENV.elements.priceInformation.innerHTML = ENV.Localisation.getTranslation("priceValidText");
+                                    ENV.elements.pricePrefix.innerHTML = ENV.Localisation.getTranslation("pricePrefix");
+                                    ENV.elements.carName.innerHTML = data.carName;
+                                    ENV.elements.subName.innerHTML = data.subName;
+                                    ENV.elements.price.innerHTML = ENV.Localisation.formatMoney(data.offerPrice);
+                                    ENV.elements.recPrice.innerHTML = ENV.Localisation.getTranslation("offerLabel");
+                                }
+
+                                overrideLog(data.tdr);
+                                overrideLog(data.tdrVehicleCode);
+                                var emissions = data.emissions.co ? getValueUnit(data.emissions.co) : { unit: "", value: "" };
+                                var litersToUnit = data.emissions.lToKm ? getValueUnit(data.emissions.lToKm) : { unit: "", value: "" };
+                                var hybridInfo = data.emissions.kwToKm ? getValueUnit(data.emissions.kwToKm) : { unit: "", value: "" };
+
+                                overrideLog(emissions);
+                                overrideLog(litersToUnit);
+                                overrideLog(hybridInfo);
+
+                                litersToUnit.unit = litersToUnit.unit.toLowerCase();
+                                litersToUnit.value = litersToUnit.value.replace('.', ',');
+                                emissions.value = emissions.value.replace('.', ',');
+                                hybridInfo.value = hybridInfo.value == "" ? "" : (
+                                    hybridInfo.value < 100 ? hybridInfo.value.replace('.', ',') : (
+                                        ((hybridInfo.value / 10) + "").replace('.', ',')
+                                    )
+                                )
+
+                                var line_fuelConsumption = litersToUnit.value != "" ? ENV.Localisation.getTranslation("fuelConsumption", {
+                                    ltValue: litersToUnit.value,
+                                    ltUnit: litersToUnit.unit
+                                }) : "",
+                                    line_co2Information = emissions.value != "" ? ENV.Localisation.getTranslation("co2Information", {
+                                        coValue: emissions.value,
+                                        coUnit: emissions.unit
+                                    }) : "",
+                                    line_electricConsumption = hybridInfo.value != "" ? ENV.Localisation.getTranslation("electricConsumption", {
+                                        kwValue: hybridInfo.value
+                                    }) : "";
+
+                                if (line_fuelConsumption || line_co2Information || line_electricConsumption) {
+                                    ENV.elements.co2Information.html(
+                                        line_fuelConsumption + line_electricConsumption + line_co2Information
+                                    );
+
+                                    var overlayForSup = document.querySelector('.optprg-tdr-pop-up-1414-content');
+                                    var sups = overlayForSup.querySelectorAll('.supThreeClick');
+
+                                    var title = ENV.Localisation.getTranslation('priceTooltipHeading');
+                                    var text = ENV.Localisation.getTranslation('disclaimer3');
+
+                                    for (var i = 0; i < document.getElementsByClassName('supThreeClick').length; i++) {
+                                        sups[i].onclick = function (e) {
+                                            try {
+                                                e.preventDefault();
+                                                var position = document.querySelector(this).offset();
+                                                var size = {
+                                                    w: document.querySelector(this).width(),
+                                                    h: document.querySelector(this).height()
+                                                };
+                                                Constructions.openTooltip({
+                                                    top: position.top + size.h,
+                                                    left: position.left + size.w,
+                                                    bottom: 0,
+                                                    title: title,
+                                                    text: text,
+                                                    number: '3',
+                                                    overlay: overlayForSup
+                                                });
+                                            } catch (E) {
+                                                overrideLog(E);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    overrideLog('hidden emissions');
+                                    ENV.elements.co2Information.hide();
+                                }
+
+
+
+                            } catch (ex) {
+                                overrideLog(ex);
+                            }
+                        }
+                        function getValueUnit(map) {
+                            if (map.value != undefined)
+                                return map;
+                            var units = Object.keys(map);
+                            if (!units.length)
+                                return null;
+                            return {
+                                unit: map[units[0]].unit,
+                                value: map[units[0]].value
+                            };
+                        }
+                    }());
+
+                    if (!display_1414 || !storedData_1414.img || !storedData_1414.carName || !storedData_1414.contextualiseLink)
+                        return;
+
+                    var Popupdetection = {};
+                    Popupdetection.getCookie = function (name) {
+                        var cookie = " " + document.cookie;
+                        var search = " " + name + "=";
+                        var setStr = null;
+                        var offset = 0;
+                        var end = 0;
+                        if (cookie.length > 0) {
+                            offset = cookie.indexOf(search);
+                            if (offset != -1) {
+                                offset += search.length;
+                                end = cookie.indexOf(";", offset)
+                                if (end == -1) {
+                                    end = cookie.length;
+                                }
+                                setStr = unescape(cookie.substring(offset, end));
+                            }
+                        }
+                        return (setStr);
+                    };
+
+                    function containsSophus() {
+                        if (typeof s3_creativeDisplayed === "undefined" && (typeof s3_creativeDisplayed !== "object" || !s3_creativeDisplayed))
+                            return false;
+                        if (s3_creativeDisplayed)
+                            return true;
+                        return false;
+                    }
+
+                    function getCookieNameContains(nameIncludes) {
+                        var allCookies = document.cookie;
+                        if (allCookies.length > 0) {
+                            var cookieArray = allCookies.split(';');
+                            for (var i = 0; i < cookieArray.length; i++) {
+                                var name = cookieArray[i].split('=')[0];
+                                if (name.includes(nameIncludes))
+                                    return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    function blockPopup() {
+                        if ((getCookieNameContains('IPE') || getCookieNameContains('IPE_M_')) || containsSophus() || compareLastClosed() === false) {
+                            overrideLog('blocked');
+                            return true;
+                        }
+                        if( window.location.href.indexOf('?td=1414') > 0){
+                            return false;
+                        }
+                        return false;
+                    }
+
+                    if (blockPopup())
+                        return;
+
+                    setTimeout(function () {
+
+                        if (!blockPopup()) {
+                            console.log('!blockPopup');
+                            OverlayHelpers.openOverlay(ENV.MarketConfiguration.overlay, function (overlay) {
+                                OverlayHelpers.fillOverlay(overlay, storedData_1414, initializeCloseHandlers(accOverlay.default.$overlay[0]));
+
+
+                                adobe.target.trackEvent({
+                                    "mbox": MBOXName,
+                                    "params": {
+                                        "open": "pop-up-open"
+                                    }
+                                });
+
+
+                                window.targetCampaign = window.targetCampaign || {
+                                    page: {
+                                        campaignName: "tt:nwp:opt-1414:xt:ase:ngc-bpa-bpc"
+                                    }
+                                }
+
+                                window.addEventListener('load', function () {
+                                    _satellite.track("impression-xt-popin")
+                                });
+
+
+                            });
+                        }
+                    }, ENV.MarketConfiguration.delayBeforeOpenOverlay);
+
+                    let myInterval = setInterval(function () {
+                        console.log('checking');
+                        if ($('.optprg-sup') !== undefined && $('.optprg-sup').length == 2) {
+                            cleanUpHtml();
+                            clearInterval(myInterval);
+                            addToPopin();
+                        }
+                    }, 250)
+                });
+            }());
+
+            window.addEventListener('load', function () {
+                var objToHide = document.querySelectorAll('.optprg-carname')[1];
+                if (objToHide != undefined) {
+                    objToHide.style.display = 'none';
+                }
+
+            });
+
+           /*  var isMobile = false; //initiate as false
+            // device detection
+            if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)
+                || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4))) {
+                isMobile = true;
+            }
+            if (!isMobile) {
+                window.addEventListener('click', function () {
+                    console.log('reg click')
+                    if ($('.acc-tooltip-overlay') !== undefined && $('.acc-tooltip-overlay').length > 0) {
+                        let overlays = $('.acc-tooltip-overlay');
+                        for (let i = 0; i < overlays.length; i++) {
+                            overlays.eq(i).attr('style', 'inset:0 !important; position:absolute !important; z-index:10000; max-height:fit-content;top:20%!important;left:35% !important;');
+                        }
+                    }
+                })
+            }
+            if (isMobile) {
+                window.addEventListener('touchend', function () {
+                    console.log('reg touch')
+                    if ($('.acc-tooltip-overlay') !== undefined && $('.acc-tooltip-overlay').length > 0) {
+                        let overlays = $('.acc-tooltip-overlay');
+                        for (let i = 0; i < overlays.length; i++) {
+                            overlays.eq(i).attr('style', 'inset:0 !important; position:absolute !important; z-index:10000; max-height:fit-content;top:0%!important;');
+                        }
+                    }
+                });
+            }
+            //Phones ONLY
+           if (isMobile && window.screen.availWidth < 768) {
+                let cssInterval = setInterval(function () {
+                    if (($('.regular.richtext-inner') !== undefined && $('.regular.richtext-inner').length > 0) && ($('#id-optprg-main-price-label') !== undefined && $('#id-optprg-main-price-label').length > 0)) {
+                        //CSS Fix
+                        $('.regular.richtext-inner').eq(2).attr('style', 'margin-right:50% !important');
+                        $('#id-optprg-main-price-label').eq(0).attr('style', 'margin-top:20% !important');
+                        clearInterval(cssInterval);
+                    }
+                }, 125);
+            }*/
+
+        }
+    } catch (ex) {
+        console.info("new solution required");
+        targetErrors.push({ ticket: "1414", error });
+    }
+
+
+</script>
+<style>
+    /*
+
+        ------------------------
+        |       NOTE           |
+        ------------------------
+        These aren't currently in the build
+        adding the styling here so when it is added
+        we can get the css here.
+
+        UPE $48,500 Retail Price
+        Desktop/Tablet:
+
+        font-family: FordAntennaRegular;
+        font-size: 16px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height:1.63;
+        letter-spacing: 1px;
+        color: #4d4d4d;
+
+        Disclaimer text below button
+        Desktop/Tablet:
+
+        width: 428px;
+        height: 63px;
+        font-family: FordAntennaRegular;
+        font-size: 12px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.75;
+        letter-spacing: 1px;
+        color: #4d4d4d;
+
+ 
+    @media only screen and (min-width: 992px) {
+        #global-ux .optprg-tdr-pop-up-1414-content .splitter {
+            padding: 10px 6.59% 50px;
+        }
+
+        #global-ux .overlay-content.optprg-tdr-pop-up-1414-content {
+            max-width: 1035px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .splitter-column-wrap>.splitter-column:last-child {
+            padding-left: 55px !important;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .image.section {
+            width: 393px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-heading {
+            font-size: 34px;
+            font-weight: 300 !important;
+            line-height: 1.29 !important;
+            letter-spacing: 4px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-carname {
+            letter-spacing: 3px;
+            font-size: 24px !important;
+            line-height: 1.42 !important;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-subname {
+            font-size: 24px !important;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content #id-optprg-main-price-label {
+            display: block !important;
+            font-size: 16px;
+            line-height: 1.63;
+            letter-spacing: 1px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-primary-button {
+            height: 40px;
+            font-size: 14px !important;
+            line-height: 0.72;
+            letter-spacing: 1px;
+            padding: 13px 25px 13px 25px !important;
+        }
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .icon-x,
+    #optprg-tdr-pop-up-price-tooltip .close-icon:before {
+        color: #102b4e !important;
+    }
+
+    #optprg-tdr-pop-up-price-tooltip .gux-tooltip-overlay-title {
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        margin: 0px;
+        font-weight: 300;
+        font-size: 1.125rem;
+        line-height: 1.39;
+        letter-spacing: 4px;
+        color: #4d4d4d;
+    }
+
+    #optprg-tdr-pop-up-price-tooltip .gux-tooltip-overlay-text {
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        font-weight: 200;
+        font-size: 18px;
+        line-height: 1.333;
+        letter-spacing: .015em;
+        margin: 0px;
+    }
+
+    #optprg-tdr-pop-up-price-tooltip .gux-tooltip-overlay-text>span {
+        color: #4d4d4d !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-heading {
+        text-align: center;
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        font-stretch: normal;
+        font-style: normal;
+        color: #4d4d4d !important;
+    }
+
+    #global-ux #id-optprg-main-price-label {
+        display: block !important;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        color: #4d4d4d;
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-info,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-co2-info,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-price-info {
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        letter-spacing: 1px;
+        color: #4d4d4d !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-sup {
+        font-size: 50%;
+        top: -1em;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-a {
+        text-decoration: unset;
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        left: auto;
+        vertical-align: super;
+        font-size: 0.5625rem;
+        cursor: pointer;
+        background: none;
+        border-width: initial;
+        border-style: none;
+        border-color: initial;
+        border-image: initial;
+        margin-top: 10px;
+        color: #4d4d4d;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-main-price-value {
+        font-weight: 500;
+        font-stretch: normal;
+        font-style: normal;
+        color: #4d4d4d;
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+
+        font-size: 24px !important;
+        line-height: 1.42;
+        letter-spacing: 3px;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-primary-button {
+        border-radius: 20px;
+        color: #FFF !important;
+        background-color: #102b4e !important;
+        border-color: unset !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        margin-bottom: 19px !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-primary-button:hover {
+        background-color: rgb(40, 97, 164) !important;
+        color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-carname {
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+        font-weight: bold !important;
+        font-stretch: normal;
+        font-style: normal;
+        color: #4d4d4d !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content p.hors-taxe {
+        font-size: 12px;
+    }
+    
+
+    #global-ux .optprg-tdr-pop-up-1414-content .cta-button.cta-button-primary {
+        margin-bottom: 2rem;
+        font-size: .9rem
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-vehicle-attribute-prefix,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-vehicle-attribute-suffix {
+        font-size: 24px;
+        font-weight: 200
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-info,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-co2-info,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-price-info {
+        font-size: 12px !important;
+        margin: 0 !important;
+        padding: 0 !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-price,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-retail-price-box {
+        font-size: 24px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-price span,
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-retail-price-box span {
+        font-size: 24px;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-retail-price-box.optprg-include-offer {
+        margin-top: -12px !important;
+        font-weight: normal !important;
+        font-stretch: normal !important;
+        font-style: normal !important;
+        color: #4d4d4d !important;
+
+        font-size: 16px !important;
+        line-height: 1.63;
+        letter-spacing: 1px;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content .optprg-retail-price-box.optprg-include-offer span {
+        font-size: .75rem !important;
+        font-weight: 300 !important;
+        letter-spacing: 1px !important;
+    }
+
+    #global-ux .optprg-tdr-pop-up-1414-content p.optprg-main-price-label {
+        font-size: .75rem;
+        display: block;
+        padding: 0;
+        margin: 0
+    }
+
+    @media only screen and (max-width:61.9375em) {
+
+        #global-ux .optprg-tdr-pop-up-1414-content {
+            top: 400px !important;
+            max-width: 537px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .splitter {
+            padding: 10px 6.59% 50px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-heading {
+            font-size: 24px;
+            font-weight: 300 !important;
+            line-height: 1.42 !important;
+            letter-spacing: 3px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-heading br {
+            display: none
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-carname {
+            letter-spacing: 3px;
+            font-size: 24px !important;
+            line-height: 1.42 !important;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-subname {
+            font-size: 24px !important;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content #id-optprg-main-price-label {
+            display: block !important;
+            font-size: 16px;
+            line-height: 1.63;
+            letter-spacing: 1px;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-primary-button {
+            height: 40px;
+            font-size: 14px !important;
+            line-height: 0.72;
+            letter-spacing: 1px;
+            padding: 13px 25px 13px 25px !important;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .splitter-column-wrap {
+            display: block;
+            text-align-last: center;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .splitter-column-wrap .splitter-column.large-6.columns {
+            display: block;
+            float: none;
+            padding: 0;
+            width: auto
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-tdr-pop-up-image {
+            width: 60%;
+            height: auto;
+            max-width: unset;
+            float: unset;
+            margin: unset;
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-car-name span {
+            display: block
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-car-name .optprg-car-name-sub-name {
+            margin-top: -6px !important
+        }
+
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-info,
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-co2-info,
+        #global-ux .optprg-tdr-pop-up-1414-content .optprg-price-info {
+            font-size: 12px !important;
+            margin: 0 !important;
+            padding: 0 !important
+        }
+    }
+
+    @media only screen and (max-width:47.9375em) {
+        #global-ux #optprg-tdr-pop-up-price-tooltip {
+            top: 0 !important;
+            left: 0 !important;
+            height: 100%;
+            width: 100%
+        }
+    }
+
+    .overlay.animate {
+        opacity: 1;
+        visibility: visible;
+        transform: translateZ(0);
+        transition: opacity .2s, visibility .2s;
+
+    }
+
+    .overlay.is-active {
+        display: block;
+        position: fixed;
+        z-index: 9999;
+        width: 100%;
+        height: unset;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    .overlay .overlay-content-wrapper {
+        transform: translateZ(0);
+        transition: opacity .2s, visibility .2s;
+        position: fixed;
+        display: block;
+        width: 100%;
+        height: unset;
+        opacity: 1;
+        z-index: 10001;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, .8);
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+    }
+
+    @media only screen and (min-width: 992px) {
+        .overlay-content-wrapper {
+            max-width: 1035px;
+        }
+    }
+
+
+
+    .overlay.optprg-tdr-pop-up-1414-content {
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif !important;
+    }
+
+    .overlay-content {
+        background-color: #fff;
+        display: block;
+        overflow: auto;
+    }
+
+    #global-ux .overlay .overlay-content-wrapper .overlay-inner .overlay-content>.content>div:not(.tryTheTechMap):not(.youtube):not(.brightcove):not(.carousel):not(.carousel3):not(.box-content-wrapper):not(.compareVs):not(#gux3):not(.richtext-numbered-list):not(.image-left-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(.image-right-align):not(.bevImageGallery):not(.splitter):not(.box):not(.helpMeChoose),
+    .overlay .overlay-content-wrapper .overlay-inner .overlay-content>.content>div:not(.tryTheTechMap):not(.youtube):not(.brightcove):not(.carousel):not(.carousel3):not(.box-content-wrapper):not(.compareVs):not(#gux3):not(.richtext-numbered-list):not(.image-left-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(.image-right-align):not(.bevImageGallery):not(.splitter):not(.box):not(.helpMeChoose) {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .overlay .overlay-content-wrapper .overlay-inner .overlay-content>.content>div:not(.tryTheTechMap):not(.youtube):not(.brightcove):not(.carousel):not(.carousel3):not(.box-content-wrapper):not(.compareVs):not(#gux3):not(.richtext-numbered-list):not(.image-left-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(#g3 .overlay .image-right-align):not(#gux3 .image-right-align):not(.image-right-align):not(.bevImageGallery):not(.splitter):not(.box):not(.helpMeChoose) {
+        margin-left: 6%;
+        margin-right: 6%;
+    }
+
+   
+    .optprg-tdr-pop-up-1414-content .optprg-vehicle-attribute-suffix {
+        display: none !important;
+
+    }*/
+
+</style>

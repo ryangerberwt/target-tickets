@@ -1,0 +1,118 @@
+<script>
+    setTimeout(function () {
+        if (getCookie('1623-challenger-impressionid-fired') === null) {
+            setCookieForImpressionID(1, '/', '1623-challenger-impressionid-fired', true);
+        }
+    }, 500)
+
+
+
+
+    var waitForControls = setInterval(function () {
+
+
+        let inputs = [];
+        inputs = document.querySelectorAll(".form-wizard-wrapper input");
+        if (inputs !== undefined && inputs !== null) {
+            var disabled_button = document.querySelectorAll('button.ng-binding.ng-scope');
+            if (disabled_button !== undefined && disabled_button !== null && disabled_button.length > 2) {
+
+                disabled_button[2].setAttribute("disabled", "disabled");
+                disabled_button[2].style.backgroundColor = "#7777";
+                clearInterval(waitForControls);
+            }
+        }
+
+
+
+
+
+    }, 250)
+
+
+    function enableButton() {
+        setTimeout(function () {
+            let text_inputs = [...inputs].filter((el, ind) => el.type == "text" && ind <= 4);
+            let radio_inputs = [...inputs].filter((el, ind) => el.type == "radio");
+            let all_filled = text_inputs.every(data => data.value.length > 0);
+
+            let contact_radios_selected = jQuery(document.querySelectorAll('.contact-permission-input.ng-not-empty')).length
+            let final_contact_permission = jQuery(jQuery('input[id*="Profiling-false"]')).hasClass('ng-not-empty');
+            let car_selected = document.querySelectorAll('.vehicle-list-item-wrapper.ng-scope.is-selected').length;
+
+            if (all_filled && contact_radios_selected > 5 && final_contact_permission && car_selected > 0) {
+                disabled_button[2].removeAttribute("disabled");
+                disabled_button[2].style.backgroundColor = "#102b4e";
+            } else {
+                disabled_button[2].setAttribute("disabled", "disabled");
+                disabled_button[2].style.backgroundColor = "#7777";
+            }
+
+        }, 1000)
+
+    }
+
+    let allInputs = document.querySelectorAll('input');
+    [...allInputs].forEach(el => {
+        el.addEventListener("change", function () {
+            enableButton()
+        })
+    });
+    document.querySelector('.cta-button.cta-button-tertiary.contact-permission-select-all-button').addEventListener('click', function () {
+        enableButton();
+    });
+
+    function fireImpressionId() {
+        //console.log('firing')
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1623:ab:tdr:grey-out-cta:challenger",
+            },
+        };
+        console.dir(window.targetCampaign);
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+        setTimeout(function () {
+            setOnClick();
+            jQuery('body').click();
+        }, 250);
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            setTimeout(function () {
+                fireImpressionId();
+            }, 500);
+
+        }
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            //console.log('clicking');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            //_satellite.track('genericTestingImpressionIDWorkaround');
+        });
+
+
+    }
+
+
+
+
+
+
+</script>

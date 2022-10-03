@@ -1,0 +1,19 @@
+<script>
+    $ = jQuery;
+    console.log('Control - 1413');
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "tt:nwp:opt-1413:ab:nav:action-design:control"
+            }
+        }
+
+        window.addEventListener('load', function () {
+            console.log('firing impression');
+            _satellite.track("impression-xt-popin")
+        });
+    });
+
+</script>

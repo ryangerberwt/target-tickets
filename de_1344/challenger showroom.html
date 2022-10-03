@@ -1,0 +1,20 @@
+<script>
+
+    var $ = jQuery; // < 1 > - $ is no longer initialized by Ford. Target has built in jQuery. Most of our scripts use the $.
+    var targetErrors = targetErrors || [];
+    console.log('OT-1344');
+
+
+    $(document).ready(function () {
+
+        console.log('Checking rules');
+        if (window.location.href.indexOf('/kaufberatung/kaufen/bp/ice#/summary/') > 0) {
+            console.log('Rules passed');
+            $('.Button__ButtonCommon-sc-5scy24-0.SpecialityCta-t61j1k-0.ReserveProgressBar__ProgressBarCTA-sc-13kezfk-8.grkIfl')[0].textContent = "WEITER";
+
+        }
+    });
+
+
+
+</script>

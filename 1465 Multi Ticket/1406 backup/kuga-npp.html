@@ -1,0 +1,442 @@
+<!-- POWER DAYS POPUP KUGA -->
+<script>
+    var $ = jQuery;
+
+    var popupData_1406 = {
+        popup_last_closed: Number("${profile.fr.power_days_popup_last_closed}"),
+        popup_display_count: Number("${profile.fr.power_days_popup_display_count}")
+    };
+
+    console.log("popup data", popupData_1406);
+
+    $(function () {
+
+
+        if (/kuga/i.test(window.location.href)) {
+            console.log('OT-1406 | Power Days Popup');
+
+            var url = window.location.href;
+            var popupId = "js-popup-fr-power-days-popup-1406";
+
+            function updatepopupData_1406(popup_last_closed, popup_display_count) {
+                adobe.target.getOffer({
+                    'mbox': 'MBOX-1406',
+                    'params': {
+                        'profile.fr.power_days_popup_last_closed': popup_last_closed,
+                        'profile.fr.power_days_popup_display_count': popup_display_count
+                    },
+                    'success': function (offer) {
+                        adobe.target.applyOffer({
+                            'mbox': 'MBOX-1406',
+                            'offer': offer
+                        });
+                    },
+                    'error': function (status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+            }
+
+            var Popup = {};
+            Popup.isPopupOpen = false;
+            Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+            Popup.openThreshold = 2; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+            Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+            Popup.setLastClosed = function () {
+                Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+            };
+            Popup.determineIfPopupShows = function () {
+
+
+
+                var popupCookie = popupData_1406;
+                var timeBool = false;
+                var limitBool = false;
+
+                // ---------------------------------------------
+                // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+                // ---------------------------------------------
+                var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+                if (timeDifference > Popup.showPopupAfter) {
+                    timeBool = true;
+                } else {
+                    console.log("SHOW AFTER FAILED");
+                    console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+                }
+
+                // ---------------------------------------------
+                // LIMIT OPEN THRESHOLD
+                // ---------------------------------------------
+                if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+                    if (popupCookie.popup_last_closed != null) {
+                        // INCREASE OPEN COUNTER BY 1
+                        Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                        Popup.setLastClosed();
+                    }
+
+                    limitBool = true;
+                }
+                console.log("TIMEBOOL : " + timeBool);
+                console.log("LIMITBOOL: " + limitBool);
+
+                return (timeBool && limitBool);
+            };
+
+            Popup.setKeyValue = function (key, value) {
+
+                popupData_1406[key] = value;
+
+                updatepopupData_1406(popupData_1406.popup_last_closed, popupData_1406.popup_display_count)
+            };
+
+
+
+            // create popup function
+
+            function createPopup() {
+
+                var translations = {
+                    mainHeading: "500 € de remise supplémentaire sur l’achat d’un Ford Kuga",
+                    primaryCta: "Réserver un essai",
+                    offer: "",
+                    date: "",
+                    subHeading: "Venez essayer votre Ford Kuga en concession et recevez 500 € de remise supplémentaire sur les versions éligibles<sup>*</sup>.",
+                    primaryCtaUrl: "/achat/poursuivre-lexperience/demande-d-essai?vehicleCode=00W",
+                    disclaimer: "<sup>*</sup> 500 € de remise sur le prix maximum valable pour toute commande d’un Ford Kuga neuf, sur finitions ST-Line, ST-Line X et Vignale, jusqu’au 31/01/2022. <br> Offre cumulable avec les offres en cours, réservée aux particuliers dans le réseau Ford participant sur présentation de l’e-mail reçu. Un seul bon d’achat « Ford Power Days » peut être utilisé pour toute commande d’un véhicule neuf éligible. ",
+                };
+
+                // Get image of configured Puma (exists on page)
+                var popupImageURL =
+                    "/content/dam/guxeu/global-shared/overlay/ford-fr-ford-power-days-logo-400x300.png";
+
+
+                // Build the popup
+                var popupShell = $(
+                    '<div class="power-days-popup-1406 popup-overlay"  id="' +
+                    popupId +
+                    '"><div class="popup-content"><div class="popup-header"><span class="popup-close popup-close-1406" tabindex="0" style="display: inline;"><i class="icon-plus icon-x"></i></span></div><div class="popup-body"><img src="' +
+                    popupImageURL +
+                    '" /><h4 class="heading-medium">' +
+                    translations.mainHeading +
+                    ' </h4><h5 class="heading-small">' + translations.subHeading +
+                    '</h5><a href="' +
+                    translations.primaryCtaUrl +
+                    '" class="popup-btn" id="js-popup-testdrive">' +
+                    translations.primaryCta +
+                    "</a><div class='m-small'>" +
+                    translations.disclaimer +
+                    '</div></div><div style="clear:both;"></div></div></div>'
+                );
+                $("body").append(popupShell);
+
+                setTimeout(() => {
+                    openPopup(popupId);
+                }, 4000);
+
+                additionalMetrics();
+
+            }
+
+            //end of createPopup function
+
+            function openPopup(popupId) {
+
+                Scroll = (function () {
+                    var x, y;
+
+                    function hndlr() {
+                        window.scrollTo(x, y);
+                        //return;
+                    }
+                    return {
+                        disable: function (x1, y1) {
+                            x = x1;
+                            y = y1;
+                            if (window.addEventListener) {
+                                window.addEventListener("scroll", hndlr);
+                            } else {
+                                window.attachEvent("onscroll", hndlr);
+                            }
+                        },
+                        enable: function () {
+                            if (window.removeEventListener) {
+                                window.removeEventListener("scroll", hndlr);
+                            } else {
+                                window.detachEvent("onscroll", hndlr);
+                            }
+                        },
+                    };
+                })();
+                Scroll.disable(0, document.body.scrollTop);
+                document.getElementById(popupId).classList.add("active");
+                document
+                    .querySelector("span.popup-close-1406")
+                    .addEventListener("click", function () {
+                        document.getElementById(popupId).classList.remove("active");
+                        document.getElementById(popupId).classList.add("popup-hide");
+                        document.getElementById(popupId).style.display = "none";
+                        Scroll.enable();
+                    });
+
+                document.querySelector('.popup-overlay').addEventListener('click', function () {
+
+                    document.getElementById(popupId).classList.remove("active");
+                    document.getElementById(popupId).classList.add("popup-hide");
+                    document.getElementById(popupId).style.display = "none";
+
+                    Scroll.enable();
+
+                })
+
+            }
+
+            function closePopup() {
+                document.getElementById(popupId).classList.remove("active");
+                document.getElementById(popupId).style.display = "none";
+            }
+
+            function additionalMetrics() {
+
+                document.querySelector("#js-popup-testdrive").addEventListener("click", function (ev) {
+
+                    adobe.target.trackEvent({
+                        "mbox": "MBOX-1406",
+                        "params": {
+                            "linkClicked": "true"
+                        }
+                    });
+
+                });
+
+                document.querySelector("#power-days-popup-1406.popup-btn").addEventListener("click", function (ev) {
+
+                    window.targetCampaign = window.targetCampaign || {
+                        page: {
+                            campaignName: "tt:nwp:opt-1406:xt:vhp:power-days",
+                        },
+                    };
+
+                    _satellite.track("genericTestingImpressionIDWorkaround");
+
+
+                });
+
+
+
+            }
+
+            function displaypopup() {
+
+                setTimeout(() => {
+                    if (!popupData_1406) {
+
+
+                        updatepopupData_1406(0, 1);
+                        Popup.setLastClosed();
+
+
+                        createPopup();
+
+                    } else if (popupData_1406) {
+
+                        if (Popup.determineIfPopupShows()) {
+
+                            createPopup();
+                        }
+
+
+
+                    }
+
+
+                }, 2000)
+
+            }
+
+            displaypopup();
+
+        }
+
+
+    });
+</script>
+
+<style>
+    #js-popup-fr-power-days-popup-1406 {
+        transform: translateZ(0);
+        transition: opacity .2s, visibility .2s;
+        position: fixed;
+        display: block;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 1;
+        z-index: 10001;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, .8);
+        -webkit-overflow-scrolling: touch;
+        outline: none !important;
+    }
+
+    /* @media only screen and (min-width: 48em) {
+        .power-days-popup-1406 .popup-content {
+            transform: translateY(-50%);
+            top: 50%;
+            width: 90%;
+            min-height: 0;
+        }
+    } */
+
+
+    .power-days-popup-1406 .popup-overlay .active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .power-days-popup-1406 .popup-overlay .popup-hide {
+        display: none !important;
+    }
+
+    .power-days-popup-1406 .popup-content {
+        transform: translateY(-50%);
+        position: relative;
+        margin: 0 auto;
+        height: auto;
+        width: 100%;
+        top: 50%;
+        min-height: 0;
+        transition: transform .2s, opacity .2s;
+        max-width: 537px !important;
+        background: white;
+    }
+
+    @media screen and (min-width: 768px) {
+        .power-days-popup-1406 .popup-content {
+            height: auto;
+            width: 500px;
+        }
+    }
+
+    .power-days-popup-1406 .popup-header {
+        width: 100%;
+        text-align: right;
+        padding-top: 20px;
+    }
+
+    .power-days-popup-1406 .popup-close {
+        position: absolute;
+        color: #102b4e !important;
+        top: 23px;
+        right: 20px;
+        height: 42px;
+        width: 42px;
+        cursor: pointer;
+        z-index: 6;
+        overflow: hidden;
+    }
+
+    .power-days-popup-1406 i.icon-plus.icon-x {
+        transform: rotate(45deg);
+        font-size: 1.75rem;
+        display: block;
+        height: 42px;
+        width: 42px;
+        line-height: 42px;
+        text-align: center;
+    }
+
+    .power-days-popup-1406 .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .power-days-popup-1406 .popup-body h4,
+    .power-days-popup-1406 .popup-body h5,
+    .power-days-popup-1406 .popup-body p {
+        padding: 0 20px;
+    }
+
+    .power-days-popup-1406 .popup-body img {
+        width: 25%;
+        padding-bottom: 20px;
+    }
+
+
+    .power-days-popup-1406 .popup-body h4.heading-medium {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: #4d4d4d;
+        font-weight: bold !important;
+        font-stretch: normal !important;
+        font-style: normal !important;
+        line-height: 1.5 !important;
+        letter-spacing: 3px !important;
+        font-size: 20px !important;
+        text-align: center !important;
+        text-transform: uppercase !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .power-days-popup-1406 .popup-body h5 {
+        font-family: FordAntennaRegular, Arial, Helvetica, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: normal !important;
+        font-stretch: normal !important;
+        font-style: normal !important;
+        line-height: 1.63 !important;
+        letter-spacing: 1px !important;
+        text-align: center !important;
+        color: #4d4d4d !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .power-days-popup-1406 .popup-btn {
+        display: block;
+        padding: 10px 40px 10px 40px !important;
+        background-color: #102a4d;
+        text-decoration: none;
+        color: white !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px,
+            rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        font-size: 1.125rem;
+        cursor: pointer;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px auto;
+        max-width: 250px;
+        margin-top: 30px;
+        text-decoration: none !important;
+        font-size: 1rem;
+        font-weight: 300;
+    }
+
+    .power-days-popup-1406 .popup-btn:hover {
+        color: white !important;
+    }
+
+    .power-days-popup-1406 .heading-small {
+        font-size: 1.0rem;
+        margin-bottom: 0.2rem;
+        color: black;
+        margin-top: 21px;
+        margin-bottom: -10px;
+    }
+
+    .power-days-popup-1406 .m-small {
+        padding: 20px;
+        font-size: 0.9rem;
+    }
+
+    .power-days-popup-1406 .voucher-code {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 0;
+        padding: 0;
+    }
+</style>

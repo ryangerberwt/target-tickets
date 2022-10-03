@@ -1,0 +1,26 @@
+<script>
+
+    window.onload = function() {
+
+        let x = setInterval(function(){
+            console.log('Checking for jQuery')
+            if (window.jQuery) {  
+                // jQuery is loaded 
+                var $ = jQuery;
+                //You can remove the body and alert statements, they are just here to demonstrate
+                $('body').css('background','red');
+                alert("Yeah!");
+                clearInterval(x);
+                // You can place the rest of your script(s) here
+
+            } else {
+                // jQuery is not loaded
+                alert("Not loaded - will check again in 500ms");
+            }
+        },500);
+
+     
+    }
+
+
+</script>

@@ -1,0 +1,57 @@
+<script>
+    var $ = jQuery;
+
+    window.addEventListener('click', function () {
+        console.log('clicked');
+        if (window.targetCampaign !== undefined) {
+            window.targetCampaign.page.campaignName = "";
+        }
+
+    })
+
+    $(document).ready(function () {
+        console.log('doc ready');
+
+        let x = setTimeout(function () {
+            console.log('firing');
+            window.targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-1480:ab:tdr:help-router-copy:challenger",
+                },
+            };
+            _satellite.track("genericTestingImpressionIDWorkaround");
+           
+        },2000);
+        let y = setTimeout(function(){
+            $('body').click();
+        },3000);
+        
+    });
+
+    /* window.addEventListener("load", function () {
+             window.targetCampaign =  {
+                 page: {
+                     campaignName: "tt:nwp:opt-1480:ab:tdr:help-router-copy:control",
+                 },
+             };
+             console.log('firing');
+             _satellite.track("genericTestingImpressionIDWorkaround");
+         
+     });*/
+
+
+    /* Fix To Prevent multiple re-fires of impression ID */
+    window.addEventListener('keyup', function () {
+
+        if (window.targetCampaign !== undefined) {
+            window.targetCampaign.page.campaignName = "";
+        }
+    });
+
+</script>
+
+<!--Action-->
+<!-- CSS SELECTOR-->
+<!--#g3 > DIV.sticky-cta:eq(0) > DIV.sticky-cta-outer:eq(0) > DIV.sticky-cta-open:eq(0) > DIV.sticky-cta-open-label:eq(0) > P:nth-of-type(1)-->
+<!--CONTENT-->
+<!--How can we help you?-->

@@ -1,0 +1,32 @@
+<script>
+
+    $(document).ready(function() {
+        $videoEl = $(".carousel").find('video');
+        var i = 0;
+
+        // Initializes the video
+        for (i = 0; i < $videoEl.length; i++) {
+            var options = {loop: true, autoplay: false };
+            this.videoObj = bc($videoEl[i], options);
+            $videoEl[i].loop = true;
+        }
+
+        // Removes the .not-ready class
+        $(".billboard-inner").find(".brightcove").removeClass("not-ready");
+
+        // Hides the image
+        var billboards = $(".billboard-inner").find(".brightcove");
+        for (i = 0; i < billboards.length; i++) {
+            billboards[i].nextElementSibling.classList.add('hide');
+        }
+
+        // Puts the buttons and navigation elements above the brightcove stuff
+        $('.carousel-billboard-homepage').find('.carousel-arrows').css('z-index', '4');
+        $('.carousel-billboard-homepage').find('.flex-control-paging').css('z-index', '4');
+        $('.carousel-billboard-homepage').find('.billboard-inner').find('.cta-button').css('z-index', '4');
+
+        // Initializes the CTA stuff on the billboards.
+        fjs.default.initSingleComponent('cta')
+    });
+
+</script>

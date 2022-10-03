@@ -1,0 +1,80 @@
+<script>
+
+    
+    function setBaseAsDefault() {
+        //No Steps started
+        if (window.location.href.indexOf('&') < 0) {
+
+            console.log('setting base model');
+            //Check for model, it will be the selected one
+            let selectedModel = $('button[role="tab"][aria-selected="true"]');
+            let range = selectedModel.text();
+            let tileBottom = $('div[data-div-id="product_tile_bottom0"]');
+            let tileTop = $('div[data-div-id="product_tile_top0"]');
+            let tileTopPrice = tileTop.children().children('div');
+            let offerPriceText = Number(tileTopPrice.children().children('span').eq(1).text().replace('€', '')).toFixed(3);
+            let offerPriceTitle = tileTopPrice.children().children().eq(0).text();
+            //Get list price
+            let retailPriceText = Number($('div[role="banner"]').children().eq(2).children('div').children('div').eq(2).children('p').eq(1).children('span').text().replace('€', '')).toFixed(3);
+            let retailPriceTitle = $('div[role="banner"]').children().eq(2).children('div').children('div').eq(2).children('p').eq(0).text();
+            //Get Image
+            let imageSrc = $('img[class^="ProductTile__VehicleImage"]').attr('src');
+            var myData;
+            var catalogID = window.location.hash.substring(window.location.hash.indexOf('=')).replace('=', '');
+            $.ajax({
+                url: "https://www.servicescache.ford.com/api/vehicleModel/v1/load?locale=it_IT&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=default&config=" + catalogID
+
+            }).done(function (response) {
+                myData = response.data;
+            });
+
+
+            let fetchedRetailPrice = myData.price.finalPrice.grossRetailWithOTR;
+            let fetchedOfferPrice = myData.price.finalPrice.grossRetailWithOTRAndIncentives;
+            let fetchedCode = myData.props['segment-code'];
+            let fetchedID = myData.props['catalog-id'];
+            let fetchedName = 'Ford ' + myData.props['nameplate-label'];
+
+
+            debugger;
+            adobe.target.getOffer({
+                'mbox': 'global-mbox',
+                'params': {
+                    "profile.id": catalogID,
+                    'profile.market': "IT",
+                    "profile.ticket": "OT-1230",
+                    "profile.carName": fetchedName, //Find this
+                    "profile.date": new Date(),
+                    "profile.img": imageSrc,
+                    "profile.retailPrice": fetchedRetailPrice,
+                    "profile.retailTitle": retailPriceTitle,
+                    "profile.offerPrice": fetchedOfferPrice,
+                    "profile.offerTitle": offerPriceTitle,
+                    "profile.subName": range,
+                    "profile.vehicleType": fetchedCode,
+                    "profile.contextualiseLink": window.location.href
+                },
+                'success': function (offer) {
+                    adobe.target.applyOffer({
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                    dataStored = true;
+                },
+                'error': function (status, error) {
+                    overrideLog({ message: "Error", status, error });
+                }
+            });
+
+
+
+            adobe.target.trackEvent({
+                'mbox': 'global-mbox',
+                'params': {
+                    'summary': 'summary-get-data'
+                }
+            });
+
+        }
+    }
+    </script>

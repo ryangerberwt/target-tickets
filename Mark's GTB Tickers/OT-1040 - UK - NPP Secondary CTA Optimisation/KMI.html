@@ -1,0 +1,21 @@
+<!-- Keep Me Informed -->
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            if (!$('.prom-1040').length > 0 && $('.kmi-1040').length > 0) {
+                // C
+                window.targetCampaign = window.targetCampaign || {
+                    page: {
+                        campaignName: "tt:nwp:opt-1040:ab:vhp:second-cta:var-c"
+                    }
+                }
+                _satellite.track("genericTestingImpressionIDWorkaround");
+            }
+        }, 1000);
+    });
+</script>
+<a class="icon-build-price-solid initialized initialized-contextualLinks kmi-1040" 
+href="/shop/research/keep-me-informed?vehicleCode=00O" 
+id="cdq_element_0" style="line-height: 58px; height: 58px;">
+    <strong>Keep Me Informed</strong>
+</a>

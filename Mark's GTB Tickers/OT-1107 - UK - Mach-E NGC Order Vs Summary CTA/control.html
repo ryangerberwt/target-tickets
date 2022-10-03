@@ -1,0 +1,45 @@
+<script>
+    $(document).ready(function() {
+        $(window).on("hashchange", checkSection);
+        checkSection();
+    });
+
+    function checkSection() {
+        if (/extras/i.test(window.location.href)) {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1107:ab:bp:order-v-summary:control"
+                }
+            }
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+
+            makeChanges();
+        }
+    }
+
+    function makeChanges() {
+        var topButtons = $('span > span:contains("ORDER")'); // Mobile and Desktop
+
+        if (topButtons.length == 0)
+            return setTimeout(makeChanges, 50);
+
+        topButtons.on('click', function() {
+            triggerMetric();
+        });
+
+        var floatingButton = $('button:contains("ORDER")[class*="NextStepCtaLink"]').first(); // Targets Floating Button only. Same one used for both Mobile and Desktop.
+
+        if (floatingButton.length > 0) {
+            floatingButton.on('click', function() {
+                triggerMetric();
+            });
+        }
+    }
+
+    function triggerMetric() {
+        adobe.target.trackEvent({
+            "mbox": "1107_UK_Order_Vs_Summary"
+        });
+    }
+</script>

@@ -1,0 +1,276 @@
+<!-- THE DC -->
+<script type="text/javascript">
+    var p_Market = "UK";
+    var dataStored = false;
+    var globalInfo = undefined;
+    var landingPage = window.location.href;
+
+    (function () {
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            (function (services) {
+
+                var pastModelParseRegExp = /config\=([^&\/\s^#]+).*series\=([^&\/\s^#]+)/i;
+                var beforeModelParseRegExp = /config\=([^&\/\s^#]+)/i;
+
+                function getCarIDs() {
+
+                    if (/series/i.test(location.href)) {
+                        var parsedCurrentURL = pastModelParseRegExp.exec(location.href);
+                        if (!parsedCurrentURL)
+                            return {
+                                usc: "WAEGB-CGW-2021-CX727BEVSUVGBR202100",
+                                codeWithFeatures: ""
+                            };
+
+                        return {
+                            usc: parsedCurrentURL[1],
+                            codeWithFeatures: parsedCurrentURL[2]
+                        };
+                    } else {
+                        var parsedCurrentURL = beforeModelParseRegExp.exec(location.href);
+
+                        if (!parsedCurrentURL)
+                            return {
+                                usc: "WAEGB-CGW-2021-CX727BEVSUVGBR202100",
+                                codeWithFeatures: ""
+                            };
+
+                        return {
+                            usc: parsedCurrentURL[1],
+                            codeWithFeatures: ""
+                        };
+                    }
+                }
+                var counter = 0;
+                var thresholdCounter = 10;
+                function getPrice() {
+                    if ($('div span:contains("£")').length != 0) {
+                        return $('div span:contains("£")')[0].innerText;
+                    } else {
+                        var otherOptions = $('.Attributes__AttributeValue-m3qu0l-3');
+                        for (var i = 0; i < otherOptions.length; i++) {
+                            if (otherOptions[i].innerText.includes('£')) {
+                                return otherOptions[i].innerText;
+                            }
+                        }
+                        if (counter < thresholdCounter) {
+                            counter++;
+                            return setTimeout(getPrice(), 250);
+                        } else {
+                            return "£40,350";
+                        }
+                    }
+                }
+
+                function getCarConfiguration(IDs, callback) {
+
+                    var lastBit = "";
+
+                    if (IDs.codeWithFeatures != "") {
+                        lastBit = "~" + IDs.codeWithFeatures;
+                    }
+
+                    var feature = "&namedConfig=default";
+
+                    if (location.hash.includes('paint')) {
+                        var feature = "&feature=" + location.hash.substr(location.hash.indexOf('paint')).replace('paint=','');
+                    }
+
+                    var key = [IDs.usc, "~", IDs.codeWithFeatures, "~", feature].join("");
+                        
+                    var data = sessionStorage.getItem(key);
+
+                    if (data != null)
+                        return callback(undefined, JSON.parse(data));
+                    
+                    var url = [
+                        "https://www.servicescache.ford.com/api",
+                        "/vehicleModel/",
+                        "v1",
+                        "/load?locale=",
+                        "en_GB",
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices",
+                        feature,
+                        "&config=",
+                        IDs.usc,
+                        lastBit
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: false
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200) {
+                            sessionStorage.setItem(key, JSON.stringify(response.data));
+                            return callback(undefined, response.data);
+                        }
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function sanitizeAPIResponse(data, IDs) {
+                    //var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+
+                    return {
+                        carName: "FORD MUSTANG",//nameplate.name,
+                        //date: (new Date()).toString(),
+                        // emissions: {
+                        //     co: fuelPerformance.co2_emission ?
+                        //         fuelPerformance.co2_emission.unitTypes : (
+                        //             fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : undefined
+                        //         ),
+                        //     coNEDC: fuelPerformance.co2_emission ?
+                        //         fuelPerformance.co2_emission.unitTypes : (
+                        //             fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                        //         ),
+                        //     lToKm: typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined,
+                        // },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: getPrice(),
+                        //offerPrice: getPrice(),
+                        //dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: "MACH-E",
+                        //tdr: IDs.usc,
+                        contextualiseLink: window.location.pathname + window.location.hash
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+
+            }(ENV.services));
+
+            var MBOXName = "UK_SummaryPage_MachE_Popin";
+
+            /* Get model basic info */
+
+            (function (bundle) {
+                var BnPHeadingSelector = "#build-price-configurator > div.app-view div.bp-header-wrapper div.bp-configurator-header-wrap > h3",
+                    SummaryPageHeadingSelector = "#build-price-configurator > div.app-view div.vehicle-view-content.left-content > h3";
+
+                function isSummaryPage() {
+                    return /\/summary\//i.test(window.location.href);
+                }
+
+                function getCarName() {
+                    var wrapper;
+                    if (!isSummaryPage()) {
+                        wrapper = $(BnPHeadingSelector);
+                        return {
+                            name: (wrapper.find("strong").text() || "").trim(),
+                            subname: (wrapper.find("span").text() || "").trim()
+                        };
+                    }
+                    wrapper = $(SummaryPageHeadingSelector).find("strong");
+                    return {
+                        name: (wrapper.text() || "").trim(),
+                        subname: (wrapper[0].nextSibling.nodeValue || "").trim()
+                    };
+                }
+
+                bundle.isSummaryPage = isSummaryPage;
+                bundle.getCarName = getCarName;
+
+            }(ENV.services));
+
+            var thresholdCounter = 0;
+
+            function reRun(error) {
+                thresholdCounter++;
+                if (thresholdCounter < 2) {
+                    console.log(error);
+                    runInformationsGathering();
+                }
+            }
+
+            function runInformationsGathering() {
+                if (!isRunning) {
+                    isRunning = true;
+
+                    if (/summary/i.test(window.location.href) && /build-your-own/i.test(window.location.href) && !/summary/i.test(landingPage)) {
+                        var currentIDs = ENV.services.getCarIDs();
+
+                        ENV.services.describeCall(currentIDs, function (err, result) {
+                            if (err)
+                                return console.log(err);
+
+                            var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+
+                            if (globalInfo == undefined)
+                                console.log(vehicleInfo);
+                            else if (globalInfo.retailPrice != vehicleInfo.retailPrice)
+                                console.log(vehicleInfo);
+
+                            globalInfo = vehicleInfo;
+
+                            if (/paint/i.test(vehicleInfo.contextualiseLink)) {
+                                var paintParseRegExp = /paint\=([^&\/\s^#]+)/i;
+                                var parsedURL = paintParseRegExp.exec(window.location.href);
+
+                                if (parsedURL) {
+                                    var defaultColor = "pnzat";
+                                    vehicleInfo.img = vehicleInfo.img.replace(defaultColor, parsedURL[1].toLowerCase());
+                                }
+                            }
+
+                            adobe.target.getOffer({
+                                'mbox': 'global-mbox',
+                                'params': {
+                                    'profile.eight_six_one.market': p_Market,
+                                    "profile.eight_six_one.carName": vehicleInfo.carName,
+                                    //"profile.eight_six_one.date" : vehicleInfo.date,
+                                    //"profile.eight_six_one.emissions" : JSON.stringify(vehicleInfo.emissions).replace(/"/g, "'"),
+                                    "profile.eight_six_one.img": vehicleInfo.img,
+                                    "profile.eight_six_one.retailPrice": vehicleInfo.retailPrice,
+                                    //"profile.eight_six_one.offerPrice" : vehicleInfo.offerPrice,
+                                    //"profile.eight_six_one.dutyFreePrice" : vehicleInfo.dutyFreePrice,
+                                    "profile.eight_six_one.subName": vehicleInfo.subName,
+                                    //"profile.eight_six_one.tdr" : vehicleInfo.tdr,
+                                    "profile.eight_six_one.contextualiseLink": vehicleInfo.contextualiseLink,
+                                },
+                                'success': function (offer) {
+                                    adobe.target.applyOffer({
+                                        'mbox': 'global-mbox',
+                                        'offer': offer
+                                    });
+                                    dataStored = true;
+                                },
+                                'error': function (status, error) {
+                                    console.log('Error', status, error);
+                                }
+                            });
+
+                            adobe.target.trackEvent({
+                                'mbox': MBOXName,
+                                'params': {
+                                    'summary': 'summary-get-data'
+                                }
+                            });
+                        });
+                    }
+
+                    isRunning = false;
+                }
+            }
+
+            var isRunning;
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+        
+        });
+
+    }());
+</script>

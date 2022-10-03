@@ -1,0 +1,41 @@
+<script>
+    var $ = jQuery;
+
+    $(document).ready(function () {
+        $(window).on('hashchange', function () {
+            //Check if summary page has been reached
+            if (/summary/.test(window.location.href)) {
+
+                console.log('OT-1513');
+                console.log('Control');
+                var impressionID = 'tt:nwp:opt-1513:ab:bp:fleet-hyperlink:control';
+
+                function fireImpression() {
+                    console.log('firing impression ID');
+                    window.targetCampaign = {
+                        page: {
+                            campaignName: impressionID
+                        }
+                    }
+                    sendImpression = false;
+                    _satellite.track("");
+                }
+
+                fireImpression();
+
+                let tOut = setTimeout(function () {
+                    if (window.targetCampaign !== undefined) {
+                        try {
+                            ;
+                            window.targetCampaign.page.campaignName = "";
+                            _satellite.track("genericTestingImpressionIDWorkaround");
+                        } catch (ex) {
+                            console.error(ex);
+                        }
+                    }
+                }, 750);
+            }
+        });
+
+    });
+</script>

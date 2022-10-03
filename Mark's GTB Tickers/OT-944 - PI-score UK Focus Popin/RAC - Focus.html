@@ -1,0 +1,34 @@
+<script>
+    $(document).ready(function() {
+        setRACOnClick();
+    });
+
+    var RacCounter = 0;
+    function setRACOnClick() {
+        if ($('.model:contains("Focus")').length == 0 && RacCounter < 3) {
+            RacCounter++;
+            return setTimeout(setRACOnClick, 250);
+        }
+            
+        $('.model:contains("Focus")').on('click', function() {
+            console.log("OT-944 - Focus RAC");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.rac" : "RAC"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

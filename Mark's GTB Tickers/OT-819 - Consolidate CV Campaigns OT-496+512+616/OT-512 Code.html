@@ -1,0 +1,15 @@
+<!-- Mon, Aug 13, 2018 12:34 PM - Michal -->
+<script type="text/javascript">
+    FordPersonalisation.guxFrameworkDeferred.then(function(){
+            $("#global-ux .main-nav .site-links li.mobile-only")
+            .eq(1)
+            .add($("#global-ux .main-nav .utility-links .site-link-chevron:first-child")),
+            $("#global-ux i.site-link-icon.icon-nav-vehicle")
+            .parent("a")
+            .attr("href","/shop/price-and-locate/build-and-price-cv"),
+            $('#global-ux .main-nav a.initialized-contextualLinks[href="/shop/price-and-locate/promotions"]')
+            .attr("href","/shop/price-and-locate/promotions/business-cv"),
+            $('#global-ux .main-nav a.initialized-contextualLinks[href="/shop/research/request-a-test-drive')
+            .attr("href","/shop/research/request-a-test-drive-cv")
+        });
+</script>

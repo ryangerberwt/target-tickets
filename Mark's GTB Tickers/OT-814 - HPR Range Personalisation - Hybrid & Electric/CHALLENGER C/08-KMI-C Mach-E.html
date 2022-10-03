@@ -1,0 +1,28 @@
+<script>
+    $(document).ready(function() {
+        console.log("OT-814 - C - KMI-A Mach-C");
+
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.hpr.personalization.market" : "DE",
+                "profile.hpr.personalization.action" : "KMI-C Mach-E",
+                "profile.hpr.personalization.triggerHomePage" : true,
+                "profile.hpr.personalization.visibleUntil" : d,
+                "profile.hpr.personalization.seen": 0
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+</script>

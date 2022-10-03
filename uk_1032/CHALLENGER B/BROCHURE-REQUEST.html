@@ -1,0 +1,56 @@
+<script>
+    var arr_urls = [
+      "new-fiesta-van",
+      "new-transit-courier",
+      "new-transit-connect",
+      "new-transit-custom",
+      "new-transit-van",
+      "new-transit-chassis-cab",
+      "new-transit-minibus",
+      "new-ranger"
+      
+    ]
+      window.addEventListener("hashchange",function(){
+        console.log("ot-1032 hash change event");
+
+        
+       var last_part = window.location.href.split('/');
+       var car_name = last_part[last_part.length -1]
+
+       
+       
+       
+
+        if (window.location.href.indexOf("overlay/content/overlays/download-a-brochure") > 0  && arr_urls.indexOf(car_name) > -1) {
+
+                console.log("OT-1032 -  - Brochure Requested");
+
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.market" : "UK",
+                        "profile.action" : "NPP Visited",
+                        "profile.triggerHomePage" : true,
+
+
+                        "profile.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+        }
+
+
+      })
+    
+</script>

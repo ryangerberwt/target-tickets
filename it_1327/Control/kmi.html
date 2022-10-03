@@ -1,0 +1,17 @@
+<script type="text/javascript">
+
+    var $ = jQuery;
+    var touchDevice = ('ontouchstart' in document.documentElement);
+    if(!touchDevice){
+    console.log('OT-1327 Control KMI');
+    $(window).on('load',function(){
+        window.targetCampaign = {
+            page: {
+                campaignName: 'tt:nwp:opt-1327:ab:tdr:stripped-nav:control'
+            }
+        }
+        _satellite.track('genericTestingImpressionIDWorkaround');
+        console.log('Done firing impression on load');
+    });
+}
+</script>

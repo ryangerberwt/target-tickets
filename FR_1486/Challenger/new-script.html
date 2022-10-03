@@ -1,0 +1,34 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1486 | Challenger | Showroom');
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        if (window.location.href === 'https://www.ford.fr/voitures-neuves?bnpShowroom=on' || window.location.href === 'https://www.ford.fr/voitures-neuves') {
+            setHrefs();
+        }
+    });
+
+
+    function setElementAttrVal(elementSelector, updatedValue, attrName) {
+        let waitForMe = setInterval(function () {
+            if ($(elementSelector) !== undefined && $(elementSelector).length > 0) {
+                $(elementSelector).attr(attrName, updatedValue);
+                clearInterval(waitForMe);
+            } else {
+                console.log('waiting')
+            }
+        }, 100);
+    }
+
+    function setHrefs() {
+        //Puma
+        setElementAttrVal('a[href="/achat/poursuivre-lexperience/bp/ice#/catalogID/WAEFX-CF7-2020-PumaFRA202250/?code=ACMAA_VS-DK"]', '/achat/poursuivre-lexperience/bp/ice-chal#/model?catalogId=WAEFX-CF7-2020-PumaFRA202250', 'href');
+        //Focus
+        setElementAttrVal('a[href="/achat/poursuivre-lexperience/bp/ice#/catalogID/WAEFX-CGE-2022-FocusMCAFRA202250/"]', '/achat/poursuivre-lexperience/bp/ice-chal#/model?catalogId=WAEFX-CGE-2022-FocusMCAFRA202250', 'href');
+        //Fiesta
+        setElementAttrVal('a[href="/achat/poursuivre-lexperience/bp/ice#/catalogID/WAEFX-CE1-2022-FiestaCarFRA202200/?code=ACMAA_VS-DJ"]', '/achat/poursuivre-lexperience/bp/ice-chal#/model?catalogId=WAEFX-CE1-2022-FiestaCarFRA202200', 'href');
+    }
+
+</script>

@@ -1,0 +1,12 @@
+<script>
+    $(document).ready(function() {
+        if (document.cookie.indexOf('guxfoe-cookiedisclaimer') < 0) {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-716:ab:as:cookie-position:control"
+                }
+            }
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        }
+    });
+</script>

@@ -1,0 +1,27 @@
+<!-- Static top cookie banner -->
+
+<style>
+    #global-ux .cookie-disclaimer.bottom {
+        top: 0;
+        position: static;
+    }
+
+    #global-ux .header {
+        z-index: 11;
+    }
+</style>
+
+<!-- TAGGING -->
+
+<script>
+    $(document).ready(function() {
+        if (document.cookie.indexOf('guxfoe-cookiedisclaimer') < 0) {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-716:ab:as:cookie-position:var-b"
+                }
+            }
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        }
+    });
+</script>

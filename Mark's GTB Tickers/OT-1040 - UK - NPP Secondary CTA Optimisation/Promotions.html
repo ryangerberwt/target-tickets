@@ -1,0 +1,33 @@
+<!-- Promotions -->
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            var cName = "";
+
+            if ($('.prom-1040').length > 0) {
+                if ($('.brd-1040').length > 0) {
+                    // F
+                    cName = "tt:nwp:opt-1040:ab:vhp:second-cta:var-f";
+                } else if ($('.kmi-1040').length > 0) {
+                    // D
+                    cName = "tt:nwp:opt-1040:ab:vhp:second-cta:var-d";
+                }  else if ($('.bp-1040').length > 0) {
+                    // B
+                    cName = "tt:nwp:opt-1040:ab:vhp:second-cta:var-b";
+                }
+            }
+
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: cName
+                }
+            }
+        _satellite.track("genericTestingImpressionIDWorkaround");
+        }, 1000);
+    });
+</script>
+<a class="initialized initialized-contextualLinks prom-1040" 
+href="/shop/price-and-locate/promotions/personal" 
+id="cdq_element_1" style="line-height: 58px; height: 58px;">
+    <strong>Promotions</strong>
+</a>

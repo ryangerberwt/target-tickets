@@ -1,0 +1,34 @@
+<script>
+    $(document).ready(function() {
+        setBRDOnClick();
+    });
+
+    var BrdCounter = 0;
+    function setBRDOnClick() {
+        if ($('.splitter-column.large-3.columns:contains("Focus") a').length == 0 && BrdCounter < 3) {
+            BrdCounter++;
+            return setTimeout(setBRDOnClick, 50);
+        }
+            
+        $('.splitter-column.large-3.columns:contains("Focus") a').on('click', function() {
+            console.log("OT-944 - Focus BRD");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.brd" : "BRD"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

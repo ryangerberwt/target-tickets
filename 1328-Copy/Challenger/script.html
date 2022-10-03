@@ -1,0 +1,140 @@
+<script>
+    var $ = jQuery;
+
+    $(document).ready(function () {
+        function setOnClick() {
+            //console.log('setOnClick');
+            window.addEventListener('click', function () {
+                //console.log('inside click');
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+                //console.log('firing impression')
+                _satellite.track('genericTestingImpressionIDWorkaround');
+            });
+        }
+
+        setTimeout(function () {
+            //Fire impression ID
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1328:ab:rac:permissions:challenger'
+                }
+            }
+            //console.log('firing impression')
+            _satellite.track('genericTestingImpressionIDWorkaround');
+            setOnClick();
+            $('body').click();
+        }, 250);
+
+
+        setTimeout(function () {
+            var j = document.querySelectorAll(
+                ".contact-permission-radio-wrapper .label-for-radiobutton"
+            );
+            [...j].forEach((el, i) => (el.click()));
+
+            var chk = [...document.querySelectorAll(".chk-group")];
+            for (let i = 0; i < chk.length; i++) {
+                chk[i].addEventListener("click", function (ev) {
+                  console.log('Checkbox');
+                  console.dir(chk[i]);
+                    chk[i].parentElement.previousElementSibling.previousElementSibling
+                        .firstElementChild.click();
+                    var btn = document.querySelector(".button-toggle")
+                    console.log("btn", btn);
+                    btn.click();
+                   // console.log(btn)
+                });
+            }
+        }, 1000);
+    });
+</script>
+
+<style>
+    .apd-form input[type=checkbox] {
+    height: auto;
+    margin: 10px;
+    opacity: 1;
+    padding: 0;
+    width: auto;
+    }
+    .contactpermissions ul li input {
+    left: 0;
+    position: relative;
+  }
+  
+  .chk-group{
+    position: absolute;
+    top:50%;
+    left: 0;
+    display: flex;
+  
+  }
+  .chk-middle{
+    left:40%;
+  }
+  .chk-last{
+    left:75%;
+  
+  
+  }
+   .contact-permission-selectAll-wrapper,.contact-permission-radio-wrapper-label,
+  .radiobuttons-ul-wrapper-element,.contact-permission-label{
+    /*opacity:0;*/
+  } 
+    .apd-form-contactPermissions hr{
+      /*opacity:0;*/
+    }
+    .apd-form-contactPermissions{
+      margin-top:-450px;
+    }
+  .checkbox-label::after{
+  
+        color: rgb(16, 43, 78) !important;
+      content: "" !important;
+      font-family: icomoon-acc-product !important;
+      font-size: 0.75rem !important;
+      font-style: normal !important;
+      font-weight: 700 !important;
+      line-height: 1 !important;
+      position: relative !important;
+      text-transform: none !important;
+      font-variant: normal !important;
+      box-sizing: border-box;
+      border: 2px solid #102b4e;
+      border-radius: 2px;
+      top:0px;
+      left:-113%;
+      height:12px;
+      width:12px;
+      background-color: #FFF;
+      backface-visibility: hidden;
+        display:flex;
+       color: rgb(16, 43, 78) !important;
+      content: "" !important;
+      font-family: icomoon-acc-product !important;
+      font-size: 0.75rem !important;
+      font-style: normal !important;
+      font-weight: 700 !important;
+      line-height: 1 !important;
+      position: relative !important;
+      text-transform: none !important;
+      font-variant: normal !important;
+      box-sizing: border-box;
+      border: 2px solid #102b4e;
+      border-radius: 2px;
+      top:0px;
+      left:-113%;
+      height:15px;
+      width:15px;
+      background-color: #FFF;
+      backface-visibility: hidden;
+      display:flex;
+      align-items: center;
+  
+  
+  }
+  </style>

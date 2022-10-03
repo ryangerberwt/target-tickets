@@ -1,0 +1,30 @@
+<script>
+
+    var $ = jQuery;
+    var targetErrors = targetErrors || [];
+    console.log('OT-1218 - Control');
+    //Click 'Select' on first result (Which is automatically the closest dealer)
+
+    var theInterval = setInterval(fireImpressionOnly,250);
+
+   
+         function fireImpressionOnly(){
+         if (window.location.href.indexOf('shop/price-and-locate/bp/preferred-dealer') > 0) {
+              if ($('button[data-automation="dealer-summary-action-button"]').length > 0) {
+
+                   console.log('Firing Impression');
+                   window.targetCampaign = window.targetCampaign || {
+                        page: {
+                             campaignName: "tt:nwp:opt-1218:ab:ecom:deafault-dealer:control"
+                        }
+                   }
+                   _satellite.track("genericTestingImpressionIDWorkaround");
+                   console.log('Done Firing Impression');
+
+                   clearInterval(theInterval);
+
+              }
+         }
+    }
+
+</script>

@@ -1,0 +1,546 @@
+<!-- The DC -->
+<script type="text/javascript">
+    var $ = jQuery; // < 1 > $ is no longer initialized by Ford. Target has built in jQuery. Most of our scripts use the $.
+    var dataStored = false;
+    var globalInfo = undefined;
+    var targetErrors = targetErrors || [];
+    var disclaimers_1142 = [];
+
+    console.log ('OT-1142');
+
+    $('<div style="display:none" id="hdnDataLoadHere" />').appendTo("body");
+    $('#hdnDataLoadHere').load('https://www.ford.gr/content/guxeu/gr/el_gr/configuration/applications-and-services/ngc-configuration-bev.model.json');
+
+    $(document).ready(function () { // < 3 > These were using the shortened form or had some FordPersonalisation function, this is replaced by the document.ready.
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+         $(document).ready(function() { // < 3 >
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            $(document).ready(function (services) { // < 3 >
+
+                var parseRegExp = /catalogID\=([^\/]+)/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = parseRegExp.exec(location.href);
+
+                    var id, code, features = "";
+
+                    if (parsedCurrentURL == null)
+                         return undefined; // < 4 > - Fewer errors
+                    else if (parsedCurrentURL.length == 0)
+                        return undefined; // < 4 > - Fewer errors
+
+                    var tempList = parsedCurrentURL[1].split('&');
+
+                    for (var i = 0; i < tempList.length; i++) {
+                        var key_value = tempList[i].split('=');
+                        if (key_value.length == 1) {
+                            id = tempList[i];
+                        } else if (key_value[0] == "series") {
+                            code =  key_value[1];  
+                        } else {
+                            features += features == "" ? key_value[1] : "," + key_value[1];   
+                        }
+                    }
+
+                    return {
+                        id: id,
+                        code: code,
+                        features: features
+                    };
+                }
+                // < 2 >
+                // START - Everything after this point is important to < 2 >
+                // This section might exist in your script already, however double check that it's exactly the same, as I think I've made changes after "spreading" the first version.
+                var StorageHandler = {};
+                StorageHandler.cookie = "opt-gux-gr"; // opt-gux-MARKET ~ for countries with multiple locales, name it MARKET_LANG ~ Always lower case.
+                StorageHandler.getData = function() {
+                    var current = JSON.parse(localStorage.getItem(StorageHandler.cookie));
+                    if (current == null)
+                        return [];
+                    else
+                        return current;
+                };
+                StorageHandler.saveData = function(key, data) {
+                    var current = StorageHandler.getData();
+                    var exists = StorageHandler.getSpecificData(key);
+                    if (exists.length > 0) {
+                        for (var i = 0; i < current.length; i++) {
+                            if (current[i].key == key) {
+                                current[i].data = data;
+                            }
+                        }
+                    } else {
+                        current.push({key, data});
+                    }
+                    localStorage.setItem(StorageHandler.cookie, JSON.stringify(current));
+                };
+                StorageHandler.getSpecificData = function(key) {
+                    var current = StorageHandler.getData();
+                    return current.filter(function(each) {
+                        return each.key == key;
+                    });
+                };
+                
+                function formatMoney(amount) {
+                    return Number(Number(amount).toFixed(0)).toLocaleString().replace(/\,/gm, ".")
+                }
+
+                 function getDisclaimers(data) {
+                    disclaimers_1142 = [];
+                    var disclosureContent = $(findDisclaimerContentClass());
+ 
+                    if (disclosureContent == undefined)
+                        return setTimeout(getDisclaimers, 250);
+ 
+                    if (disclosureContent.length == 0)
+                        return setTimeout(getDisclaimers, 250);
+ 
+                    if (isNull(data))
+                        return setTimeout(getDisclaimers, 250);
+ 
+                    for (var i = 0; i < data.length; i++) {
+                        if (!isNull(data[i]) && !isNull(data[i].disclaimerKey)) {
+                            for (var j = 0; j < disclosureContent.length; j++) {
+                                if (disclosureContent[j].innerText.includes(data[i].disclaimerKey)) {
+                                    disclaimers_1142.push({key: "disclaimer" + (i+1), symbol: data[i].disclaimerKey, type: data[i].type, content: findDisclaimer(disclosureContent[j])});
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+ 
+                function findDisclaimer(theContent) {
+                    console.log('findDisclaimer');
+                    console.dir(theContent);
+                    if (theContent.getElementsByTagName('p').length > 0) {
+                        return theContent.getElementsByTagName('p')[0].innerHTML;
+                    } else {
+                        return "";
+                    }
+                }
+                function findDisclaimerContentClass() {
+                    var disclosureContent = $('div[class*="DisclosureContent"]');
+                    var prevClass = "";
+                    var currentClass = "";
+                    for (var i = 0; i < disclosureContent.length; i++) {
+                        var classLists = disclosureContent[i].classList;
+                        for (var j = 0; j < classLists.length; j++) {
+                            currentClass += "." + classLists[j];
+                        }
+                        if (prevClass != "") {
+                            if (prevClass == currentClass) {
+                                return currentClass;
+                            } else {
+                                prevClass = currentClass;
+                                currentClass = "";
+                            }
+                        } else {
+                            prevClass = currentClass;
+                            currentClass = "";
+                        }
+                    }
+                }
+
+                function getPriceNameAndDisclaimerKey(amount, type) {
+                    var disclaimerKey = "", priceName = "";
+ 
+                    if (isNull(amount))
+                        return {disclaimerKey, priceName, type};
+                     
+                    var p = jQuery('p').filter(function(i){ return jQuery('p')[i].innerText.includes(formatMoney(amount));});
+                    var theIndex = -1;
+                     
+                    for (var i = 0; i < p.length; i++) {
+                        disclaimerKey = "", priceName = "";
+                        if (!isNull(p[i].nextElementSibling)) {
+                            disclaimerKey = p[i].nextElementSibling.innerText;
+                        }
+ 
+                        if (!isNull(p[i].previousElementSibling)) {
+                            priceName = p[i].previousElementSibling.innerText;
+                            theIndex = i;
+                        }
+                    }
+ 
+                    if (!isNull(priceName) && isNull(disclaimerKey)) {
+                        // Check another spot
+                        var span = jQuery('span').filter(function(i){ return jQuery('span')[i].innerText.includes(formatMoney(amount));});
+                        for (var i = 0; i < span.length; i++) {
+                            if (span[i].parentElement != p[theIndex]) {
+                                disclaimerKey = getDisclaimerKey_DrillMethod(span[i]);
+                            }
+                        }
+                    }
+ 
+                    if (!isNull(priceName) && isNull(disclaimerKey)) {
+                        // See if we have it stored already...
+                        var currentIDs = getCarIDs();
+                        if (!isNull(currentIDs)) {
+                            var data = StorageHandler.getSpecificData("disclaimers_1142_" + currentIDs.id);
+                            if (data.length > 0) {
+                                var disclaimers = data[0].data;
+ 
+                                if (!isNull(disclaimers)) {
+                                    for (var i = 0; i < disclaimers.length; i++) {
+                                        if (disclaimers[i].type == type) {
+                                            disclaimerKey = disclaimers[i].symbol;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+ 
+                    if (isNull(priceName)) {
+                        disclaimerKey = "", priceName = "";
+                    }
+                     
+                    return {disclaimerKey, priceName, type};
+                }
+ 
+                function getDisclaimerKey_DrillMethod(element) {
+                    if (isNull(element.nextElementSibling))
+                        return "";
+ 
+                    if (isNull(element.nextElementSibling.innerText))
+                        return getDisclaimerKey_DrillMethod(element.nextElementSibling);
+                    else
+                        return element.nextElementSibling.innerText
+                }
+                // END - Everything up to this point is important.
+                // < 2 >
+
+                function getCarConfiguration(IDs, callback) {
+
+                    // < 4 >
+                    if (isNull(IDs))
+                        return callback("Information not set");
+                    // < 4 >
+ 
+                    var theLine = IDs.id;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+                        theLine += "~" + IDs.code;
+                    }
+
+                    if (IDs.features != undefined && IDs.features != "") {
+                        theLine += (theLine.includes("~") ? "," : "~") + IDs.features.replaceAll("included", "");
+                    }
+
+                    // < 4 >
+                    if (isNull(theLine))
+                        return callback("Information not set");
+                    // < 4 >
+
+                    var key = [theLine].join("");
+
+                    var data = StorageHandler.getSpecificData(key);
+                    if (data != null && data.length > 0)
+                        return callback(undefined, data[0].data,key); // < 2 > - Added the key to be returned.
+                    
+                    var url = [
+                        "https://www.servicescache.ford.com/api",
+                        "/vehicleModel/",
+                        "v1",
+                        "/load?locale=",
+                        "el_GR",
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        theLine
+                    ].join("");
+
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: false
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200) {
+                            StorageHandler.saveData(key, response.data);
+                            return callback(undefined, response.data, key); // < 2 >
+                        }
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function sanitizeAPIResponse(data, IDs) {
+                    var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};                
+                     // < 4 >
+                     var car = "";
+                    try {
+                        car = getCarName(data, IDs);
+                    } catch (ex) {
+                        overrideLog(ex);
+                        return undefined;
+                    }
+                    // < 4 >
+                     
+                    // < 2 >
+                    // This part just gets the Price Label as well as key for the disclaimer.
+                    var retailPrice = data.price.finalPrice.grossRetailWithOTR;
+                    var offerPrice = data.price.finalPrice.grossRetailWithOTRAndIncentives;
+ 
+                    var retailInfo = getPriceNameAndDisclaimerKey(retailPrice, "Retail");
+                    var offerInfo = getPriceNameAndDisclaimerKey(offerPrice, "Offer");
+ 
+                    var combined = [];
+                    combined.push(retailInfo, offerInfo);
+                    // This gets the actual disclaimer based on the key we got.
+                    getDisclaimers(combined);
+                    // < 2 >
+
+                    return {
+                        carName: car.name,
+                        date: (new Date()).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combinedWeighted ? fuelPerformance.co2_emission_combinedWeighted.unitTypes : (
+                                        fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : (
+                                            fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : (
+                                                fuelPerformance.co2_emission_extra_urban ? fuelPerformance.co2_emission_extra_urban.unitTypes : undefined
+                                            )
+                                        )
+                                    )
+                                ),
+                            coNEDC: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                                ),
+                            lToKm: typeof fuelPerformance.fuel_consumption_combinedweighted !== "undefined" ? fuelPerformance.fuel_consumption_combinedweighted.unitTypes : (
+                                typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined
+                            ),
+                            kwToKm: fuelPerformance.combined_ecWeighted ? fuelPerformance.combined_ecWeighted.unitTypes : 
+                                (fuelPerformance.energy_consumption ? fuelPerformance.energy_consumption.unitTypes.kWh100Km : undefined)
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        // < 2 >
+                        // Using the above methods, we set the Price and Price label.
+                        // Previously only the price was set.
+                        retailPrice: retailPrice,
+                        retailTitle: retailInfo.priceName,
+                        offerPrice: offerPrice,
+                        offerTitle: offerInfo.priceName,
+                        // < 2 >
+                        dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: car.secondary,
+                        vehicleType: data.props['segment-code'],
+                        contextualiseLink: window.location.pathname + window.location.hash
+                    }
+                }
+
+
+ 
+
+                function getCarName(data, IDs) {
+                    var carName, subName = "";
+                    
+                    var jsonData = JSON.parse($('#hdnDataLoadHere')[0].innerText);
+                    
+                    var theVehicle = jsonData.nameplateConfig.labels.filter(function(item){
+                        return item.key == IDs.id;
+                    });
+                    if (theVehicle.length > 0)
+                        carName = theVehicle[0].value.toLowerCase().replace(/^(.)|\s+(.)/g, c => c.toUpperCase());
+                    else
+                        carName = data.props['nameplate-label'];
+
+                    if (carName.includes("car") || carName.includes("Car"))
+                        carName = carName.replace("Car", "").replace("car", "").trim();
+                    
+                    if (!carName.toLowerCase().includes("ford"))
+                        carName = "Ford " + carName;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+
+                        var selectedSeries = data.features.selectedByMarketing.filter(function(el) {
+                            return el.code == 'series'; 
+                        });
+
+                        if (selectedSeries.length > 0) {
+                            subName = (selectedSeries[0].children != undefined ? (selectedSeries[0].children.length > 0 ? selectedSeries[0].children[0].name : "")  : "");
+                            subName = (subName != "" ? subName : (selectedSeries[0].features != undefined ? (selectedSeries[0].features.length > 0 ? selectedSeries[0].features[0].name : "") : ""));
+                        }
+
+                        if (subName == "") {
+                            var series = data.features.byMarketing.filter(function(el){
+                                return el.code == 'series';
+                            });
+
+                            if (series.length > 0) {
+                                if (series[0].features != undefined) {
+                                    if (series[0].features.length > 0) {
+                                        var sub = series[0].features.filter(function(el) {
+                                            return el.code == IDs.code;
+                                        });
+                                        if (sub.length > 0) {
+                                            subName = sub[0].name;
+                                        }
+                                    }
+                                }
+                                if (subName == "") {
+                                    if (series[0].children != undefined) {
+                                        if (series[0].children.length > 0) {
+                                            var sub = series[0].children.filter(function(el) {
+                                                return el.code == IDs.code;
+                                            });
+                                            if (sub.length > 0) {
+                                                subName = sub[0].name;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //Had to add the toLowerCase() as the Mach-e sub name was never being cleared.
+                    //Probably best to keep this in other DC scripts for good measure.
+                    if (carName.toLowerCase() == ("ford " + subName.toLowerCase()) || carName.toLowerCase() == subName.toLowerCase()) {
+                        subName = "";
+                    }
+ 
+
+                    return {
+                        name: carName,
+                        secondary: subName
+                    }
+                }
+                
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+                // < 2 > - Gives access to the StorageHandler outside of the implemented area.
+                services.storageHandler = StorageHandler;
+
+            }(ENV.services));
+
+            var MBOXName = "GR_BP_C_Popin";
+
+            /* Get model basic info */
+
+            var thresholdCounter = 0;
+
+            // < 4 >
+            // Method was updated to always log the error, as well as increase number of runs allowed.
+            function reRun(error) {
+                thresholdCounter++;
+                overrideLog(error);
+                if (thresholdCounter < 100) {
+                    setTimeout(runInformationsGathering, 250);
+                }
+            }
+            // < 4 >
+
+            function overrideLog(error) {	
+                if (/targetDebug=1142/i.test(window.location.href)) {	
+                    console.log(error);	
+                }	
+                	
+                targetErrors.push({ticket: "1142", error});	
+            }
+
+            // < 4 > - Checks if the object is null.
+            function isNull(obj) {
+                return obj == undefined || obj == null || obj == "";
+            }
+            // < 4 >
+
+            function runInformationsGathering() {
+                if (/summary/i.test(window.location.href)) {
+                    var currentIDs = ENV.services.getCarIDs();
+
+                    if ($('div[class*="FullScreen"]').length > 0) {
+                        isRunning = false;
+                        return setTimeout(runInformationsGathering, 250);
+                    }
+
+
+                    ENV.services.describeCall(currentIDs, function (err, result,key) { // < 2 > - Added the key variable.
+                        if (err)
+                            return reRun(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+
+                          // < 4 > < 2 > A bunch of checks to ensure we have data, and the labels for prices set.
+                          if (isNull(vehicleInfo))
+                            return reRun("Vehicle information not captured");
+                         
+                        if (!isNull(vehicleInfo.offerPrice) && isNull(vehicleInfo.offerTitle))
+                            return reRun("OfferPrice set, but OfferTitle not set");
+                        if (!isNull(vehicleInfo.retailPrice) && isNull(vehicleInfo.retailTitle))
+                            return reRun("RetailPrice set, but RetailTitle not set");
+ 
+                        if (!isNull(disclaimers_1142)) {
+                            var disclaimersKey = "disclaimers_1142_" + key;
+                            ENV.services.storageHandler.saveData(disclaimersKey, disclaimers_1142);
+                        }
+                        // < 4 > < 2 >
+
+                        globalInfo = vehicleInfo;
+
+                        ENV.services.storageHandler.saveData("disclaimers_1142_", disclaimers_1142);
+
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                "profile.id": key, // < 2 > - Added so that we could get exact Disclaimers back based on configuration.
+                                'profile.market': "GR",
+                                "profile.ticket" : "OT-1142",
+                                "profile.carName": vehicleInfo.carName,
+                                "profile.date" : vehicleInfo.date,
+                                "profile.emissions" : JSON.stringify(vehicleInfo.emissions).replace(/"/g, "'"),
+                                "profile.img": vehicleInfo.img,
+                                "profile.retailPrice": vehicleInfo.retailPrice,
+                                "profile.offerPrice" : vehicleInfo.offerPrice,
+                                 // < 2 > - Addition of the titles
+                                "profile.retailTitle": vehicleInfo.retailTitle,
+                                "profile.offerTitle" : vehicleInfo.offerTitle,
+                                // < 2 >
+                                "profile.dutyFreePrice" : vehicleInfo.dutyFreePrice,
+        
+                                "profile.subName": vehicleInfo.subName,
+                                "profile.vehicleType": vehicleInfo.vehicleType,
+                                "profile.contextualiseLink": vehicleInfo.contextualiseLink
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                                dataStored = true;
+                            },
+                            'error': function (status, error) {
+                                overrideLog({message: "Error", status, error});
+                            }
+                        });
+
+                        adobe.target.trackEvent({
+                            'mbox': MBOXName,
+                            'params': {
+                                'summary': 'summary-get-data'
+                            }
+                        });
+                    });
+                }
+                
+            }
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+
+        });
+
+    }());
+</script>

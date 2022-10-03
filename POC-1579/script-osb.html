@@ -1,0 +1,81 @@
+<script>
+    console.log('1579 | OSB');
+    var btn, txt, hasRun;
+    //TODO: Try writing the whole script in plain JS
+    setTimeout(run(), 1000);
+
+    function run() {
+        console.log('called run on OSB');
+        /*button = document.querySelector('button[aria-label="choose you location"]');*/
+        waitForInput();
+    }
+
+    function waitForInput() {
+        txt = document.getElementById('selectLocation');
+        txt.setAttribute('value', getCookie('dealerAddressFormatted'));
+        txt.dispatchEvent(new Event('input', { bubbles: true }));
+
+        let waitForAuto = setInterval(function () {
+            if (document.querySelector('.ulList > li') !== undefined && document.querySelector('.ulList > li') !== null) {
+                clearInterval(waitForAuto);
+                document.querySelector('.ulList > li').click();
+                waitForResults();
+            }
+        }, 250);
+    }
+
+    function waitForResults() {
+        hasRun = false;
+        console.log('waiting for results');
+        let waitForElements = setInterval(function () {
+            if (document.querySelectorAll('.primary-button.color-dark.color-fill') !== undefined && document.querySelectorAll('.primary-button.color-dark.color-fill').length > 0) {
+                clearInterval(waitForElements);
+                //TODO: Click the relevant select based on dealer name
+                console.log('found');
+                if (document.querySelectorAll('.dealer-address') === undefined || document.querySelectorAll('.dealer-address') === null || document.querySelectorAll('.dealer-address').length <= 0) {
+                    let waitForDealers = setInterval(function () {
+                        console.log('Do we have dealers yet?');
+                        if (document.querySelectorAll('.dealer-address') !== undefined && document.querySelectorAll('.dealer-address') !== null && document.querySelectorAll('.dealer-address').length > 0) {
+                            console.log('Yes, we do');
+                            clearInterval(waitForDealers);
+                            matchDealerAddress();
+                        }
+                    }, 750);
+                } else {
+                    matchDealerAddress();
+                }
+            }
+        }, 750);
+    }
+
+    function selectFirstDealer(){
+        document.querySelectorAll('.primary-button.color-dark.color-fill')[0].click();
+    }
+
+    function matchDealerAddress() {
+        if (hasRun === false) {
+            hasRun = true;
+            console.log('matchDealerAddress');
+            var allDealers = document.querySelectorAll('.dealer-address');
+            allDealers = document.querySelectorAll('.dealer-address');
+            var splitAddress = getCookie('dealerAddressFormatted').split(',');
+            for (var x = 0; x < allDealers.length; x++) {
+                console.log(x);
+                if (allDealers[x].innerHTML.includes(splitAddress[0]) || allDealers[x].innerHTML.includes(splitAddress[1])) {
+                    console.log('we found it on iteration ' + x);
+                    document.querySelectorAll('.primary-button.color-dark.color-fill')[x].click();
+                    break;
+                }
+
+            }
+        }
+    }
+
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+</script>

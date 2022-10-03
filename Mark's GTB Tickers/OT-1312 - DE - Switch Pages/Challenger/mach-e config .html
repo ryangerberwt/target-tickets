@@ -1,0 +1,13 @@
+<script>
+    var $ = jQuery;
+
+    $(document).ready(function() {
+        changeHref();
+    });
+
+    $(window).on("hashchange", changeHref);
+
+    function changeHref() {
+        window.location.pathname = '/kaufberatung/kaufen/reservieren/konfigurieren-chal';
+    }
+  </script>

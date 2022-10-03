@@ -1,0 +1,168 @@
+<script>
+    $(document).ready(function() {
+        setBRDOnClick();
+        setTDROnClick();
+        setTDRChevronOnClick();
+        setCtCOnClick();
+        setTellamamosOnClick();
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.piscored.market" : "ES",
+                "profile.piscored.action.npp" : "NPP"
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+
+    function setCtCOnClick() {
+        if ($('a[href*="c2c"]').length == 0)
+            return setTimeout(setCtCOnClick, 50);
+        
+        var objects = $('a[href*="c2c"]');
+
+        for (var i = 0; i < objects.length; i++) {
+            if (/fiesta/i.test(objects[i].href)) {
+                objects[i].onclick = function() {
+                    console.log("OT-815 - Fiesta C2C");
+
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.piscored.market" : "ES",
+                            "profile.piscored.action.ctc" : "C2C"
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                };
+            }
+        }
+    }
+
+    function setTellamamosOnClick() {
+        if ($('a[href*="te-llamamos"]').length == 0)
+            return setTimeout(setCtCOnClick, 50);
+        
+        var objects = $('a[href*="te-llamamos"]');
+
+        for (var i = 0; i < objects.length; i++) {
+            if (/new-fiesta/i.test(objects[i].href)) {
+                objects[i].onclick = function() {
+                    console.log("OT-815 - Fiesta C2C");
+
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.piscored.market" : "ES",
+                            "profile.piscored.action.ctc" : "C2C"
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                };
+            }
+        }
+    }
+
+    function setBRDOnClick() {
+        if ($('.link-overlay:contains("Descarga el catálogo")').length == 0)
+            return setTimeout(setBRDOnClick, 50);
+        
+        $('.link-overlay:contains("Descarga el catálogo")').on('click', function() {
+            console.log("OT-815 - Fiesta BRD");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.market" : "ES",
+                    "profile.piscored.action.brd" : "BRD"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+
+    function setTDRChevronOnClick() {
+        if ($('.link-wizard-overlay:contains("Prueba de vehículo")').length == 0)
+            return setTimeout(setTDRChevronOnClick, 50);
+
+        $('.link-wizard-overlay:contains("Prueba de vehículo")').on('click', function() {
+            console.log("OT-815 - Fiesta TDR");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.market" : "ES",
+                    "profile.piscored.action.tdr" : "TDR"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+
+    function setTDROnClick() {
+        if ($('.link-wizard-overlay:contains("Pruébalo")').length == 0)
+            return setTimeout(setTDROnClick, 50);
+        
+        $('.link-wizard-overlay:contains("Pruébalo")').on('click', function() {
+            console.log("OT-815 - Fiesta TDR");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.market" : "ES",
+                    "profile.piscored.action.tdr" : "TDR"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

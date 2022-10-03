@@ -1,0 +1,31 @@
+<script>
+    $(document).ready(function() {
+        setKMIOnClick();
+    });
+
+    function setKMIOnClick() {
+        if ($('.model:contains("Fiesta")').length == 0)
+            return setTimeout(setKMIOnClick, 50);
+        
+        $('.model:contains("Fiesta")').on('click', function() {
+            console.log("OT-815 - Fiesta KMI");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.market" : "ES",
+                    "profile.piscored.action.kmi" : "KMI"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

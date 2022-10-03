@@ -1,0 +1,542 @@
+<script>
+    console.log("OT-839 - Showroom");
+    
+    $(document).ready(function() {
+        setInitialCarData();
+    });
+
+	$(function() {
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "tt:nwp:opt-839:ab:nav:family-cars:challenger"
+            }
+        }
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+		$('#vehicleSegments-family').change(function (e) {
+			e.preventDefault();
+			console.log("family");
+			showHideVehicles(isFamilyChecked());
+		});
+
+		$('#vehicleSegments-hev').change(function (e) {
+			e.preventDefault();
+			console.log("hev");
+			showHideVehicles(isFamilyChecked());
+		});
+
+		$('#vehicleSegments-suv').change(function (e) {
+			e.preventDefault();
+			console.log("suv");
+			showHideVehicles(isFamilyChecked());
+		});
+
+		$('#vehicleSegments-performance').change(function (e) {
+			e.preventDefault();
+			console.log("performance");
+			showHideVehicles(isFamilyChecked());
+		});
+    });
+
+    var mondeoHTML = '', focusHTML = '', courierHTML = '';
+    var errorCounter = 0;
+    var errorOccurred = false;
+    
+    function setInitialCarData() {
+        if (errorCounter < 3) {
+            if (mondeoHTML == '') {
+                if (getVehicle("FORD MONDEO").length > 0) {
+                    var mondeoClone = $(getVehicle("FORD MONDEO")[0].outerHTML);
+                    mondeoClone[0].id = 'mondeoHTML';
+                    mondeoClone[0].style.display = 'none';
+                    mondeoHTML = mondeoClone[0].outerHTML;
+                } 
+                else
+                    errorOccurred = true;
+            }
+
+            if (focusHTML == '') {
+                if (getVehicle("FORD FOCUS").length > 0) {
+                    focusClone = $(getVehicle("FORD FOCUS")[0].outerHTML);
+                    focusClone[0].id = 'focusHTML';
+                    focusClone[0].style.display = 'none';
+                    focusHTML = focusClone[0].outerHTML;
+                }
+                else
+                    errorOccurred = true;
+                
+            }
+
+            if (courierHTML == '') {
+                if (getVehicle("FORD TOURNEO COURIER").length > 0) {
+                    courierClone = $(getVehicle("FORD TOURNEO COURIER")[0].outerHTML);
+                    courierClone[0].id = 'courierHTML';
+                    courierClone[0].style.display = 'none';
+                    courierHTML = courierClone[0].outerHTML;
+                }  
+                else
+                    errorOccurred = true;;
+            }
+
+            if (errorOccurred) {
+                errorOccurred = false;
+                errorCounter++;
+                return setTimeout(setInitialCarData, 50);
+            }
+        }
+    }
+
+    var focusAfterVehicles = [
+        "FORD FOCUS",
+        "DER NEUE FORD PUMA",
+        "FORD ECOSPORT",
+        "FORD TOURNEO COURIER",
+        "FORD FIESTA"
+    ];
+
+    var mondeoAfterVehicles = [
+        "FORD MONDEO",
+        "FORD TOURNEO CONNECT",
+        "DER NEUE FORD MUSTANG MACH-E",
+        "DER NEUE FORD KUGA",
+        "FORD FOCUS",
+        "DER NEUE FORD PUMA",
+        "FORD ECOSPORT",
+        "FORD TOURNEO COURIER",
+        "FORD FIESTA"
+    ];
+
+    var courierAfterVehicles = [
+        "FORD TOURNEO COURIER",
+        "FORD FIESTA"
+    ];
+
+    function addVehicles() {
+        
+        var focusAdded = false;
+        var mondeoAdded = false;
+        var courierAdded = false;
+
+        while ($('#mondeoHTML').length > 0) {
+            $('#mondeoHTML').remove();
+        }
+            
+        for (var i = 0; i < mondeoAfterVehicles.length; i++) {
+            if ($('div.model-item.ng-scope:contains(' + mondeoAfterVehicles[i] + ')').length > 0 && !mondeoAdded) {
+				if (i == 0)
+					$(getModeoHTML()).insertBefore($('div.model-item.ng-scope:contains(' + mondeoAfterVehicles[i] + ')')[0]);
+				else
+					$(getModeoHTML()).insertAfter($('div.model-item.ng-scope:contains(' + mondeoAfterVehicles[i] + ')')[0]);
+					
+                mondeoAdded = true;
+                i = 1000;
+            }
+        }
+
+        if (!mondeoAdded) {
+            $(getModeoHTML()).insertBefore($('div.model-item.ng-scope')[0]);
+            console.log('mondeo added');
+        }
+
+        while ($('#focusHTML').length > 0) {
+            $('#focusHTML').remove();
+        }
+            
+        for (var i = 0; i < focusAfterVehicles.length; i++) {
+            if ($('div.model-item.ng-scope:contains(' + focusAfterVehicles[i] + ')').length > 0 && !focusAdded) {
+				if (i == 0)
+					$(getFocusHTML()).insertBefore($('div.model-item.ng-scope:contains(' + focusAfterVehicles[i] + ')')[0]);
+				else
+                	$(getFocusHTML()).insertAfter($('div.model-item.ng-scope:contains(' + focusAfterVehicles[i] + ')')[0]);
+                focusAdded = true;
+                i = 1000;
+            }
+        }
+
+        if (!focusAdded) {
+            $(getFocusHTML()).insertBefore($('div.model-item.ng-scope')[0]);
+        }
+        
+
+        while ($('#courierHTML').length > 0) {
+            $('#courierHTML').remove();
+        }
+            
+        for (var i = 0; i < courierAfterVehicles.length; i++) {
+            if ($('div.model-item.ng-scope:contains(' + courierAfterVehicles[i] + ')').length > 0 && !courierAdded) {
+				if (i == 0)
+					$(getCourierHTML()).insertBefore($('div.model-item.ng-scope:contains(' + courierAfterVehicles[i] + ')')[0]);
+				else
+                	$(getCourierHTML()).insertAfter($('div.model-item.ng-scope:contains(' + courierAfterVehicles[i] + ')')[0]);
+                courierAdded = true;
+                i = 1000;
+            }
+        }
+
+        if (!courierAdded) {
+            $(getCourierHTML()).insertBefore($('div.model-item.ng-scope')[0]);
+        }
+    }
+
+    function checker(car, id, show) {
+        if (getVehicle(car).length == 2) {
+            $(id).remove();
+        } else if (getVehicle(car).length == 1 && show) {
+            $(id)[0].style.display = '';
+        } else if (getVehicle(car).length == 1) {
+            $(id).remove();
+        }
+    }
+
+    function showHideVehicles(value) {
+        addVehicles();
+        if (value) {
+            checker("FORD FOCUS", "#focusHTML", true);
+            checker("FORD MONDEO", "#mondeoHTML", true);
+            checker("FORD TOURNEO COURIER", "#courierHTML", true);
+        } else {
+            checker("FORD FOCUS", "#focusHTML", false);
+            checker("FORD MONDEO", "#mondeoHTML", false);
+            checker("FORD TOURNEO COURIER", "#courierHTML", false);
+        }
+
+        $('#global-ux .showroom .filter-bar .result-count strong').html($('.content-wrap > .model-item').length);
+        addOrRemoveStyleExtender();
+    }
+
+    function addOrRemoveStyleExtender() {
+
+        if ($('.content-wrap > .model-item').length > 0) {
+            if ($('.content-wrap > .model-item')[0].classList.contains('model-item-extended')) {
+                $('.content-wrap > .model-item').each(function () {
+                    if (!$(this).hasClass('model-item-extended')) {
+                        $(this).addClass('model-item-extended')
+                    }
+                });
+            } else {
+                $('.content-wrap > .model-item').each(function () {
+                    if ($(this).hasClass('model-item-extended')) {
+                        $(this).removeClass('model-item-extended')
+                    }
+                });
+            }
+
+        }
+    }
+
+    function isFamilyChecked() {
+        return $('#vehicleSegments-family').is(":checked");
+    }
+
+    function getVehicle(car) {
+		if ($('.content-wrap > .model-item .model-name:contains("' + car + '")').length > 1) {
+			var newObj = new Array();
+			for (var i = 0; i < $('.content-wrap > .model-item .model-name:contains("' + car + '")').length; i++) {
+				if ($('.content-wrap > .model-item .model-name:contains("' + car + '")')[i].innerText == car)
+					newObj.push($('.content-wrap > .model-item:contains("' + car + '")')[i])
+			}
+			return newObj;
+		} else {
+			return $('.content-wrap > .model-item:contains("' + car + '")');
+		}
+    }
+
+    function getFocusHTML() {
+        if (focusHTML != '')
+            return focusHTML;
+        else
+            return `<div class="model-item ng-scope is-hev-visible" data-ng-repeat-end="" data-ng-class="{
+			  'model-item-extended': isDetailedVehicleView(),
+			  'prevent-buttons-display': isBnpShowroomMode &amp;&amp; !containsBuyOnline,
+			  'is-hev-visible': vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length
+
+			  }" id="focusHTML" style="display: none;">
+			<div class="model-item-content">
+				<span class="model-item-close ng-scope" data-ng-vehicle-close-mobile-overlay=""></span>
+
+				<!-- ngIf: !isBnpShowroomMode || containsBuyOnline --><div data-ng-if="!isBnpShowroomMode || containsBuyOnline" class="ng-scope">
+					<img class="model-shot ng-scope" src="//www.gpas-cache.ford.com/guid/546eba5b-4154-3075-971d-19e43918a540.png" alt="FORD FOCUS" data-ng-src="//www.gpas-cache.ford.com/guid/546eba5b-4154-3075-971d-19e43918a540.png" data-ng-vehicle-open-mobile-overlay="">
+				</div><!-- end ngIf: !isBnpShowroomMode || containsBuyOnline -->
+				<!-- ngIf: isBnpShowroomMode && !containsBuyOnline -->
+				<div class="model-info">
+					<div class="title-container">
+						<h3 class="model-title">
+							<!-- ngIf: !isBnpShowroomMode || containsBuyOnline --><a data-ng-if="!isBnpShowroomMode || containsBuyOnline" data-ng-href="/fahrzeuge/ford-focus" data-ng-vehicle-open-mobile-overlay="" class="ng-scope" href="/fahrzeuge/ford-focus">
+								<span class="model-name ng-binding">FORD FOCUS</span>
+							</a><!-- end ngIf: !isBnpShowroomMode || containsBuyOnline -->
+							<!-- ngIf: isBnpShowroomMode && !containsBuyOnline -->
+						</h3>
+					</div>
+					<!-- ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> Unverbindliche Aktionspreisempfehlung ab</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group price-promotional-bnp price-finalPrice-grossRetailWithOTRAndIncentives"><span class="vehicle-attribute-prefix"></span><span class="value">17.890</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="Unverbindliche Aktionspreisempfehlung" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">1</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> UPE ab</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group price-retail-with-otr price-finalPrice-grossRetailWithOTR"><span class="vehicle-attribute-prefix"></span><span class="value">20.568,07</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="UPE" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">2</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group authored-consumption-main-label manuallyAuthored-consumptionMain-label"><span class="vehicle-attribute-prefix"></span><span class="value">Verbrauchswerte (kombiniert):</span><span class="vehicle-attribute-suffix"></span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="Verbrauch RS" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">3</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> Kraftstoff</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group authored-L100km-combined manuallyAuthored-fuelConsumption-combined-L100KM"><span class="vehicle-attribute-prefix"></span><span class="value">4,6</span><span class="vehicle-attribute-suffix"> L/100 km</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> CO2-Emissionen</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group authored-emissions-combined manuallyAuthored-fuelEmissions-combined-gkm"><span class="vehicle-attribute-prefix"></span><span class="value">104</span><span class="vehicle-attribute-suffix"> g/km</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs -->
+
+					
+
+	<!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length --><div class="model-hev-indicator ng-scope item-has-attributes" data-ng-class="{'item-has-attributes': vehicle.attributeCount > 0}" data-ng-if="vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length">
+		<div class="model-hev-indicator-items">
+			<!-- ngRepeat: hev in vehicle.hevTechnologies track by hev.name --><div data-ng-repeat="hev in vehicle.hevTechnologies track by hev.name" class="model-hev-indicator-item hev-mildHybrid">
+				Mild-Hybrid
+			</div><!-- end ngRepeat: hev in vehicle.hevTechnologies track by hev.name -->
+		</div>
+		<!-- ngIf: vehicle.hevTechnologies.length > 0 --><div data-ng-if="vehicle.hevTechnologies.length > 0" class="model-hev-indicator-available ng-scope">
+			
+		</div><!-- end ngIf: vehicle.hevTechnologies.length > 0 -->
+	</div><!-- end ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->
+
+
+				</div>
+				<div class="model-footer">
+					<!-- ngRepeat: attr in attrs -->
+
+					<!-- ngRepeat: attr in filterAttributes -->
+
+					
+
+	<!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length --><div class="model-hev-indicator ng-scope item-has-attributes" data-ng-class="{'item-has-attributes': vehicle.attributeCount > 0}" data-ng-if="vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length">
+		<div class="model-hev-indicator-items">
+			<!-- ngRepeat: hev in vehicle.hevTechnologies track by hev.name --><div data-ng-repeat="hev in vehicle.hevTechnologies track by hev.name" class="model-hev-indicator-item hev-mildHybrid">
+				Mild-Hybrid
+			</div><!-- end ngRepeat: hev in vehicle.hevTechnologies track by hev.name -->
+		</div>
+		<!-- ngIf: vehicle.hevTechnologies.length > 0 --><div data-ng-if="vehicle.hevTechnologies.length > 0" class="model-hev-indicator-available ng-scope">
+			
+		</div><!-- end ngIf: vehicle.hevTechnologies.length > 0 -->
+	</div><!-- end ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->
+
+
+					<div class="model-buttons">
+						<!-- ngIf: showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator') --><a data-ng-if="showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator')" data-ng-class="{'model-item-button-hidden' : vehicle.disableBnPCta}" class="cta-button cta-button-primary ng-scope ng-isolate-scope" data-ng-gux-bnp-contextual-link="" data-bnp-path="/kaufberatung/kaufen/pkw-konfigurator-gf3" data-nameplate-code="vehicle.nameplateCode" data-model-code="vehicle.defaultModelCode" data-bnp-start-model-code="vehicle.bnpStartModelCode" data-ng-gux-track-cta="build price" data-nameplate="vehicle" href="/kaufberatung/kaufen/pkw-konfigurator-gf3#/catalogID/WAEDX-CGE-2018-C519FocusDEU202075/?code=ACMAA_VS-D3">
+							Konfigurieren
+						</a><!-- end ngIf: showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator') -->
+						<!-- ngIf: !isBnpShowroomMode --><a class="cta-button cta-button-secondary ng-scope" data-ng-if="!isBnpShowroomMode" data-ng-href="/fahrzeuge/ford-focus" data-ng-gux-track-cta="explore vehicle" data-nameplate="vehicle" href="/fahrzeuge/ford-focus">
+							zur Modellseite
+						</a><!-- end ngIf: !isBnpShowroomMode -->
+						
+					</div>
+				</div>
+			</div>
+		</div>`;
+    }
+
+    function getModeoHTML() {
+        if (mondeoHTML != '')
+            return mondeoHTML;
+        else
+            return `<div class="model-item ng-scope is-hev-visible" data-ng-repeat-end="" data-ng-class="{
+			  'model-item-extended': isDetailedVehicleView(),
+			  'prevent-buttons-display': isBnpShowroomMode &amp;&amp; !containsBuyOnline,
+			  'is-hev-visible': vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length
+
+			  }" id="mondeoHTML" style="display: none;">
+			<div class="model-item-content">
+				<span class="model-item-close ng-scope" data-ng-vehicle-close-mobile-overlay=""></span>
+
+				<!-- ngIf: !isBnpShowroomMode || containsBuyOnline --><div data-ng-if="!isBnpShowroomMode || containsBuyOnline" class="ng-scope">
+					<img class="model-shot ng-scope" src="//www.gpas-cache.ford.com/guid/b1ffbc0b-749e-36df-a971-eddcc4b788ff.png" alt="FORD MONDEO" data-ng-src="//www.gpas-cache.ford.com/guid/b1ffbc0b-749e-36df-a971-eddcc4b788ff.png" data-ng-vehicle-open-mobile-overlay="">
+				</div><!-- end ngIf: !isBnpShowroomMode || containsBuyOnline -->
+				<!-- ngIf: isBnpShowroomMode && !containsBuyOnline -->
+				<div class="model-info">
+					<div class="title-container">
+						<h3 class="model-title">
+							<!-- ngIf: !isBnpShowroomMode || containsBuyOnline --><a data-ng-if="!isBnpShowroomMode || containsBuyOnline" data-ng-href="/fahrzeuge/ford-mondeo" data-ng-vehicle-open-mobile-overlay="" class="ng-scope" href="/fahrzeuge/ford-mondeo">
+								<span class="model-name ng-binding">FORD MONDEO</span>
+							</a><!-- end ngIf: !isBnpShowroomMode || containsBuyOnline -->
+							<!-- ngIf: isBnpShowroomMode && !containsBuyOnline -->
+						</h3>
+					</div>
+					<!-- ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> Unverbindliche Aktionspreisempfehlung ab</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group price-promotional-bnp price-finalPrice-grossRetailWithOTRAndIncentives"><span class="vehicle-attribute-prefix"></span><span class="value">28.190</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="Unverbindliche Aktionspreisempfehlung" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">1</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> UPE ab</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group price-retail-with-otr price-finalPrice-grossRetailWithOTR"><span class="vehicle-attribute-prefix"></span><span class="value">32.168,07</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="UPE" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">2</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group authored-consumption-main-label manuallyAuthored-consumptionMain-label"><span class="vehicle-attribute-prefix"></span><span class="value">Verbrauchswerte (kombiniert):</span><span class="vehicle-attribute-suffix"></span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="Verbrauch RS" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">3</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> Kraftstoff</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group authored-L100km-combined manuallyAuthored-fuelConsumption-combined-L100KM"><span class="vehicle-attribute-prefix"></span><span class="value">4,7</span><span class="vehicle-attribute-suffix"> L/100 km</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> CO2-Emissionen</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group authored-emissions-combined manuallyAuthored-fuelEmissions-combined-gkm"><span class="vehicle-attribute-prefix"></span><span class="value">108</span><span class="vehicle-attribute-suffix"> g/km</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs -->
+
+					
+
+	<!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length --><div class="model-hev-indicator ng-scope item-has-attributes" data-ng-class="{'item-has-attributes': vehicle.attributeCount > 0}" data-ng-if="vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length">
+		<div class="model-hev-indicator-items">
+			<!-- ngRepeat: hev in vehicle.hevTechnologies track by hev.name --><div data-ng-repeat="hev in vehicle.hevTechnologies track by hev.name" class="model-hev-indicator-item hev-hybrid">
+				Hybrid
+			</div><!-- end ngRepeat: hev in vehicle.hevTechnologies track by hev.name -->
+		</div>
+		<!-- ngIf: vehicle.hevTechnologies.length > 0 --><div data-ng-if="vehicle.hevTechnologies.length > 0" class="model-hev-indicator-available ng-scope">
+			
+		</div><!-- end ngIf: vehicle.hevTechnologies.length > 0 -->
+	</div><!-- end ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->
+
+
+				</div>
+				<div class="model-footer">
+					<!-- ngRepeat: attr in attrs -->
+
+					<!-- ngRepeat: attr in filterAttributes -->
+
+					
+
+	<!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length --><div class="model-hev-indicator ng-scope item-has-attributes" data-ng-class="{'item-has-attributes': vehicle.attributeCount > 0}" data-ng-if="vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length">
+		<div class="model-hev-indicator-items">
+			<!-- ngRepeat: hev in vehicle.hevTechnologies track by hev.name --><div data-ng-repeat="hev in vehicle.hevTechnologies track by hev.name" class="model-hev-indicator-item hev-hybrid">
+				Hybrid
+			</div><!-- end ngRepeat: hev in vehicle.hevTechnologies track by hev.name -->
+		</div>
+		<!-- ngIf: vehicle.hevTechnologies.length > 0 --><div data-ng-if="vehicle.hevTechnologies.length > 0" class="model-hev-indicator-available ng-scope">
+			
+		</div><!-- end ngIf: vehicle.hevTechnologies.length > 0 -->
+	</div><!-- end ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->
+
+
+					<div class="model-buttons">
+						<!-- ngIf: showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator') --><a data-ng-if="showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator')" data-ng-class="{'model-item-button-hidden' : vehicle.disableBnPCta}" class="cta-button cta-button-primary ng-scope ng-isolate-scope" data-ng-gux-bnp-contextual-link="" data-bnp-path="/kaufberatung/kaufen/pkw-konfigurator-gf3" data-nameplate-code="vehicle.nameplateCode" data-model-code="vehicle.defaultModelCode" data-bnp-start-model-code="vehicle.bnpStartModelCode" data-ng-gux-track-cta="build price" data-nameplate="vehicle" href="/kaufberatung/kaufen/pkw-konfigurator-gf3#/catalogID/WAEDX-CNG-2013-CD391MondeoDEU202050/?code=ACMAA_VS-DB">
+							Konfigurieren
+						</a><!-- end ngIf: showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator') -->
+						<!-- ngIf: !isBnpShowroomMode --><a class="cta-button cta-button-secondary ng-scope" data-ng-if="!isBnpShowroomMode" data-ng-href="/fahrzeuge/ford-mondeo" data-ng-gux-track-cta="explore vehicle" data-nameplate="vehicle" href="/fahrzeuge/ford-mondeo">
+							zur Modellseite
+						</a><!-- end ngIf: !isBnpShowroomMode -->
+						
+					</div>
+				</div>
+			</div>
+		</div>`;
+    }
+
+    function getCourierHTML() {
+        if (courierHTML != '')
+            return courierHTML;
+        else
+            return `<div class="model-item ng-scope" data-ng-repeat-end="" data-ng-class="{
+			  'model-item-extended': isDetailedVehicleView(),
+			  'prevent-buttons-display': isBnpShowroomMode &amp;&amp; !containsBuyOnline,
+			  'is-hev-visible': vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length
+
+			  }" id="courierHTML" style="display: none;">
+			<div class="model-item-content">
+				<span class="model-item-close ng-scope" data-ng-vehicle-close-mobile-overlay=""></span>
+
+				<!-- ngIf: !isBnpShowroomMode || containsBuyOnline --><div data-ng-if="!isBnpShowroomMode || containsBuyOnline" class="ng-scope">
+					<img class="model-shot ng-scope" src="//www.gpas-cache.ford.com/guid/9d934eee-6daf-3b01-a304-aad55ffd766e.png" alt="FORD TOURNEO COURIER" data-ng-src="//www.gpas-cache.ford.com/guid/9d934eee-6daf-3b01-a304-aad55ffd766e.png" data-ng-vehicle-open-mobile-overlay="">
+				</div><!-- end ngIf: !isBnpShowroomMode || containsBuyOnline -->
+				<!-- ngIf: isBnpShowroomMode && !containsBuyOnline -->
+				<div class="model-info">
+					<div class="title-container">
+						<h3 class="model-title">
+							<!-- ngIf: !isBnpShowroomMode || containsBuyOnline --><a data-ng-if="!isBnpShowroomMode || containsBuyOnline" data-ng-href="/fahrzeuge/ford-tourneo-courier" data-ng-vehicle-open-mobile-overlay="" class="ng-scope" href="/fahrzeuge/ford-tourneo-courier">
+								<span class="model-name ng-binding">FORD TOURNEO COURIER</span>
+							</a><!-- end ngIf: !isBnpShowroomMode || containsBuyOnline -->
+							<!-- ngIf: isBnpShowroomMode && !containsBuyOnline -->
+						</h3>
+					</div>
+					<!-- ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" data-ng-class="['model-attributes', attr.cssClass]" data-ng-vehicle-attributes="" data-specific-attributes="vehicleSpecificAttributes" data-limit="11" data-get-vehicle-attribute="getVehicleAttribute" data-attributes="attributes" data-vehicle="vehicle" class="ng-scope model-attributes">
+				<!-- ngIf: attr.prefix --><span class="attr-prefix ng-binding ng-scope" data-ng-if="attr.prefix"> UPE ab</span><!-- end ngIf: attr.prefix -->
+			
+				<span class="attr-value ng-binding" data-ng-bind-html="getVehicleAttribute(attr.attribute, vehicle)"><span class="vehicle-attribute-group price-retail-with-otr price-finalPrice-grossRetailWithOTR"><span class="vehicle-attribute-prefix"></span><span class="value">17.863,01</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>
+				
+				<!-- ngIf: attr.suffix -->
+				
+				<!-- ngIf: attr.disclosure --><sup data-ng-gux-disclosure="" data-disclosure="UPE" tabindex="0" data-ng-if="attr.disclosure" class="ng-binding ng-scope ng-isolate-scope initialized" style="display: inline;">2</sup><!-- end ngIf: attr.disclosure -->
+			</div><!-- end ngRepeat: attr in attrs -->
+
+					
+
+	<!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->
+
+
+				</div>
+				<div class="model-footer">
+					<!-- ngRepeat: attr in attrs -->
+
+					<!-- ngRepeat: attr in filterAttributes -->
+
+					
+
+	<!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->
+
+
+					<div class="model-buttons">
+						<!-- ngIf: showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator') --><a data-ng-if="showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator')" data-ng-class="{'model-item-button-hidden' : vehicle.disableBnPCta}" class="cta-button cta-button-primary ng-scope ng-isolate-scope" data-ng-gux-bnp-contextual-link="" data-bnp-path="/kaufberatung/kaufen/pkw-konfigurator-gf3" data-nameplate-code="vehicle.nameplateCode" data-model-code="vehicle.defaultModelCode" data-bnp-start-model-code="vehicle.bnpStartModelCode" data-ng-gux-track-cta="build price" data-nameplate="vehicle" href="/kaufberatung/kaufen/pkw-konfigurator-gf3#/catalogID/WAEDX-C4A-2014-TourneoCourierDEU202075/?code=ACMAA_VS-GE">
+							Konfigurieren
+						</a><!-- end ngIf: showBnpButton(vehicle, '/kaufberatung/kaufen/pkw-konfigurator') -->
+						<!-- ngIf: !isBnpShowroomMode --><a class="cta-button cta-button-secondary ng-scope" data-ng-if="!isBnpShowroomMode" data-ng-href="/fahrzeuge/ford-tourneo-courier" data-ng-gux-track-cta="explore vehicle" data-nameplate="vehicle" href="/fahrzeuge/ford-tourneo-courier">
+							zur Modellseite
+						</a><!-- end ngIf: !isBnpShowroomMode -->
+						
+					</div>
+				</div>
+			</div>
+		</div>`;
+    }
+
+</script>

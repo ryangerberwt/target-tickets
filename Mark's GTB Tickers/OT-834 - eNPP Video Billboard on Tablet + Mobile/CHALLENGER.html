@@ -1,0 +1,214 @@
+<script>
+    console.log('OT-834');
+
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-834:ab:as:video-billboards:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    function doThis() {
+        if (!isRunning) {
+            isRunning = true;
+            // Add required container for videos
+            if ($('.mobile-video-container').length == 0) {
+                $('.billboard-inner:contains("Pre-order now")').append('<div class="mobile-video-container"></div>')
+            }
+
+            if ($('.mobile-video-status').length == 0 && $('.richtext-vehicle-attributes > .richtext-content').length > 0) {
+                $('.richtext-vehicle-attributes > .richtext-content').first().append("<div class='mobile-video-status playing'></div>");
+
+                // Moves object to a location where it works on all screen sizes.
+                var statusObj = $('.mobile-video-status');
+                statusObj[0].parentNode.insertBefore(statusObj[0], statusObj[0].parentNode.children[0]);
+            }
+
+            if ($('.mobile-video-hide-me').length == 0 && $('.billboard-inner:contains("Pre-order now") > .initialized-lazyLoadingImage').length > 0) {
+                $('.billboard-inner:contains("Pre-order now") > .initialized-lazyLoadingImage')[0].classList.add('mobile-video-hide-me');
+            }
+        
+            if ($('.mobile-video-container').length > 0 && $('.mobile-video-hide-me').length > 0 && $('.mobile-video-status').length > 0) {
+
+                // Init all video controls for varying screens and add them to the container
+                var videoHtml =
+                    "<div class='mobile-video-clicker' onclick='playPauseVideo()'></div>" + 
+                    "<video class='mobile-video four' autoplay loop muted playsinline>" +
+
+                        "<source type='video/mp4' src='https://www.ford.eu/target/GUX_2020_480x660.mp4'>" +
+                        "<source type='video/ogv' src='https://www.ford.eu/target/GUX_2020_480x660.ogv'>" +
+                        "<source type='video/webm' src='https://www.ford.eu/target/GUX_2020_480x660.webm'>" +
+
+                    "</video>" +
+                    "<video class='mobile-video seven' autoplay loop muted playsinline>" +
+
+                        "<source type='video/mp4' src='https://www.ford.eu/target/GUX_2020_767x1055.mp4'>" +
+                        "<source type='video/ogv' src='https://www.ford.eu/target/GUX_2020_767x1055.ogv'>" +
+                        "<source type='video/webm' src='https://www.ford.eu/target/GUX_2020_767x1055.webm'>" +
+
+                    "</video>" +
+                    "<video class='mobile-video nine' autoplay loop muted playsinline>" +
+
+                        "<source type='video/mp4' src='https://www.ford.eu/target/GUX_2020_991x425.mp4'>" +
+                        "<source type='video/ogv' src='https://www.ford.eu/target/GUX_2020_991x425.ogv'>" +
+                        "<source type='video/webm' src='https://www.ford.eu/target/GUX_2020_991x425.webm'>";
+
+                    "</video>";
+
+                $('.mobile-video-container')[0].innerHTML = videoHtml;
+
+                clearInterval(runner);
+            }
+            
+            isRunning = false;
+        }
+    }
+
+    function playPauseVideo() {
+        if (window.innerWidth < 992) {
+            
+            var statusObj = $('.mobile-video-status')[0];
+
+            if (statusObj.classList.contains('paused')) {
+                
+                statusObj.classList.remove('paused');
+                statusObj.classList.add('playing');
+
+                $('.mobile-video.four')[0].play();
+                $('.mobile-video.seven')[0].play();
+                $('.mobile-video.nine')[0].play();
+            } else {
+                statusObj.classList.add('paused');
+                statusObj.classList.remove('playing');
+
+                $('.mobile-video.four')[0].pause();
+                $('.mobile-video.seven')[0].pause();
+                $('.mobile-video.nine')[0].pause();
+            }
+        }
+    }
+
+    var isRunning = false;
+    var runner = setInterval(doThis, 100);
+</script>
+
+<style>
+
+    @media only screen and (max-width: 479px) {
+        .mobile-video.four {
+            display: unset !important;
+        }
+
+        .mobile-video.seven, .mobile-video.nine {
+            display: none !important;
+        }
+    }
+
+    @media only screen and (min-width: 480px) and (max-width: 766px) {
+        .mobile-video.seven {
+            display: unset !important;
+        }
+
+        .mobile-video.nine, .mobile-video.four {
+            display: none !important;
+        }
+    }
+
+    @media only screen and (min-width: 767px) and (max-width: 991px) {
+        .mobile-video.nine {
+            display: unset !important;
+        }
+
+        .mobile-video.seven, .mobile-video.four {
+            display: none !important;
+        }
+    }
+
+    @media only screen and (max-width: 991px) {
+        .mobile-video-hide-me {
+            display: none !important;
+        }
+
+        .mobile-video-container {
+            display: unset !important;
+        }
+
+        .mobile-video {
+            width: 100%;
+        }
+
+        .mobile-video-clicker {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: 10;
+        }
+
+        @media only screen and (min-width: 700px) {
+            .mobile-video-status {
+                right: 8% !important;
+            }
+        }
+
+        .mobile-video-status {
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            top: -36px;
+            right: 7%;
+            border: 1px solid #FFF;
+            border-radius: 50%;
+        }
+
+        .mobile-video-status.playing::before {
+            content: "";
+            line-height: 32px;
+            border: 0;
+            border-right: 1px solid #FFF;
+            border-left: 1px solid #FFF;
+            height: 14px;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
+
+        .mobile-video-status.paused::before {
+            font-size: 16px;
+            content: "";
+            border-style: solid;
+            border-width: 6px 10px 6px 0;
+            border-color: transparent #FFF transparent transparent;
+            line-height: 13px;
+            text-shadow: none;
+            display: block;
+            width: 13px;
+            height: 13px;
+            top: 50%;
+            left: 60%;
+            margin: 0;
+            transform: translate(-50%,-50%) rotate(180deg);
+            position: absolute;
+            box-sizing: border-box;
+        }
+    }
+
+    @media only screen and (min-width: 992px) {
+        .mobile-video-hide-me {
+            display: unset;
+        }
+        
+        .mobile-video-container {
+            display: none !important;
+        }
+
+        .mobile-video-clicker {
+            width: 0%;
+            height: 0%;
+        }
+    }
+</style>

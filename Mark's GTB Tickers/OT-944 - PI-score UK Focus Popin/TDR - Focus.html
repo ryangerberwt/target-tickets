@@ -1,0 +1,34 @@
+<script>
+    $(document).ready(function() {
+        setTDROnClick();
+    });
+
+    var TdrCounter = 0;
+    function setTDROnClick() {
+        if ($('.model:contains("Focus")').length == 0 && TdrCounter < 3) {
+            TdrCounter++;
+            return setTimeout(setTDROnClick, 250);
+        }
+            
+        $('.model:contains("Focus")').on('click', function() {
+            console.log("OT-944 - Focus TDR");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.tdr" : "TDR"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

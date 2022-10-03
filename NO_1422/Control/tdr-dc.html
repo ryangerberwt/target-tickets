@@ -1,0 +1,27 @@
+<script>
+    console.log('TDR CONTROL');
+    var enableLogs = false;
+    var _log = console.log;
+        console.log = function(logMsg){
+            if(enableLogs){
+     
+                _log.apply(console,arguments);
+            }
+        }
+        //Added because we sometimes use the console.dir function to display vars
+        var _dir = console.dir;
+        console.dir = function(dirMsg){
+            if(enableLogs){
+                _dir.apply(console,arguments);
+            }
+        }
+    $(document).ready(function () {
+        if (window.location.href.indexOf('ford.no/kjoepe/neste-steg/bestill-proevekjoering')) {
+            localStorage.setItem('carInfo', JSON.stringify({
+                'carName': '',
+                'imgSrc': '',
+                'visited': true
+            }));
+        }
+    });
+</script>

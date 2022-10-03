@@ -1,0 +1,25 @@
+<script>
+    var $ = jQuery;
+    console.log('ticket-1519');
+// Making the Jquery start
+ $(document).ready(function(){
+  
+    // If URL pages start with and has summary ,do the folowing
+    if (/compra/i.test(window.location.href) && !/summary/i.test(window.location.href)){
+        console.log('OT-1519 | Load capacity');
+     
+
+        function swapelement(){
+            var el = document.querySelectorAll(".Accordion__AccordionWrapper-sc-1umbobk-0");
+
+            if (el != undefined) {
+                childNode[7].before(childNode[4]);
+            }
+
+        }
+    
+    }
+
+  })
+
+</script>

@@ -1,0 +1,30 @@
+<script>
+    var $ = jQuery;
+    $(document).ready(function () {
+
+        console.log("OT-1077 - C - Nugget Visited");
+
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.hpr.de.personalization.market": "DE",
+                "profile.hpr.de.personalization.action": "Nugget Page Visited",
+                "profile.hpr.de.personalization.vehicleViewed": window.location.pathname.split('?')[0],
+                "profile.hpr.de.personalization.visibleUntil": d,
+                "profile.hpr.de.personalization.seen": 0
+            },
+            'success': function (offer) {
+                adobe.target.applyOffer({
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function (status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+</script>

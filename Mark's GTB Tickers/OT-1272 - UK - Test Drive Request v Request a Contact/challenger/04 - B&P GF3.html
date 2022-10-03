@@ -1,0 +1,100 @@
+<script>
+
+    console.log('OT-1272');
+
+    (function() {
+    
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1272:ab:ase:tdr-v-rac:challenger'
+            }
+        }
+         
+        _satellite.track('genericTestingImpressionIDWorkaround');
+     
+    })();
+ 
+    (function() {
+
+        setTimeout(() => {
+
+            // 1. Mobile menu item
+            var mobileMenuItems = document.querySelectorAll('.nav-content .site-links .mobile-only a span');
+            replaceCTA(mobileMenuItems);
+
+            // 2. Main desktop menu item
+            var utilityNavItems = document.querySelectorAll('.utility-links .site-link-chevron a span');
+            replaceCTA(utilityNavItems);
+
+            // 3. Main mega menu nav
+            var megaNavItems = document.querySelectorAll('.nav-content .category .category-inner .section .accordion-content p a')
+            replaceCTA(megaNavItems);
+
+            // 4. Footer item
+            var footerItems = document.querySelectorAll('.footer-links .footer-links-column .footer-content ul li a');
+            replaceCTA(footerItems);
+
+            // 5. Sticky side CTAs
+            var stickyItems = document.querySelectorAll('.sticky-cta .sticky-cta-inner a span');
+            replaceCTA(stickyItems);
+
+            // 6. Summery KBA bar
+            var kbaItems = document.querySelectorAll('.splitter .splitter-column a h2');
+            replaceCTA(kbaItems);
+
+
+        }, 1800)
+
+    })();
+
+    function replaceCTA(listOfCtas) {
+
+for (var i = 0; i < listOfCtas.length; i++) {
+
+    if (listOfCtas[i].textContent == 'Request a Contact' || listOfCtas[i].textContent.includes('Request a Contact')) {
+        
+        listOfCtas[i].textContent = 'Request a Test Drive';
+
+        var elementType = listOfCtas[i].tagName;
+
+        // Get query params
+        var quaryParams = '';
+
+        if (elementType != 'A') {
+
+            quaryParams = listOfCtas[i].closest('a').href.split('?')[1];
+            if (quaryParams != undefined) {
+                quaryParams = '?' + quaryParams;
+            }
+            else {
+                quaryParams = '';
+            }
+            
+            listOfCtas[i].closest('a').href = getUrl(listOfCtas[i].closest('a').href) + quaryParams; 
+        
+        } else {
+
+            quaryParams = listOfCtas[i].href.split('?')[1];
+            if (quaryParams != undefined) {
+                quaryParams = '?' + quaryParams;
+            }
+            else {
+                quaryParams = '';
+            }
+        
+            listOfCtas[i].href = getUrl(listOfCtas[i].href) + quaryParams; 
+        }
+
+    }
+
+}
+
+}
+
+function getUrl(href) {
+return href.includes('wizard-overlays') 
+? 'https://www.ford.co.uk/content/overlays/wizard-overlays/request-a-test-drive' 
+: 'https://www.ford.co.uk/shop/research/request-a-test-drive';
+}
+
+</script>

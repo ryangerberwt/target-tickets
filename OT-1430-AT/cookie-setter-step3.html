@@ -1,0 +1,68 @@
+<script>
+    debugger;
+    console.log('OT-1430 - Step 3');
+
+
+
+    var enableLogs = true;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+    setTimeout(function () {
+        //Update the URL in the indexOf for each step.
+        if (window.location.href.indexOf('ford.at/hilfe/online-service-buchung/übergabe') >= 0) {
+
+
+            collectSteps();
+            //If you've completed the OSB then just use this: (You will need to add this to target with the relevant URL that you get sent to after completing the OSB)
+            //setCookie(24, '/', '1430-at-osb-aban', 'isFalse',true);
+
+
+            setCookie(24, '/', '1430-at-osb-aban', 'isTrue', false);
+        }
+    }, 750);
+
+    
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    //Attach this to hashchange
+    function collectSteps() {
+        console.log('collectSteps hash changed');
+        return setCookie(24, '/', 'lastUrlVisited', window.location.href, true);
+    }
+
+
+    function setCookie(expireInHours, path, cookieName, cookieValue, overwrite) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null || overwrite === true) {
+            console.log("no cookie set --- setting now");
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            console.log("cookie is set");
+            return true;
+        } else {
+            console.log("Cookie is still valid");
+            return false;
+        }
+    }
+
+
+
+</script>

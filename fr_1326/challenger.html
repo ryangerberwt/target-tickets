@@ -1,0 +1,63 @@
+<script>
+    var $ = jQuery;
+    $(document).ready(function () {
+        if (window.location.href.indexOf("ford.fr/achat/poursuivre-lexperience/tenez-moi-informe-target") < 0) {
+            var doesExist = setInterval(function () {
+                console.log('calling function');
+                let linkNoParameter = $('a[href="/achat/poursuivre-lexperience/tenez-moi-informe"]');
+                let linkWithParameter = $('a[href^="/achat/poursuivre-lexperience/tenez-moi-informe?"]');
+                if (linkNoParameter.length > 0) {
+                    linkNoParameter.attr('href', window.location.origin + '/achat/poursuivre-lexperience/tenez-moi-informe-target');
+                    if (linkWithParameter.length > 0) {
+                        let parameter = linkWithParameter.attr('href').split('?')[1];
+                        linkWithParameter.attr('href', window.location.origin + '/achat/poursuivre-lexperience/tenez-moi-informe-target?' + parameter);
+                    }
+                    clearInterval(doesExist);
+                } else if ($('a[href="/achat/poursuivre-lexperience/tenez-moi-informe-target"]').length > 0) {
+                    clearInterval(doesExist);
+                }
+
+            }, 500);
+        }
+
+        else if (window.location.href.indexOf("ford.fr/achat/poursuivre-lexperience/tenez-moi-informe-target") >= 0) {
+     
+
+            window.addEventListener('load', function () {
+                console.log('firing tag!');
+                window.targetCampaign = window.targetCampaign || {
+                    page: {
+                        campaignName: "tt:nwp:opt-1326:ab:kmi:email-vs-emailphone:var-b",
+                    },
+                };
+
+                _satellite.track("genericTestingImpressionIDWorkaround");
+            });
+
+
+            window.addEventListener('click', function () {
+                try {
+                    console.log('This is to force it to stop firing');
+                    console.dir(window.targetCampaign);
+                    window.targetCampaign.page.campaignName = "";
+                    console.log('name is ' + window.targetCampaign.page.campaignName)
+                } catch (ex) {
+                    console.log('Ex is');
+                    console.dir(ex);
+                }
+            });
+
+            /*setTimeout(function () {
+                $('body').click();
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+                _satellite.track('');
+                console.log('done firing -- second pass');
+            }, 125)*/
+        }
+    });
+
+</script>

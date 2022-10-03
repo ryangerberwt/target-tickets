@@ -1,0 +1,232 @@
+<script>
+    var at_errors = [];
+    console.log('OT-1645 | Challenger | Header Links')
+    const targetNode = jQuery('div[data-analytics-content-type="global nav header"] > ul')[2];
+    const config = { attributes: true, childList: true, subtree: true };
+    try {
+        var enableLogs = false;
+        var _log = console.log;
+        console.log = function (logMsg) {
+            if (enableLogs) {
+
+                _log.apply(console, arguments);
+            }
+        }
+        //Added because we sometimes use the console.dir function to display vars
+        var _dir = console.dir;
+        console.dir = function (dirMsg) {
+            if (enableLogs) {
+                _dir.apply(console, arguments);
+            }
+        }
+        //setTimeout(function () {
+
+        if (window.location.pathname === '/') {
+
+            window.addEventListener('click', function (e) {
+                //console.log('clicked'); addMutationObserver
+                if (getCookie('hasAccepted') === undefined) {
+                    var now = new Date();
+                    now.setTime(now.getTime() + 24 * 3600 * 1000);
+                    document.cookie = "hasAccepted=true;path=/;expires=" + now.toUTCString();
+                    if (e.target.dataset !== undefined && e.target.dataset !== null && e.target.dataset.accContextType === 'cookiesAgree') {
+                        setTimeout(function () {
+                            runLogic();
+                        }, 1000);
+
+                    }
+                } else {
+                    console.log('cookie has been accepted');
+                }
+            });
+            setTimeout(function () {
+                runLogic();
+            }, 1000);
+            jQuery('body').click();
+            addMutationObserver();
+
+        } else {
+            jQuery(document).ready(function () {
+                console.log('pathname is ' + window.location.pathname);
+                console.log('window has loaded');
+                setTimeout(function () {
+                    runLogic();
+                }, 1000);
+            });
+        }
+
+
+        //}, 1000);
+
+        //TODO: Add menu hover function (might need to use a mutation observer) to fire the
+        //Impression ID when the menu opens.
+        function addMutationObserver() {
+
+            const callback = function (mutationsList, observer) {
+                // Use traditional 'for loops' for IE 11
+                for (const mutation of mutationsList) {
+
+                    if (mutation.type === 'attributes') {
+
+                        if (mutation.attributeName === 'class') {
+                            mutation.target.className === 'has-children is-active' ? fireImpressionID() : console.log('menu is not open');
+                        }
+                    }
+                }
+            };
+            const observer = new MutationObserver(callback);
+            initMutationObserver(observer)
+
+        }
+
+        function initMutationObserver(_observer) {
+            _observer.observe(targetNode, config);
+        }
+        function runLogic() {
+            console.log('Running Logic');
+
+
+            //We need to exclude the following:
+            /*
+                The Vehicle's Section
+                The Support Section
+            */
+            try {
+                var topLevelItems = jQuery(document.querySelectorAll('div[data-analytics-content-type="global nav header"]')[2].children[0].children)
+
+                jQuery.each(topLevelItems, function (idx, val) {
+                    console.log(idx);
+                    if (idx !== 0 && idx !== topLevelItems[topLevelItems.length - 1]) {
+
+                        let theSubList = val.children[1];
+                        let subListHeader = theSubList.children
+                        jQuery.each(subListHeader, function (idx, val) {
+                            let elementVal = val;
+                            let textVal = val.firstChild.nodeValue;
+                            if (textVal === 'FINANCE') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('FINANCE', '<a class="customLinks" href="/finance/overview" onclick="trackLeads(this)">FINANCE</a>');
+                            }
+                            else if (textVal === 'PROMOTIONS') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('PROMOTIONS', '<a class="customLinks" onclick="trackLeads(this)" href="/shop/promotions/personal">PROMOTIONS</a>');
+                            }
+                            else if (textVal === 'ELECTRIC & HYBRID') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('ELECTRIC &amp; HYBRID', '<a class="customLinks" onclick="trackLeads(this)" href="/hybrid-electric">ELECTRIC &amp; HYBRID</a>');
+                            }
+                            else if (textVal === 'CHARGING') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('CHARGING', '<a class="customLinks" onclick="trackLeads(this)" href="/hybrid-electric/charging">CHARGING</a>');
+                            }
+                            else if (textVal === 'WHY GO ELECTRIC?') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('WHY GO ELECTRIC?', '<a class="customLinks" onclick="trackLeads(this)" href="/hybrid-electric/going-electric">WHY GO ELECTRIC?</a>');
+                            }
+                            else if (textVal === 'EXPLORE') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('EXPLORE', '<a class="customLinks" onclick="trackLeads(this)" href="/technology">EXPLORE</a>');
+                            }
+                            else if (textVal === 'CONNECTIVITY') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('CONNECTIVITY', '<a class="customLinks" onclick="trackLeads(this)" href="/technology/connectivity">CONNECTIVITY</a>');
+                            }
+                            else if (textVal === 'YOUR ACCOUNT') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('YOUR ACCOUNT', '<a class="customLinks" onclick="trackLeads(this)" href="/owner/your-account/ford-account">YOUR ACCOUNT</a>');
+                            }
+                            else if (textVal === 'SERVICE & MAINTENANCE') {
+                                elementVal.innerHTML = elementVal.innerHTML.replace('SERVICE &amp; MAINTENANCE', '<a class="customLinks" onclick="trackLeads(this)" href="/owner/service-and-maintenance/book-a-service">SERVICE &amp; MAINTENANCE</a>');
+                            }
+                        });
+                    }
+                });
+            } catch (ex) {
+                at_errors.push('ticket 1645',ex)
+            }
+        }
+
+        function trackLeads(e) {
+            console.dir(e)
+            console.log('TRACK LEADS!!')
+            adobe.target.trackEvent({
+                'mbox': 'OT-1645',
+                'params': {
+                    'clicked': e.outerText
+                }
+            });
+        
+        }
+
+
+
+        function fireImpressionID() {
+            var theCookie = getCookie('1645-impressionid-challenger-fired');
+            console.log('FIREIMPRESSIONID - ' + theCookie);
+            if (theCookie === undefined || theCookie === null) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: 'tt:nwp:opt-1645:ab:nav:nav-menu-headers:challenger'
+                    }
+                };
+                _satellite.track("genericTestingImpressionIDWorkaround");
+                console.log('done firing -- first pass');
+                setCookieForImpressionID(24, '/', '1645-impressionid-challenger-fired', true);
+                console.log('We fired the impressionID ' + window.targetCampaign.page.campaignName);
+                setTimeout(function () {
+                    setOnClick();
+                    console.log('setOnClick done');
+                    jQuery('body').click();
+                }, 500);
+
+            }
+        }
+
+        function setOnClick() {
+            window.addEventListener('click', function () {
+                if (window.targetCampaign !== undefined) {
+                    window.targetCampaign = {
+                        page: {
+                            campaignName: ""
+                        }
+                    }
+                }
+
+                console.dir(window.targetCampaign);
+                console.log('blocking impression on event listener')
+
+            });
+        }
+
+        function getCookie(name) {
+            function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+            var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+            return match ? match[1] : null;
+        }
+
+        function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+            console.log("setting cookie for impression ID");
+            if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+                console.log("no cookie set --- setting now");
+                var now = new Date();
+                now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+                document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+                console.log("cookie is set");
+                return true;
+            } else {
+                console.log("Cookie is still valid");
+                return false;
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
+</script>
+
+<style>
+    a.customLinks {
+        font-size: 1.625rem !important;
+        font-weight: 400 !important;
+        letter-spacing: 2.5px !important;
+        line-height: 1.15 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    .richtext-menu>div>ul>li:hover a.customLinks {
+        color: #102b4e !important;
+    }
+</style>

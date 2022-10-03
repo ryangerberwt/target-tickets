@@ -1,0 +1,51 @@
+<script>
+    $(document).ready(function() {
+        $(window).on("hashchange", checkSection);
+        checkSection();
+    });
+
+    function checkSection() {
+        if (/extras/i.test(window.location.href)) {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1107:ab:bp:order-v-summary:challenger"
+                }
+            }
+            _satellite.track("genericTestingImpressionIDWorkaround");
+
+            makeChanges();
+        }
+    }
+
+    function makeChanges() {
+        var topButtons = $('span > span:contains("ORDER")'); // Mobile and Desktop
+
+        // These top buttons go through a loading phase, where they're not ready yet, displaying something else.
+        // This is to ensure we update them.
+        if (topButtons.length == 0)
+            return setTimeout(makeChanges, 50);
+
+        for (var i = 0; i < topButtons.length; i++) {
+            topButtons[i].innerText = "SUMMARY";
+        }
+
+        topButtons.on('click', function() {
+            triggerMetric();
+        });
+
+        var floatingButton = $('button:contains("ORDER")[class*="NextStepCtaLink"]').first(); // Targets Floating Button only. Same one used for both Mobile and Desktop.
+
+        if (floatingButton.length > 0) {
+            floatingButton[0].innerText = "SUMMARY";
+            floatingButton.on('click', function() {
+                triggerMetric();
+            });
+        }
+    }
+
+    function triggerMetric() {
+        adobe.target.trackEvent({
+            "mbox": "1107_UK_Order_Vs_Summary"
+        });
+    }
+</script>

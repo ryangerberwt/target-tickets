@@ -1,0 +1,44 @@
+<!--<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> -->
+    
+    <script src="https://code.jquery.com/qunit/qunit-2.19.1.js"></script>
+    <script>
+        var $,QUnit;
+    
+        let waitForJquery = setInterval(function () {
+            if (window.jQuery !== undefined) {
+                $ = jQuery;
+                console.log('loaded');
+                QUnit = window.QUnit;
+                $('#global-ux').append('<div id="qunit"></div><div id="qunit-fixture"></div>');
+                clearInterval(waitForJquery);
+             
+                    console.log('starting tests');
+                    QUnit.module('mytests');
+                    QUnit.test('add', function (assert) {
+                        assert.equal(add(1, 2), 3);
+                    });
+
+    
+                console.log('Done running tests');
+            }
+        }, 1500)
+    
+    
+    
+        function add(a, b) {
+            return a + b;
+        }
+    
+        function divide(a, b) {
+            return a / b;
+        }
+    
+        function multiply(a, b) {
+            return a * b;
+        }
+    
+        function minus(a, b) {
+            return a - b;
+        }
+    </script>

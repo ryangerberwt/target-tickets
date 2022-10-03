@@ -1,0 +1,1015 @@
+<script>
+    var targetErrors = targetErrors || [];
+
+    var shortURLResponse_1245 = undefined;
+    var json_shortURL_1245 = undefined;
+
+    function loadData_1245() {
+        $('<div style="display:none" id="hdnDataLoadHere_1245" />').appendTo("body");
+        $('#hdnDataLoadHere_1245').load('https://www.ford.fr/content/guxeu/fr/fr_fr/configuration/applications-and-services/ngc-configuration-bev.model.json');
+    }
+
+    var loadData_1245_interval = setInterval(function(){
+        if ($('#hdnDataLoadHere_1245').length > 0) {
+            clearInterval(loadData_1245_interval);
+        } else {
+            loadData_1245();
+        }
+    }, 50);
+
+    (function () {
+
+        function debugLog(error) {
+            if (/targetDebug=1245/i.test(window.location.href)) {
+                console.log(error);
+            }
+
+            targetErrors.push({ ticket: "1245", error: error });
+        }
+
+        /**
+         *
+         *	DOM builder
+        *	(requires jQuery)
+        *
+        * #def name DOMBuilder
+        *
+        *	SYNTAX:
+        *	jQueryobject DOMbuilder(srcObject);
+        *
+        *	srcObject = DOMobject || [array of DOMobject] || jQueryObject || [array of jQueryObject] || function (returning srcObject);
+        *
+        *	DOMobject = {
+        *		type: 'div',
+        *		id: 'elm-id' || null,
+            render: boolean, // You can decide if element will be rendered
+        *		className: 'elm-class' || 'elm-class-1 elm-class-2' || null,
+        *		data: { key: key, value: value } || null,
+        *		text: 'Text content' || null,
+        *		html: 'HTML content' || null,		// if html provided, text is ignored
+        *		child: srcObject || null
+        *		handlers: { eventID: function, ... } || null,
+        *		callback: function($element) || null
+        *		} || [ array of DOMobj ]
+        *
+        */
+        function DOMBuilder(obj) {
+            if (!obj) return;
+            if ($.isArray(obj)) {
+                var i, arr = [];
+                for (i = 0; i < obj.length; i++) {
+                    (obj[i] instanceof $) ? arr.push(obj[i]) : arr.push(DOMBuilder(obj[i]));
+                }
+                return arr;
+            } else if (obj instanceof $) return obj;
+            else if ($.isFunction(obj)) return DOMBuilder(obj());
+            else {
+                if (!obj.type) return obj.html || obj.text || undefined;
+                if (obj.hasOwnProperty("render") && !obj.render)
+                    return undefined;
+                var $e = $('<' + obj.type + '>');
+                if (obj.id) $e.prop('id', obj.id);
+                if (obj.className) $e.addClass(obj.className);
+                if ($.isPlainObject(obj.data) && obj.data.key) $e.data(obj.data.key, obj.data.value);
+                obj.html ? $e.html(obj.html) : $e.text(obj.text || '');
+                if (obj.child) $e.append(DOMBuilder(obj.child));
+                if ($.isPlainObject(obj.handlers)) {
+                    for (var evName in obj.handlers) $e.on(evName, obj.handlers[evName]);
+                }
+                if ($.isPlainObject(obj.props)) {
+                    for (var propName in obj.props) $e.prop(propName, obj.props[propName]);
+                }
+                if ($.isFunction(obj.callback)) obj.callback($e);
+                return $e;
+            }
+        }
+
+        /**
+         * JS VARIANT "Challenger" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            var Constructions = {};
+            var ENV = {
+                elements: {},
+                data: {},
+                services: {}
+            };
+
+            (function (services) {
+
+                var parseRegExp = /catalogID\=([^\/]+)/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = parseRegExp.exec(location.href);
+
+                    var id, code, features = "";
+
+                    if (parsedCurrentURL == null)
+                        return setTimeout(getCarIDs, 250);
+                    else if (parsedCurrentURL.length == 0)
+                        return setTimeout(getCarIDs, 250);
+
+                    var tempList = parsedCurrentURL[1].split('&');
+
+                    for (var i = 0; i < tempList.length; i++) {
+                        var key_value = tempList[i].split('=');
+                        if (key_value.length == 1) {
+                            id = tempList[i];
+                        } else if (key_value[0] == "series") {
+                            code = key_value[1];
+                        } else {
+                            features += features == "" ? key_value[1] : "," + key_value[1];
+                        }
+                    }
+
+                    return {
+                        id: id,
+                        code: code,
+                        features: features
+                    };
+                }
+
+                var StorageHandler = {};
+                StorageHandler.cookie = "opt-gux-fr"; // opt-gux-MARKET ~ for countries with multiple locales, name it MARKET_LANG ~ Always lower case.
+                StorageHandler.getData = function () {
+                    var current = JSON.parse(localStorage.getItem(StorageHandler.cookie));
+                    if (current == null)
+                        return [];
+                    else
+                        return current;
+                };
+                StorageHandler.saveData = function (key, data) {
+                    var current = StorageHandler.getData();
+                    current.push({ key, data });
+                    localStorage.setItem(StorageHandler.cookie, JSON.stringify(current));
+                };
+                StorageHandler.getSpecificData = function (key) {
+                    var current = StorageHandler.getData();
+                    return current.filter(function (each) {
+                        return each.key == key;
+                    });
+                };
+
+                function getCarConfiguration(IDs, callback) {
+                    return callback(undefined, undefined);
+                }
+
+
+
+                function sanitizeAPIResponse(data, IDs) {
+                    shortURLResponse_1245 = undefined;
+                    shortenURL();
+
+                    if (shortURLResponse_1245 != undefined)
+                        json_shortURL_1245 = JSON.parse(shortURLResponse_1245);
+
+                    return {
+                        loadedJSON: JSON.parse($('#hdnDataLoadHere_1245')[0].innerText),
+                        vehicleID: IDs.id,
+                        vehicleCode: "",
+                        shortURL: ""
+                    }
+                }
+
+                function shortenURL() {
+                    if (/summary/i.test(window.location.href)) {
+                        if (json_shortURL_1245 != undefined) {
+                            if (json_shortURL_1245.data.longUrl == window.location.href) {
+                                return true;
+                            }
+                        }
+
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST", "https://www.servicescache.ford.com/api/ShortURLService/v1/communication/shortenURL/shortURL");
+                        xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
+                        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
+                        xhr.setRequestHeader("Origin", window.location.origin);
+                        xhr.setRequestHeader("Content-Length", "249");
+                        xhr.setRequestHeader("Accept-Language", "en-gb");
+                        xhr.setRequestHeader("Host", "www.servicescache.ford.com");
+                        xhr.setRequestHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Safari/605.1.15");
+                        xhr.setRequestHeader("Referer", window.location.origin);
+                        xhr.setRequestHeader("Accept-Encoding", "gzip, deflate, br");
+                        xhr.setRequestHeader("Connection", "keep-alive");
+
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4) {
+                                shortURLResponse_1245 = xhr.responseText;
+                            }
+                        };
+
+                        var data = '{"locale":"fr_FR","longURL":"' + window.location.href + '"}';
+                        xhr.send(data);
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+
+            }(ENV.services));
+
+            function runInformationsGathering() {
+                if (!/WAEFX-CE1-2015-FiestaCarFRA202100/i.test(window.location.href)) {
+                    return false;
+                }
+                
+                if (/summary/i.test(window.location.href)) {
+                    
+                    var currentIDs = ENV.services.getCarIDs();
+
+                    
+
+                    if ($('.loading-spinner__Spinner-sc-1oahix1-2').length > 0) {
+                        isRunning = false;
+                        return setTimeout(runInformationsGathering, 250);
+                    }
+
+                    ENV.services.describeCall(currentIDs, function (err, result) {
+                        if (err)
+                            return reRun(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+                        
+                        if (/WAEFX-CE1-2015-FiestaCarFRA202100/i.test(window.location.href)) {
+                            DoPopupNow(vehicleInfo);
+                        }
+                    });
+                }
+            }
+
+            function DoPopupNow(theData_1245) {
+
+                // Popup Data
+                var popupData_1245 = {
+                    popup_last_closed: Number("${profile.fr.popup_last_closed}"),
+                    popup_display_count: Number("${profile.fr.popup_display_count}")
+                };
+
+                // Configurations
+                /* Market configuration */
+
+                (function (environment) {
+                    environment.MarketConfiguration = {
+                        // Define overlay URL
+                        overlay: "/overlay/content/overlays/target/tdr",
+                        // Define delay in ms before opening overlay
+                        delayBeforeOpenOverlay: 5000,
+                    };
+                }(ENV));
+
+                /* Define texts - easily move across markets */
+                var customSups = [];
+                function createSup(id, char, disclaimer, heading) {
+                    customSups.push({ id: id, char: char, disclaimer: disclaimer, heading: heading });
+                    return "<sup id='" + id + "'><a style='text-decoration: unset'>" + char + "</a></sup>";
+                }
+
+                (function (environment) {
+
+                    //
+                    var translations = {
+                        heading: "350 € DE REMISE SUPPLÉMENTAIRE SUR L’ACHAT D’UNE FORD FIESTA",
+                        subHeading: "Envoyez dès maintenant votre configuration de Ford Fiesta à votre concessionnaire et recevez 350 € de remise supplémentaire sur les versions éligibles" + createSup("sup_1245_disclaimer_star", "*", "disclaimer1", "priceTooltipHeading") + ".",
+
+                        priceTooltipHeading: "Information",
+                        disclaimer1: "350 € de remise sur le prix maximum valable pour toute commande d’une Ford Fiesta neuve, disponible sur stock, sur toutes les finitions sauf ST, ST Pack et ST Plus jusqu’au 30/04/2021.<br/>Offre cumulable avec les offres en cours, réservée aux particuliers dans le réseau Ford participant sur présentation de l’e-mail reçu.",
+                    };
+
+                    environment.Localisation = {
+                        getTranslation: getTranslation
+                    };
+
+                    function getTranslation(key, replacements) {
+                        var tr = translations[key];
+                        if (!tr)
+                            return;
+                        if (replacements) {
+                            $(Object.keys(replacements)).each(function (i, replace) {
+                                if (replace == 'hybrid' && replacements[replace] != "") {
+                                    tr = tr.replace('<' + replace + '>', "Stromverbrauch " + replacements[replace] + " kWh/100 km kombiniert" + returnSupThree() + ". ");
+                                } else {
+                                    tr = tr.replace("<" + replace + ">", replacements[replace]);
+                                }
+                            });
+                        }
+
+                        return tr;
+                    }
+                }(ENV));
+
+
+                // Elements builder
+
+                /* Generate tooltip */
+                (function () {
+
+                    var tooltipInstance;
+                    var overlay;
+
+                    function docGlobUXOnClick(event) {
+                        if (event.target.id === "optprg-tdr-pop-up-price-tooltip" || $(event.target).parents("#optprg-tdr-pop-up-price-tooltip").length)
+                            return;
+                        event.preventDefault();
+                        closeTooltip();
+                    }
+                    function onResizeOrScrollEvent() {
+                        closeTooltip();
+                    }
+                    function closeTooltip(event) {
+                        if (event)
+                            event.preventDefault();
+                        if (!tooltipInstance)
+                            return;
+                        overlay.unbind("mousedown", docGlobUXOnClick);
+                        overlay.unbind("scroll", onResizeOrScrollEvent);
+                        $(window).unbind("resize", onResizeOrScrollEvent);
+                        tooltipInstance.remove();
+                        tooltipInstance = undefined;
+                    }
+                    function tooltip(options, close) {
+                        return DOMBuilder({
+                            type: "div",
+                            className: "gux-tooltip-overlay",
+                            id: "optprg-tdr-pop-up-price-tooltip",
+                            props: {
+                                tabindex: "0"
+                            },
+                            callback: function (element) {
+                                element.attr("style", "position: absolute; top: " + options.top + "px; left: " + options.left + "px;right: auto; bottom: " + (options.bottom == undefined ? "auto" : options.bottom + "px") + "; z-index: 10001;");
+                            },
+                            child: [{
+                                type: "h5",
+                                className: "gux-tooltip-overlay-title",
+                                text: options.title
+                            }, {
+                                type: "span",
+                                className: "gux-tooltip-overlay-text",
+                                child: [{
+                                    type: "span",
+                                    render: options.number ? true : false,
+                                    text: "[" + options.number + "]"
+                                }, {
+                                    type: "p",
+                                    html: options.text
+                                }]
+                            }, {
+                                type: "a",
+                                className: "close-icon",
+                                handlers: {
+                                    click: close
+                                },
+                                props: {
+                                    tabindex: "0"
+                                }
+                            }]
+                        });
+                    }
+                    Constructions.openTooltip = function (options) {
+                        debugLog(options);
+
+                        closeTooltip();
+
+                        tooltipInstance = tooltip(options, closeTooltip);
+                        $(".popup-overlay-gux-1245").append(tooltipInstance);
+                        if (!overlay)
+                            overlay = options.overlay.parent();
+                        overlay.on("mousedown", docGlobUXOnClick);
+                        overlay.on("scroll", onResizeOrScrollEvent);
+                        $(window).on("resize", onResizeOrScrollEvent);
+                    };
+                }());
+
+                // Handlers
+                /* Handle close events */
+
+                function initializeCloseHandlers(overlay) {
+                    function destroy() {
+                        $(document).unbind("keydown", onKeyPress);
+                    }
+                    var handlers = {
+                        dontShowAgainClose: function (wayOfDestroy, callback, mbox) {
+                            adobe.target.trackEvent({
+                                mbox: mbox,
+                                params: {
+                                    release: wayOfDestroy,
+                                    popup: wayOfDestroy
+                                },
+                                success: function () {
+                                    if (callback)
+                                        callback();
+                                },
+                                error: function () {
+                                    if (callback)
+                                        callback();
+                                }
+                            });
+                            if (callback)
+                                setTimeout(function () {
+                                    callback();
+                                }, 300);
+                            destroy();
+                        },
+                        showAgainClose: function (wayOfDestroy, mbox) {
+                            adobe.target.trackEvent({
+                                mbox: mbox,
+                                params: {
+                                    popup: wayOfDestroy
+                                }
+                            });
+                            destroy();
+                        }
+                    };
+                    function onKeyPress(e) {
+                        if (e.keyCode == 27) {
+                            handlers.dontShowAgainClose("close_escape_keyboard", Popup.setLastClosed(), 'FR_1245_close_cta_ctr');
+                        }
+                    }
+                    $(document).on("keydown", onKeyPress);
+                    overlay.find("span.overlay-close").on("click", function (e) {
+                        handlers.dontShowAgainClose("clicked_x", Popup.setLastClosed(), 'FR_1245_close_cta_ctr');
+                    });
+                    overlay.parent(".overlay-container").on("click", function (e) {
+                        if ($(e.target).hasClass("overlay-container") || $(e.target).hasClass("overlay-container-1245"))
+                            handlers.showAgainClose("clicked_outside_overlay", Popup.setLastClosed(), 'FR_1245_close_cta_ctr');
+                    });
+                    return handlers;
+                }
+
+                function updatePopupData(popup_last_closed, popup_display_count) {
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            'profile.fr.popup_last_closed': popup_last_closed,
+                            'profile.fr.popup_display_count': popup_display_count
+                        },
+                        'success': function (offer) {
+                            adobe.target.applyOffer({
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function (status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+
+                }
+
+                var Popup = {};
+                Popup.isPopupOpen = false;
+                Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+                Popup.openThreshold = 3; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+                Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+                Popup.setLastClosed = function () {
+                    Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+                };
+                Popup.determineIfPopupShows = function () {
+
+                    var popupCookie = popupData_1245;
+                    var timeBool = false;
+                    var limitBool = false;
+
+                    // --------------------------------------------------------
+                    // DETERMINE IF 15 DAYS HAS PASSED SINCE LAST POPUP CLOSED
+                    // --------------------------------------------------------
+                    var lastClosed_minutes = Math.floor(popupCookie.popup_last_closed / 60);
+                    var current_minutes = Math.floor(Popup.currentTimeStamp / 60);
+                    var minuteDifference = current_minutes - lastClosed_minutes;
+
+                    if (minuteDifference >= 21600) {
+                        popupData_1245.popup_last_closed = 0;
+                        popupData_1245.popup_display_count = 1;
+                        updatePopupData(popupData_1245.popup_last_closed, popupData_1245.popup_display_count);
+
+                        return true; // In order for popup to appear
+                    }
+
+                    // ---------------------------------------------
+                    // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+                    // ---------------------------------------------
+                    var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+                    if (timeDifference > Popup.showPopupAfter) {
+                        timeBool = true;
+                    }
+                    else {
+                        debugLog("SHOW AFTER FAILED");
+                        debugLog("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+                    }
+
+                    // ---------------------------------------------
+                    // LIMIT OPEN THRESHOLD
+                    // ---------------------------------------------
+                    if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+                        if (popupCookie.popup_last_closed != null) {
+                            // INCREASE OPEN COUNTER BY 1
+                            Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                        }
+
+                        limitBool = true;
+                    }
+                    debugLog("TIMEBOOL : " + timeBool);
+                    debugLog("LIMITBOOL: " + limitBool);
+
+                    //return true;
+                    return (timeBool && limitBool) || /targetDebug=1245/i.test(window.location.href);
+                };
+                Popup.setKeyValue = function (key, value) {
+
+                    popupData_1245[key] = value;
+
+                    updatePopupData(popupData_1245.popup_last_closed, popupData_1245.popup_display_count)
+                };
+
+                /* Open TDR Overlay */
+                var OverlayHelpers = {};
+
+                (function () {
+
+                    var isAlreadyOpenCalled = false;
+
+                    OverlayHelpers.openOverlay = function (overlay, onOverlayOpen) {
+
+                        window.targetCampaign = window.targetCampaign || {
+                            page: {
+                                campaignName: "tt:nwp:opt-1245:xt:bp:bp-s2d-fiesta"
+                            }
+                        }
+
+                        FordPersonalisation.guxFrameworkDeferred.then(function () {
+                            _satellite.track("impression-xt-popin")
+                        });
+
+                        if (isAlreadyOpenCalled)
+                            return false;
+
+                        isAlreadyOpenCalled = true;
+                        var element = $("<a href=\"" + overlay + "\" style=\"display: none;\" class='test-me'></a>");
+                        $("body").append(element);
+
+                        function waitForOverlayOpen(overlay) {
+                            if (!overlay.$overlayContent)
+                                return setTimeout(function () {
+                                    waitForOverlayOpen(overlay);
+                                }, 50);
+                            onOverlayOpen(overlay);
+                        }
+
+
+                        /*require(['overlay/component.overlay'],*/
+
+                        element.on('click', function (e) {
+                            e.preventDefault();
+                        });
+
+                        if (!popupData_1245) {
+
+                            updatePopupData(0, 1);
+
+                            var overlay = guxOverlay.default.init(element);
+                            debugLog("Trigger Popup");
+                            overlay.getOverlayContent('/overlay/content/overlays/target/tdr');
+                            waitForOverlayOpen(overlay);
+                            Popup.isPopupOpen = true;
+                        }
+                        else {
+                            if (Popup.determineIfPopupShows()) {
+                                var overlay = guxOverlay.default.init(element);
+                                debugLog("Trigger Popup");
+                                overlay.getOverlayContent('/overlay/content/overlays/target/tdr');
+                                waitForOverlayOpen(overlay);
+                            }
+                        }
+                        element.remove();
+                    };
+
+                    /* Fill overlay with data */
+                    OverlayHelpers.fillOverlay = function (overlay, closeHandlers, limit) {
+                        ENV.overlayInstance = overlay;
+                        var overlayContent = overlay.$overlayContent;
+                        var image = overlayContent.find("img.picture-tag-fallback");
+
+                        if (limit >= 100)
+                            return false;
+
+                        if (!image.length)
+                            return setTimeout(function () {
+                                OverlayHelpers.fillOverlay(overlay, closeHandlers, limit ? limit++ : 1);
+                            }, 40);
+
+                        locateAllElements(overlayContent, image);
+                        fillFinishedBnPOverlay(closeHandlers);
+
+                    };
+
+                    function locateAllElements(overlayContent, image) {
+                        ENV.elements.overlayContent = overlayContent.addClass("optprg-tdr-pop-up-1245-content");
+
+                        ENV.elements.image = image.addClass("optprg-tdr-pop-up-image").addClass('optprg-tdr-pop-up-image-desktop');
+
+                        ENV.elements.heading = overlayContent.find("h3").addClass("optprg-tdr-pop-up-heading");
+
+                        //ENV.elements.subHeading = ENV.elements.heading.after(DOMBuilder({ type: "h3", className: "optprg-tdr-pop-up-sub-heading"})).next(); 
+
+                        ENV.elements.offerPrice = overlayContent.find("h4").addClass("optprg-tdr-pop-up-price");
+                        ENV.elements.retailPrice = overlayContent.find("h5").addClass("optprg-tdr-pop-up-price");
+                        //test
+                        ENV.elements.dutyFreePrice = overlayContent.find("h5").addClass("optprg-tdr-pop-up-price");
+                        ENV.elements.afterPrices = ENV.elements.retailPrice.next("p");
+                        ENV.elements.secondatyButton = overlayContent.find("a.cta-button.cta-button-secondary");
+                        ENV.elements.primaryButton = overlayContent.find("a.cta-button.cta-button-primary");
+                        ENV.elements.horsTaxe = ENV.elements.retailPrice.after(DOMBuilder({
+                            type: "p",
+                            className: "hors-taxe"
+                        })).next();
+                        ENV.elements.priceInformation = ENV.elements.primaryButton.after(DOMBuilder({
+                            type: "p",
+                            className: "optprg-co2-info"
+                        })).next();
+                        ENV.elements.co2Information = ENV.elements.priceInformation.after(DOMBuilder({
+                            type: "p",
+                            className: "optprg-price-info"
+                        })).next();
+                    }
+                    function fillFinishedBnPOverlay(closeHandlers) {
+                        var i = 0;
+                        ENV.elements.heading.html(ENV.Localisation.getTranslation("heading"));
+
+                        ENV.elements.priceInformation.text(ENV.Localisation.getTranslation("priceValidText"));
+
+                        ENV.elements.offerPrice.html(ENV.Localisation.getTranslation("heading"));
+                        ENV.elements.retailPrice.html(ENV.Localisation.getTranslation("subHeading"));
+
+                        $('.duty-free').hide();
+                        $('.optprg-main-price-label').hide();
+
+                        ENV.elements.overlayContent.find("source").attr("srcset", "https://gtb-ci.s3-eu-west-1.amazonaws.com/logo.png");
+                        ENV.elements.image.removeAttr("src").attr("src", "https://gtb-ci.s3-eu-west-1.amazonaws.com/logo.png").attr("alt", "Ford Logo").attr("title", "Ford Logo");
+
+                        ENV.elements.secondatyButton.remove();
+                        //ENV.elements.primaryButton.remove();
+
+                        $(".cta-button-primary").html("Envoyez à ma concession");
+                        $(".cta-button-primary").attr("href", "/achat/poursuivre-lexperience/send-to-dealer" + theData_1245.vehicleCode + "&shortUrl=" + theData_1245.shortURL + "&longUrl=" + window.location.href + window.location.hash)
+
+
+                        ENV.elements.afterPrices.hide();
+
+                        ENV.elements.co2Information.hide();
+
+                        while (ENV.elements.overlayContent.html().indexOf('large-6') > 0) {
+                            ENV.elements.overlayContent.html(ENV.elements.overlayContent.html().replace("large-6", ""));
+                        }
+
+                        var overlayForSup = $('.optprg-tdr-pop-up-1245-content');
+
+                        for (var i = 0; i < customSups.length; i++) {
+                            $('#' + customSups[i].id).on('click', function (e) {
+                                try {
+                                    e.preventDefault();
+                                    var customSup = customSups.filter(function (sup) {
+                                        return sup.id == e.currentTarget.id;
+                                    });
+                                    var position = $(this).offset();
+                                    var size = {
+                                        w: $(this).width(),
+                                        h: $(this).height()
+                                    };
+                                    Constructions.openTooltip({
+                                        top: position.top + size.h,
+                                        left: position.left + size.w,
+                                        title: ENV.Localisation.getTranslation(customSup[0].heading),
+                                        text: ENV.Localisation.getTranslation(customSup[0].disclaimer),
+                                        number: customSup[0].char,
+                                        overlay: overlayForSup
+                                    });
+                                } catch (E) {
+                                    debugLog(E);
+                                }
+                            });
+                        }
+
+                        $(".overlay-close")[0].classList.add("overlay-close-1245");
+                    }
+                }());
+
+                var Popupdetection = {};
+                Popupdetection.getCookie = function (name) {
+                    var cookie = " " + document.cookie;
+                    var search = " " + name + "=";
+                    var setStr = null;
+                    var offset = 0;
+                    var end = 0;
+                    if (cookie.length > 0) {
+                        offset = cookie.indexOf(search);
+                        if (offset != -1) {
+                            offset += search.length;
+                            end = cookie.indexOf(";", offset)
+                            if (end == -1) {
+                                end = cookie.length;
+                            }
+                            setStr = unescape(cookie.substring(offset, end));
+                        }
+                    }
+                    return (setStr);
+                };
+
+                function containsSophus() {
+                    if (typeof s3_creativeDisplayed === "undefined" && (typeof s3_creativeDisplayed !== "object" || !s3_creativeDisplayed))
+                        return false;
+                    if (s3_creativeDisplayed)
+                        return true;
+                    return false;
+                }
+
+                function containsBrazePopUp() {
+                    if ($('.ab-iam-root').length > 0)
+                        return true;
+                    else
+                        return false;
+                }
+
+                function getCookieNameContains(nameIncludes) {
+                    var allCookies = document.cookie;
+                    if (allCookies.length > 0) {
+                        var cookieArray = allCookies.split(';');
+                        for (var i = 0; i < cookieArray.length; i++) {
+                            var name = cookieArray[i].split('=')[0];
+                            if (name.includes(nameIncludes))
+                                return true;
+                        }
+                    }
+                    return false;
+                }
+
+                var psymaParticipation = Popupdetection.getCookie("psyma_participation");
+                var psymaIpBlock = Popupdetection.getCookie("psyma_ip_block");
+                var popupsDisable = Popupdetection.getCookie("optprg-popups-disable");
+
+                // DETECT PSYMA PARTICIPATION
+                function blockPopup() {
+                    if (Popupdetection.getCookie("psyma_participation") === "1" && Popupdetection.getCookie("optprg-popups-disable")) {
+
+                        if ($("#psyma_layer").length > 0) {
+                            console.log('blocked');
+                            return true;
+                        }
+                    }
+
+                    if ((getCookieNameContains('IPE') || getCookieNameContains('IPE_M_')) || containsBrazePopUp() || containsSophus()) {
+                        console.log('blocked');
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                var buttonPressed = false;
+                if (blockPopup()) {
+                    return;
+                }
+
+
+                setTimeout(function () {
+
+                    if (!blockPopup()) {
+                        $('button:contains("ENVOYEZ À MA CONCESSION")').on('click', function () {
+                            buttonPressed = true;
+                        });
+                        try {
+                            if (theData_1245.loadedJSON.nameplateConfig != undefined) {
+                                if (theData_1245.loadedJSON.nameplateConfig.formsContexts != undefined) {
+                                    theData_1245.vehicleCode = theData_1245.loadedJSON.nameplateConfig.formsContexts[theData_1245.vehicleID];
+                                }
+                            }
+
+                            if (json_shortURL_1245 == undefined) {
+                                if (shortURLResponse_1245 != undefined) {
+                                    json_shortURL_1245 = JSON.parse(shortURLResponse_1245);
+                                }
+                            }
+
+                            if (json_shortURL_1245 != undefined) {
+                                theData_1245.shortURL = json_shortURL_1245.data.shortUrl;
+                            }
+                        } catch (error) { }
+
+                        if (buttonPressed) {
+                            return;
+                        }
+
+                        if (/summary/i.test(window.location.href)) {
+                            OverlayHelpers.openOverlay(ENV.MarketConfiguration.overlay, function (overlay) {
+                                OverlayHelpers.fillOverlay(overlay, initializeCloseHandlers(overlay.$overlayContent));
+
+                                $(".overlay-container").wrapAll("<div class='popup-overlay-gux-1245' />");
+                                $(".overlay-container")[0].classList.add('overlay-container-1245');
+                                $(".overlay-container-1245")[0].classList.remove('overlay-container');
+
+                                FordPersonalisation.guxFrameworkDeferred.then(function () {
+                                    _satellite.track("impression-xt-popin")
+                                });
+
+                            });
+                        }
+                    }
+                }, ENV.MarketConfiguration.delayBeforeOpenOverlay);
+            }
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+        });
+    }());
+
+    $(window).load(function () {
+        var objToHide = document.querySelectorAll('.optprg-carname')[1];
+        if (objToHide != undefined) {
+            objToHide.style.display = 'none';
+        }
+    });
+
+</script>
+
+<style>
+    .optprg-tdr-pop-up-1245-content .overlay-close-1245 {
+        top: 15px !important;
+        right: 15px !important;
+
+        transform: unset !important;
+        padding: 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .white-background {
+        padding: 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .feature-container>.richtext.section {
+        display: none;
+    }
+
+    .optprg-tdr-pop-up-1245-content .row.splitter {
+        padding: 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .splitter-column:first-child {
+        text-align: -webkit-center;
+        text-align: -moz-center;
+    }
+
+    .optprg-tdr-pop-up-1245-content .splitter-column:last-child {
+        padding: 20px 37px 30px 38px !important;
+        text-align: center;
+    }
+
+    .optprg-tdr-pop-up-1245-content .image.section {
+        width: 25%;
+    }
+
+    .optprg-tdr-pop-up-1245-content sup a {
+        color: #102b4e !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content h4.optprg-tdr-pop-up-price {
+        font-family: FordAntennaCondMedium, Arial, Helvetica, sans-serif !important;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.5 !important;
+        letter-spacing: 3px;
+        text-align: center;
+        color: #4d4d4d !important;
+        border: 0 !important;
+        padding: 0 !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content h5.optprg-tdr-pop-up-price {
+        font-family: FordAntennaRegular, Arial, Helvetica, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.63 !important;
+        letter-spacing: 1px;
+        text-align: center;
+        color: #4d4d4d !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .overlay-content.optprg-tdr-pop-up-1245-content {
+        max-width: 537px !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .icon-x,
+    #optprg-tdr-pop-up-price-tooltip .close-icon:before {
+        color: #102b4e !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .optprg-primary-button {
+        border-radius: 20px;
+        color: #FFF !important;
+        background-color: #102b4e !important;
+        border-color: unset !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        font-family: FordAntennaCondMedium, Arial, Helvetica, sans-serif !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .optprg-primary-button:hover {
+        background-color: rgb(40, 97, 164) !important;
+        color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .first-button {
+        margin: 0 0 0 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .second-button {
+        margin: 20px 0 20px 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .optprg-co2-info {
+        font-family: FordAntennaRegular, Arial, Helvetica, sans-serif !important;
+        font-size: 12px !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.75 !important;
+        letter-spacing: 1px;
+        text-align: center;
+        color: #4d4d4d !important;
+        margin: 0 0 0 0 !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .optprg-primary-button {
+        height: 40px;
+        font-size: 18px !important;
+        line-height: 0.72;
+        letter-spacing: 1px;
+        padding: 13px 25px 13px 25px !important;
+    }
+
+    #optprg-tdr-pop-up-price-tooltip .gux-tooltip-overlay-title {
+        font-family: FordAntennaCondLight, AntennaCondExtraLight, Antenna, Arial, Helvetica, sans-serif !important;
+        margin: 0px;
+        font-weight: 300;
+        font-size: 1.125rem;
+        line-height: 1.39;
+        letter-spacing: 4px;
+        color: #4d4d4d;
+    }
+
+    #optprg-tdr-pop-up-price-tooltip .gux-tooltip-overlay-text {
+        font-family: FordAntennaCondLight, AntennaCondExtraLight, Antenna, Arial, Helvetica, sans-serif !important;
+        font-weight: 200;
+        font-size: 18px;
+        line-height: 1.333;
+        letter-spacing: .015em;
+        margin: 0px;
+    }
+
+    #optprg-tdr-pop-up-price-tooltip .gux-tooltip-overlay-text>span {
+        color: #4d4d4d !important;
+    }
+
+    @media only screen and (max-width:47.9375em) {
+        #optprg-tdr-pop-up-price-tooltip {
+            top: 0 !important;
+            left: 0 !important;
+            height: 100%;
+            width: 100%
+        }
+
+        .overlay-content.optprg-tdr-pop-up-1245-content {
+            max-width: 100% !important;
+        }
+    }
+
+    .optprg-tdr-pop-up-1245-content .cta-button-primary {
+        color: #fff !important;
+        border-radius: 25px !important;
+        background: #102b4e !important;
+        border-color: #102b4e !important;
+        padding: 10px 40px 10px 40px !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .cta-button-primary:hover {
+        background-color: rgb(40, 97, 164) !important;
+        border-color: rgb(40, 97, 164) !important;
+        color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px !important;
+    }
+
+    .optprg-tdr-pop-up-1245-content .cta-button {
+        font-size: 1rem !important;
+        font-weight: 300 !important;
+        text-decoration: none !important;
+        transition: background-color .3s, color .3s !important;
+    }
+</style>

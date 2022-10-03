@@ -1,0 +1,83 @@
+<!-- C - Is On TDR Page -->
+<script>
+    $(document).ready(function(){
+        console.log("OT-866 - C - Is On TDR Page");
+        function vehicleOnList() {
+            if ($('.selected label')[0] == undefined)
+                return setTimeout(vehicleOnList, 50);
+                
+            var car = $('.selected label')[0].innerText;
+
+            switch (car.toLowerCase()) {
+                case "mondeo":
+                case "mondeo hybrid":
+                case "nouveau ford explorer":
+                case "nouveau puma":
+                case "nouveau kuga":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        function setVehicleSelected() {
+            var logIt = vehicleOnList();
+
+            if ($('a:contains("Envoyer")').length > 0) {
+                $('a:contains("Envoyer")')[0].onclick = function() { 
+                    logIt = vehicleOnList();
+                    if (logIt) {
+                        adobe.target.getOffer({
+                            'mbox': "global-mbox",
+                            'params': {
+                                "profile.hpr.range.personalisation.market" : "BE-FR",
+                                "profile.hpr.range.personalisation.action" : "TDR-C",
+                                "profile.hpr.range.personalisation.triggerHomePage" : false,
+                                "profile.hpr.range.personalisation.imageToShow" : "Hybrid & Electric",
+                                "profile.hpr.range.personalisation.visibleUntil" : "",
+                                "profile.hpr.range.personalisation.seen": ""
+                            },
+                            'success': function(offer) {
+                                adobe.target.applyOffer( {
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                            },
+                            'error': function(status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+                    } 
+                };
+            } 
+            if (logIt) {
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.hpr.range.personalisation.market" : "BE-FR",
+                        "profile.hpr.range.personalisation.action" : "TDR-A",
+                        "profile.hpr.range.personalisation.triggerHomePage" : true,
+                        "profile.hpr.range.personalisation.imageToShow" : "Hybrid & Electric",
+                        "profile.hpr.range.personalisation.visibleUntil" : d,
+                        "profile.hpr.range.personalisation.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+            }
+
+            return setTimeout(setVehicleSelected, 50);
+        }
+
+        setVehicleSelected();
+    });
+</script>

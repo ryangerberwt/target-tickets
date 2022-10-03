@@ -1,0 +1,30 @@
+<!-- B - BP-S -->
+<script>
+    $(document).ready(function() {
+        console.log("OT-869 - B - BP-S");
+        
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.hpr.range.personalisation.market" : "BE-NL",
+                "profile.hpr.range.personalisation.action" : "BP S",
+                "profile.hpr.range.personalisation.triggerHomePage" : true,
+                "profile.hpr.range.personalisation.imageToShow" : "SUV",
+                "profile.hpr.range.personalisation.visibleUntil" : d,
+                "profile.hpr.range.personalisation.seen": 0
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,266 @@
+<!-- The DC -->
+<script type="text/javascript">
+    var dataStored = false;
+
+    var globalInfo = undefined;
+
+    (function () {
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            (function (services) {
+
+                var parseRegExp = /catalogID\=([^\/]+)/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = parseRegExp.exec(location.href);
+
+                    var id, code, features = "";
+
+                    var tempList = parsedCurrentURL[1].split('&');
+
+                    for (var i = 0; i < tempList.length; i++) {
+                        var key_value = tempList[i].split('=');
+                        if (key_value.length == 1) {
+                            id = tempList[i];
+                        } else if (key_value[0] == "series") {
+                            code = key_value[1];
+                        } else {
+                            features += features == "" ? key_value[1] : "," + key_value[1];
+                        }
+                    }
+
+                    return {
+                        id: id,
+                        code: code,
+                        features: features
+                    };
+                }
+
+                function getCarConfiguration(IDs, callback) {
+
+                    var theLine = IDs.id;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+                        theLine += "~" + IDs.code;
+                    }
+
+                    if (IDs.features != undefined && IDs.features != "") {
+                        theLine += (theLine.includes("~") ? "," : "~") + IDs.features.replaceAll("included", "");
+                    }
+
+                    var key = [theLine].join("");
+
+                    var data = sessionStorage.getItem(key);
+
+                    if (data != null)
+                        return callback(undefined, JSON.parse(data));
+
+
+                    var url = [
+                        "https://www.servicescache.ford.com/api",
+                        "/vehicleModel/",
+                        "v1",
+                        "/load?locale=",
+                        "de_DE",
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        theLine.replace("included", "")
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: false
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200) {
+                            sessionStorage.setItem(key, JSON.stringify(response.data));
+                            return callback(undefined, response.data);
+                        }
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function sanitizeAPIResponse(data, IDs) {
+                    var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+                    var car = getCarName(data, IDs);
+                    return {
+                        carName: car.name,
+                        date: (new Date()).toString(),
+                        emissions: {
+                            co: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined_wltp ? fuelPerformance.co2_emission_combined_wltp.unitTypes : undefined
+                                ),
+                            coNEDC: fuelPerformance.co2_emission ?
+                                fuelPerformance.co2_emission.unitTypes : (
+                                    fuelPerformance.co2_emission_combined ? fuelPerformance.co2_emission_combined.unitTypes : undefined
+                                ),
+                            lToKm: typeof fuelPerformance.fuel_consumption_combined_wltp !== "undefined" ? fuelPerformance.fuel_consumption_combined_wltp.unitTypes : undefined,
+                        },
+                        img: data.images.exterior[0].urls[0],
+                        retailPrice: data.price.finalPrice.grossRetailWithOTR,
+                        offerPrice: data.price.finalPrice.grossRetailWithOTRAndIncentives,
+                        //dutyFreePrice: data.price.finalPrice.netRetailWithOTR,
+                        subName: car.secondary,
+                        vehicleType: data.props['segment-code'],
+                        contextualiseLink: window.location.pathname + window.location.hash
+                    }
+                }
+
+                function getCarName(data, IDs) {
+                    var carName, subName = "";
+
+                    carName = data.props['nameplate-label'];
+
+                    if (carName.includes("car") || carName.includes("Car"))
+                        carName = carName.replace("Car", "").replace("car", "").trim();
+
+                    if (!carName.toLowerCase().includes("ford"))
+                        carName = "Ford " + carName;
+
+                    if (IDs.code != undefined && IDs.code != "") {
+                        var series = data.features.byMarketing.filter(function (el) {
+                            return el.code == 'series';
+                        });
+
+                        if (series.length > 0) {
+                            var sub = series[0].features.filter(function (el) {
+                                return el.code == IDs.code;
+                            });
+                            if (sub.length > 0) {
+                                subName = sub[0].name;
+                            }
+                        }
+                    }
+
+                    return {
+                        name: carName,
+                        secondary: subName
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+
+            }(ENV.services));
+
+            var MBOXName = "DE_BP_A_Popin";
+
+            /* Get model basic info */
+
+            var thresholdCounter = 0;
+
+            function reRun(error) {
+                thresholdCounter++;
+                if (thresholdCounter < 2) {
+                    console.log(error);
+                    runInformationsGathering();
+                }
+            }
+
+            function runInformationsGathering() {
+                if (/summary/i.test(window.location.href)) {
+                    var currentIDs = ENV.services.getCarIDs();
+
+                    if ($('.loading-spinner__Spinner-sc-1oahix1-2').length > 0) {
+                        isRunning = false;
+                        return setTimeout(runInformationsGathering, 250);
+                    }
+
+                    ENV.services.describeCall(currentIDs, function (err, result) {
+                        if (err)
+                            return reRun(err);
+
+                        var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+
+                        globalInfo = vehicleInfo;
+
+                        var vehicleTDRCode = {
+                            "Ford Fiesta": "00M",
+                            "Ford Tourneo Courier": "00V",
+                            "Ford EcoSport": "00F",
+                            "Ford Puma": "00O",
+                            "Ford Focus": "006",
+                            "Ford Focus Vignale": "006",
+                            "Ford Focus ST": "006",
+                            "Ford Tourneo Connect": "00Q",
+                            "Der neue Ford Kuga": "00W",
+                            "Ford Mondeo": "00R",
+                            "Ford Mondeo Vignale": "00R",
+                            "Ford Mustang": "007",
+                            "Ford S-MAX": "00A",
+                            "Ford S-MAX Vignale": "00A",
+                            "Ford Galaxy": "002",
+                            "Ford Edge": "00E",
+                            "Ford Edge Vignale": "00E",
+                            "Ford Tourneo Custom": "00T",
+                            "Ford Transit Courier": "00K",
+                            "Ford Transit Connect": "00I",
+                            "Ford Transit Custom": "00T",
+                            "Ford Transit": "003",
+                            "Ford Transit Fahrgestelle": "00Z",
+                            "Ford Transit Personentransporter Kombi": "00Z",
+                            "Ford Transit Personentransporter Busse": "00Z",
+                            "Ford Range": "00U"
+
+                        };
+
+                        adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                'profile.market': "ES",
+                                "profile.ticket": "OT-1096",
+                                "profile.carName": vehicleInfo.carName,
+                                "profile.date": vehicleInfo.date,
+                                "profile.emissions": JSON.stringify(vehicleInfo.emissions).replace(/"/g, "'"),
+                                "profile.img": vehicleInfo.img,
+                                "profile.retailPrice": vehicleInfo.retailPrice,
+                                "profile.offerPrice": vehicleInfo.offerPrice,
+                                "profile.subName": vehicleInfo.subName,
+                                "profile.vehicleType": vehicleInfo.vehicleType,
+                                "profile.contextualiseLink": vehicleInfo.contextualiseLink.replace("included", ""),
+                                "profile.tdrVehicleCode": vehicleTDRCode[vehicleInfo.carName],
+                                "profile.vehicleType": "PV",
+                            },
+                            'success': function (offer) {
+                                adobe.target.applyOffer({
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                                dataStored = true;
+                            },
+                            'error': function (status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+
+                        adobe.target.trackEvent({
+                            'mbox': MBOXName,
+                            'params': {
+                                'summary': 'summary-get-data'
+                            }
+                        });
+                    });
+                    return console.log('summary page reached');
+                }
+            }
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+
+        });
+
+    }());
+</script>

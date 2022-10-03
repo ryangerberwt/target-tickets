@@ -1,0 +1,419 @@
+<script>
+    /*
+       gJRhEQ => hGGXtP
+       kfKLKE => liWsoy, lbQlHs
+    */
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-791:ab:vhp:floaty-ebp-cta:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+    console.log('OT-791')
+    var lastPage = "";
+    setInterval(function () {
+        if (isUpdateUrl()) {
+            if($('.float-button').length > 0) {
+                ($('.float-button').empty());
+            }
+            if ($('#root .liWsoy').length > 0 && $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3').length > 0) {
+                if ((document.URL.indexOf('/colour') && lastPage != "colour") || (document.URL.indexOf('/interior') && lastPage != "interior")) {
+                    if ($('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI').html() != $('#root .liWsoy').html()) {
+                        $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI').html($('#root .liWsoy').html())
+                        $("#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI").parent().off("click");
+                        $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI').parent().click(function () {
+                            $('#root .liWsoy').trigger('click');
+                        })
+
+                        if (document.URL.indexOf('/colour')) {
+                            lastPage = "colour";
+                        }
+                        if (document.URL.indexOf('/interior')){
+                            lastPage = "interior";
+                        }
+                        if (document.URL.indexOf('/extras')) {
+                            lastPage = "extras";
+                        }
+                    }
+                }
+            } else if ($('#root .lbQlHs').length > 0 && $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3').length > 0) {
+                if ((document.URL.indexOf('/extras') && lastPage != "extras")) {
+                    $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI').html($('#root .lbQlHs').html())
+                    $("#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI").parent().off("click");
+                    $('#root .ngc-react-parsys button.MainNavigationSaveReserve__MainNavigationSaveReserveCta-sc-141ax0u-1 h3.jnFSBI').parent().click(function () {
+                        $('#root .lbQlHs').trigger('click');
+                    })
+
+                    if (document.URL.indexOf('/colour')) {
+                        lastPage = "colour";
+                    }
+                    if (document.URL.indexOf('/interior')){
+                        lastPage = "interior";
+                    }
+                    if (document.URL.indexOf('/extras')) {
+                        lastPage = "extras";
+                    }
+                }
+            }
+        }
+        else if (isUpdateModelRangeUrl()) {
+            if($('#root .ProductTileSection__ProductTileFullWidthWrapper-sc-1a04xx1-1.DJDpg').find('button.iYyjMP').length>0) {
+
+                var floatButtons = $('.float-button > button');
+                var oldButtons = $('.old-buttons');
+                var doRest = true;
+
+                if (oldButtons.length > 0 && floatButtons.length > 0) {
+                    for (var i = 0; i < oldButtons.length; i++) {
+                        for (var j = 0; j < floatButtons.length; j++) {
+                            if (oldButtons[i].dataset.itemCode == floatButtons[j].dataset.itemCode) {
+                                doRest = false;
+                            }
+                        }
+                    }
+                }
+
+                if (doRest) {
+                    if($('.float-button').length > 0) {
+                        ($('.float-button').empty());
+                    }
+                    else {
+                        $('#root').append('<div class="float-button"></div>');
+                    }
+                    var newButtons = $('#root .ProductTileSection__ProductTileFullWidthWrapper-sc-1a04xx1-1.DJDpg').find('button.iYyjMP').clone();
+                    $('.float-button').append(newButtons);
+                    $('.float-button > .old-buttons').removeClass('old-buttons');
+                }
+            }
+
+            /* Mark Changes */
+            if (document.URL.indexOf('/model') > 0) {
+                var btns = $('.float-button > button');
+                for (var i = 0; i < btns.length; i++) {
+                    if (!btns[i].classList.contains('model-updated')) {
+                        btns[i].classList.add('model-updated');
+                        btns[i].onclick = function(e) {
+                            clickEventsToTrigger(e);
+                        }
+                    }
+                }
+            }
+
+            if (document.URL.indexOf('/range') > 0) {
+                var btns = $('.float-button > button');
+                for (var i = 0; i < btns.length; i++) {
+                    if (!btns[i].classList.contains('range-updated')) {
+                        btns[i].classList.add('range-updated');
+                        btns[i].onclick = function(e) {
+                            clickEventsToTrigger(e);
+                        }
+                    }
+                }
+            }
+
+            if ($('.old-buttons').length == 0) {
+                $('#root .ProductTileSection__ProductTileFullWidthWrapper-sc-1a04xx1-1.DJDpg').find('button.iYyjMP').addClass('old-buttons');
+            }
+        } else {
+            if (document.URL.indexOf('/intro')) {
+                if ($('#hidePlaceholder').length <= 0) {
+                    if ($('#root .ProductSpotlight__ProductInfo-sc-1s1lq5o-3.iEZRLd').length > 0) {
+                        $('#root .ProductSpotlight__ProductInfo-sc-1s1lq5o-3.iEZRLd').append('<div id="hidePlaceholder"></div>');
+                        $('#hidePlaceholder').append( $("#root a.Button__ButtonCommon-sc-5scy24-0.hGGXtP").clone());
+
+                    }
+                }
+
+                if ($('.hGGXtP').length > 0) {
+                    if ($('.hGGXtP')[0].innerText == translations.desktop_right_cta_original)
+                    $('.hGGXtP')[0].innerText = translations.desktop_right_cta_update;
+                }
+
+            }
+            if ($('.float-button').length > 0) {
+                ($('.float-button').empty());
+            }
+        }
+        if (!hackyFloatChangesInit) {
+            hackyFloatChanges();
+        }       
+    }, 200);
+
+    function clickEventsToTrigger(event) {
+        for (var i = 0; i < $('.old-buttons').length; i++) {
+            if ($('.old-buttons')[i].dataset.itemCode == event.target.dataset.itemCode) {
+                $('.old-buttons')[i].click();
+            }
+        }
+    }
+
+    function isUpdateUrl() {
+        if (document.URL.indexOf('/colour') > 0 || document.URL.indexOf('/interior') > 0 || document.URL.indexOf('/extras') > 0) {
+            return true;
+        }
+        return false
+    }
+    function isUpdateModelRangeUrl() {
+        if (document.URL.indexOf('/range') > 0 || document.URL.indexOf('/model') > 0 ) {
+            return true;
+        }
+        return false;
+    }
+
+    var hackyFloatChangesInit = false;
+    var lPage = "";
+
+    function returnCPage() {
+        var tempValue = window.location.hash.replace("#/", "");
+        if (tempValue.indexOf('?') > 0)
+            tempValue = tempValue.substr(0, tempValue.indexOf('?'));
+        
+        return tempValue;
+    }
+
+    function hackyFloatChanges() {
+        setTimeout(function() {
+            var cPage = returnCPage();
+
+            if (lPage != cPage) {
+                lPage = cPage;
+
+                $(window).unbind('scroll');
+                var timeout;
+
+                if (cPage == "intro") {
+                    $(window).scroll(function() {
+                        clearTimeout(timeout);  
+                        timeout = setTimeout(function() {
+                            introHackChange();
+                        }, 50);
+                    });
+                    introHackChange();
+                    hackyFloatChangesInit = true;
+                } else if (cPage == "model" || cPage == "range") {
+                    $(window).scroll(function() {
+                        clearTimeout(timeout);  
+                        timeout = setTimeout(function() {
+                            selectorsHackChange();
+                        }, 50);
+                    });
+                    selectorsHackChange();
+                    hackyFloatChangesInit = true;
+                } else if (cPage == "colour" || cPage == "interior" || cPage == "extras") {
+                    $(window).scroll(function() {
+                        clearTimeout(timeout);  
+                        timeout = setTimeout(function() {
+                            otherHackChange();
+                        }, 50);
+                    });
+                    otherHackChange();
+                    hackyFloatChangesInit = true;
+                }
+            }
+        },250);
+    }
+
+    function introHackChange() {
+        var floatingButton = $('.hGGXtP').first();
+
+        if (window.innerWidth > 992) {
+            if (returnCPage() == "intro") {
+                var noGoZone = $('.BottomDisclosure__BottomDisclosureWrapper-sc-1rvjz71-0').first();
+
+                if (noGoZone.offset() == undefined)
+                    return setTimeout(introHackChange, 50);
+
+                var toCross_position = noGoZone.offset().top;
+
+                if (toCross_position <= 622)
+                    return setTimeout(introHackChange, 50);
+
+                if (window.pageYOffset + window.innerHeight  < toCross_position) {
+                    if (floatingButton[0] != undefined) {
+                        floatingButton[0].style.position = 'fixed';
+                        floatingButton[0].style.transform = 'translate(0,75%)';
+                    }  
+                } else {
+                    if (floatingButton[0] != undefined) {
+                        floatingButton[0].style.position = 'unset';
+                        floatingButton[0].style.transform = '';
+                    } 
+                }
+            }
+        }
+    }
+
+    function selectorsHackChange() {
+        if (window.innerWidth > 992) {
+            if (returnCPage() == "model" || returnCPage() == "range") {
+                var noGoZone = $('.BottomDisclosure__BottomDisclosureWrapper-sc-1rvjz71-0').first()
+
+                if (noGoZone.offset() == undefined)
+                    return setTimeout(selectorsHackChange, 50);
+
+                var toCross_position = noGoZone.offset().top;
+
+                if (toCross_position <= 892)
+                    return setTimeout(selectorsHackChange, 50);
+
+                if (window.pageYOffset + window.innerHeight  < toCross_position) {
+                    $('.old-buttons').each(function() {
+                        $(this)[0].classList.remove('override-old-buttons');
+                    });
+                    if ($('.float-button')[0] != undefined)
+                        $('.float-button')[0].classList.remove('override-float-buttons');
+                } else {
+                    $('.old-buttons').each(function() {
+                        $(this)[0].classList.add('override-old-buttons');
+                    });
+                    if ($('.float-button')[0] != undefined)
+                        $('.float-button')[0].classList.add('override-float-buttons');
+                }
+            }
+        }
+    }
+
+    function otherHackChange() {
+        var floatingButton = $('.liWsoy').first();
+
+        if (window.innerWidth > 992) {
+            if (returnCPage() == "colour" || returnCPage() == "interior") {
+                var noGoZone = $('.BottomDisclosure__BottomDisclosureWrapper-sc-1rvjz71-0').first();
+
+                if (noGoZone.offset() == undefined)
+                    return setTimeout(otherHackChange, 50);
+
+                var toCross_position = noGoZone.offset().top;
+
+                var possiblyStillLoadingThreshold = (returnCPage() == "colour" ? 689 : 683)
+
+                if (toCross_position <= possiblyStillLoadingThreshold)
+                    return setTimeout(otherHackChange, 50);
+
+                if (window.pageYOffset + window.innerHeight  < toCross_position) {
+                    if (floatingButton[0] != undefined)
+                        floatingButton[0].style.position = 'fixed'
+                } else {
+                    if (floatingButton[0] != undefined)
+                        floatingButton[0].style.position = 'absolute'
+                }
+            } else if (returnCPage() == "extras") {
+
+                floatingButton = $('.lbQlHs').first();
+
+                var noGoZone = $('.BottomDisclosure__BottomDisclosureWrapper-sc-1rvjz71-0').first();
+
+                if (noGoZone.offset() == undefined)
+                    return setTimeout(otherHackChange, 50);
+
+                var toCross_position = noGoZone.offset().top;
+
+                var possiblyStillLoadingThreshold = (returnCPage() == "colour" ? 689 : 683)
+
+                if (toCross_position <= possiblyStillLoadingThreshold)
+                    return setTimeout(otherHackChange, 50);
+
+                if (window.pageYOffset + window.innerHeight  < toCross_position) {
+                    if (floatingButton[0] != undefined)
+                        floatingButton[0].style.position = 'fixed'
+                } else {
+                    if (floatingButton[0] != undefined)
+                        floatingButton[0].style.position = 'absolute'
+                }
+            }
+        }
+    }
+
+    $(document).ready(function(){
+        mobileChanges();
+
+        $(window).on('hashchange', function(e) {
+            console.log('hash changed');
+            mobileChanges();
+            hackyFloatChanges();
+        });
+
+        $(window).resize(function() {
+            introHackChange();
+            selectorsHackChange();
+            otherHackChange();
+        });
+
+        function mobileChanges() {
+            setTimeout(function() {
+
+                if (!$('button:contains(' + translations.mobile_right_cta + ')'))
+                    return setTimeout(mobileChanges, 50);
+
+                if (!$('button:contains(' + translations.mobile_right_cta + ')')[0])
+                    return setTimeout(mobileChanges, 50);
+
+                if (/intro/i.test(window.location.href)) {
+                    $('button:contains(' + translations.mobile_right_cta + ')')[0].onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '#/model';
+                    };
+                    $('button:contains(' + translations.mobile_right_cta + ') > span')[0].innerHTML = translations.model;
+                } else if (/model/i.test(window.location.href)) {
+                    $('button:contains(' + translations.mobile_right_cta + ') > span')[0].innerHTML = translations.range;
+                } else if (/range/i.test(window.location.href)) {
+                    $('button:contains(' + translations.mobile_right_cta + ') > span')[0].innerHTML = translations.colour;
+                } else if (/colour/i.test(window.location.href)) {                  
+                    $('button:contains(' + translations.mobile_right_cta + ')')[0].onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        $('#root .liWsoy').trigger('click');
+                    };
+                    $('button:contains(' + translations.mobile_right_cta + ') > span')[0].innerHTML = translations.interior;
+                } else if (/interior/i.test(window.location.href)) {                
+                    $('button:contains(' + translations.mobile_right_cta + ')')[0].onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        $('#root .liWsoy').trigger('click');
+                    };
+                    $('button:contains(' + translations.mobile_right_cta + ') > span')[0].innerHTML = translations.extras;
+                } else if (/extras/i.test(window.location.href)) {
+                                       $('button:contains(' + translations.mobile_right_cta + ')')[0].onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        $('#root .lbQlHs').trigger('click');
+                    };
+                    $('button:contains(' + translations.mobile_right_cta + ') > span')[0].innerHTML = translations.summary;
+                }
+
+                if ($('button:contains(' + translations.mobile_right_cta + ') > span').length > 0)
+                    return setTimeout(mobileChanges, 50);
+            }, 250);
+        }
+    });
+
+    var translations = {
+        market: 'DE', // Just so we know which market the below translations are for. We're not actually using it anywhere.
+
+        desktop_right_cta_original: 'STELLEN SIE IHR EIGENES FAHRZEUG ZUSAMMEN',
+        desktop_right_cta_update: 'KONFIGURIEREN',
+
+        mobile_right_cta: 'JETZT VORBESTELLEN', // This is the CTA Button at the bottom of the screen on a mobile device, on the right.
+
+        model: 'KONFIGURIEREN',
+        range: 'BATTERIE',
+        colour: 'AUSSENFARBE',
+        interior: 'INTERIEUR',
+        extras: 'OPTIONEN',
+        summary: 'JETZT RESERVIEREN',
+
+        mach_e: 'MUSTANG MACH-E',
+        awd: 'AWD',
+
+        mach_e_standard: 'BATTERIE STANDARD RWD',
+        mach_e_extended: 'BATTERIE EXTENDED RWD',
+
+        awd_standard: 'BATTERIE STANDARD AWD',
+        awd_extended: 'BATTERIE EXTENDED AWD',
+
+    }
+</script>

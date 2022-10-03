@@ -1,0 +1,70 @@
+<script>
+    var $ = jQuery;
+    var checkForElements;
+    var impressionFired = false;
+    $(document).ready(function () {
+        console.log('document ready');
+        if (window.location.href.indexOf('ford.co.uk/shop/research/request-a-contact') > 0) {
+            checkForElements = setInterval(function () {
+                //New code
+                if (jQuery('.form-wizard-wrapper').children().eq(1).children().eq(0).children().filter('p') !== undefined && jQuery('.form-wizard-wrapper').children().eq(1).children().eq(0).children().filter('p').length === 2) {
+
+                    if (impressionFired === false || impressionFired == false) {
+                        $(function () {
+                            window.targetCampaign = {
+                                page: {
+                                    campaignName: 'tt:nwp:opt-1421:ab:tdr:legal-copy:control'
+                                }
+                            }
+                            console.log('firing impression')
+                            _satellite.track('genericTestingImpressionIDWorkaround');
+                            impressionFired = true;
+                        });
+                    }
+                
+                    window.addEventListener('click', function (e) {
+                        window.targetCampaign = {
+                            page: {
+                                campaignName: ""
+                            }
+                        }
+
+                        _satellite.track('');
+                    })
+                    $('body').click();
+                    clearInterval(checkForElements);
+                }
+            }, 125);
+
+            setTimeout(function () {
+
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+                _satellite.track('');
+                console.log('done firing -- second pass');
+            }, 250)
+
+        }
+    });
+
+
+</script>
+
+<style>
+    .MuiInputBase-input::-moz-placeholder {
+
+        font-size: 11px !important;
+    }
+
+    .MuiInputBase-input::-webkit-input-placeholder {
+
+        font-size: 11px !important;
+    }
+
+    .MuiInputBase-input::placeholder {
+        font-size: 11px !important;
+    }
+</style>

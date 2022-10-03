@@ -1,0 +1,123 @@
+<script>
+    var privateOffers, commOffers;
+  $(document).ready(function () {
+    $('<div style="display:none" id="hdnPrivateLoadHere" />').appendTo("body");
+    $('<div style="display:none" id="hdnCommLoadHere" />').appendTo("body");
+    $('#hdnPrivateLoadHere').load('/kaufberatung/kaufen/angebote-im-ueberblick/privatkunden .promotionsShowroom');
+    $('#hdnCommLoadHere').load('/kaufberatung/kaufen/angebote-im-ueberblick/geschaeftskunden .promotionsShowroom');
+    var stopLooping = false;
+    var loadInterval = setInterval(loadEightOneThree, 100);
+    
+    function loadEightOneThree() {
+        var carobj = JSON.parse(window.localStorage.getItem('optprg-visited-car-informations-v2'));
+
+        if (carobj != null) {
+            if ($('#hdnPrivateLoadHere').find('.promotionsShowroom').find('.configuration').data('offers') != undefined && $('#hdnCommLoadHere').find('.promotionsShowroom').find('.configuration').data('offers') != undefined) {
+                privateOffers = $('#hdnPrivateLoadHere').find('.promotionsShowroom').find('.configuration').data('offers')[0]['nameplateOffers'];
+                console.log('PRIVATE OFFERS: ' + privateOffers);
+
+                if (privateOffers == undefined) {
+                    privateOffers = $('#hdnPrivateLoadHere').find('.promotionsShowroom').find('.configuration').data('offers')[0]['nameplateOffers'];
+                    console.log('PRIVATE OFFERS: ' + privateOffers);
+                }
+
+                commOffers = $('#hdnCommLoadHere').find('.promotionsShowroom').find('.configuration').data('offers')[0]['nameplateOffers'];
+                console.log('COMM OFFERS: ' + commOffers);
+
+                var showBanner = false;
+                
+                privateOffers.forEach(function(offer) {
+                    if (carobj.carName === offer.name) {
+                        console.log('is private offer');
+                        showBanner = true;
+                    }
+                });
+
+                if (!showBanner) {
+                    commOffers.forEach(function(offer) {
+                        if (carobj.carName === offer.name) {
+                            console.log('is comm offer');
+                            showBanner = true;
+                        }
+                    });
+                }
+
+                /*
+                    EXCLUDES:
+                    FORD KA+
+                    DER NEUE FORD PUMA
+                    DER NEUE FORD KUGA
+                    FORD MUSTANG
+                    DER NEUE FORD EXPLORER PLUG-IN-HYBRID
+                    FORD TOURNEO CUSTOM
+                    DER NEUE FORD MUSTANG MACH-E
+                */
+                if (/FORD KA+/i.test(carobj.carName) ||
+                    /DER NEUE FORD PUMA/i.test(carobj.carName) ||
+                    /DER NEUE FORD KUGA/i.test(carobj.carName) ||
+                    /FORD MUSTANG/i.test(carobj.carName) ||
+                    /DER NEUE FORD EXPLORER PLUG-IN-HYBRID/i.test(carobj.carName) ||
+                    /FORD TOURNEO CUSTOM/i.test(carobj.carName) ||
+                    /DER NEUE FORD MUSTANG MACH-E/i.test(carobj.carName)	) {
+                    
+                } else if (showBanner) {
+
+                    var vehicle = carobj.carName.split(" ");
+                    var arrwords = [];
+                    vehicle.forEach(word => {
+                        var c = word.charAt(0);
+                        var str = word.substr(1).toLowerCase();
+                        if (str.indexOf("-max") !== -1){
+                            var str = str.toUpperCase();
+                        }
+                        if (/NEUE/i.test(word)) {
+                            c = 'n';
+                            str = 'eue';
+                        }
+                        arrwords.push(c + str);
+
+                    })
+
+                    var z = " ";
+                    arrwords.map(a => {
+                        z = z + " " + a;
+                    })
+                    var h = document.querySelectorAll(`#global-ux .billboard .billboard-smart-next-steps h2`)[0];
+                    console.log('h2  tags : ',h);
+                    var h2text = h.innerHTML;
+                    console.log(h2text);
+
+                    var continueExecution = false;
+
+                    if (/Jetzt aktuelle Angebote entdecken!/i.test(h2text)) {
+                        continueExecution = true;
+                    }
+                    
+                    if (continueExecution) {
+                        var rpString = h2text.split(' ');
+
+                        var str = "";
+                        rpString.splice(2, 0, z);
+                        rpString.map(a => {
+                            str = str + " " + a;
+                        });
+                        h.textContent = str;
+                        console.log("final string : ",str);
+                    }
+                    
+                    var a_link = Array.from(document.querySelectorAll("a"));
+                    for (var i = 0; i < a_link.length; i++) {
+
+                        if (a_link[i].classList.contains('billboard-link-layer') && (a_link[i].href.indexOf('kaufberatung/kaufen/angebote-im-ueberblick') > -1)) {
+                            a_link[i].href = "/kaufberatung/kaufen/angebote-im-ueberblick/privatkunden";
+                            console.log(a_link[i]);
+                        }
+
+                    }
+                }
+                clearInterval(loadInterval);
+            }
+        }
+    }
+  });
+</script>

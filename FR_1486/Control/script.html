@@ -1,0 +1,54 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1486 | NGC CONTROL - ' + Math.random(2,100).toFixed(2));
+
+    /*var allowedUrls = [
+        'https://www.ford.fr/achat/poursuivre-lexperience/bp/ice#/model?catalogId=WAEFX-CE1-2022-FiestaCarFRA202200',
+        'https://www.ford.fr/achat/poursuivre-lexperience/bp/ice#/model?catalogId=WAEFX-CGE-2022-FocusMCAFRA202250',
+        'https://www.ford.fr/achat/poursuivre-lexperience/bp/ice#/model?catalogId=WAEFX-CF7-2020-PumaFRA202250'
+    ]*/
+
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        if(window.location.href === 'https://www.ford.fr/achat/poursuivre-lexperience/bp/ice#/model?catalogId=WAEFX-CGE-2022-FocusMCAFRA202250'){
+            fireImpressionId();
+            setTimeout(function(){
+                console.log('clicking ');
+                setOnClick();
+                $('body').click();
+            }, 750);
+            
+        }else{
+            console.log('not on correct URL');
+        }
+    });
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener')
+            _satellite.track('');
+
+        });
+    }
+
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1486:ab:bp:ngc-filters:control",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+    }
+
+
+</script>

@@ -1,0 +1,68 @@
+<script>
+    $(document).ready(function() {
+        console.log("OT-980");
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-980:ab:hp:mindset-uncert-it:challenger"
+            }
+        }
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+        var billboard;
+        var carouselLoadInterval;
+        var slideToMove = 2;
+        var pumaOffer;
+        var firstOffer;
+
+        customizationInit();
+
+        function customizationInit() {
+            if (!billboard) {
+                carouselLoadInterval = setInterval(checkCarouselLoaded, 50);
+            }
+        }
+
+        function checkCarouselLoaded() {
+            billboard = $("div.carousel.carousel-billboard-homepage.active").data("flexslider");
+            if (billboard != undefined) {
+                clearInterval(carouselLoadInterval);
+                customiseCarousel();
+            }
+        }
+
+        function customiseCarousel() {
+            billboard.pause();
+            
+            firstOffer = billboard.slides[0];
+            pumaOffer = getPumaOffer();
+
+            if (billboard.count > 4) {
+                    billboard.removeSlide(slideToMove); // Removes the Puma one
+                    billboard.removeSlide(0); // Removes the first one
+            }
+
+
+            billboard.addSlide(pumaOffer, 0);
+            billboard.addSlide(firstOffer, slideToMove);
+            billboard.play();
+            
+            FordPersonalisation.ptemplate.set("return");
+        }
+
+        function getPumaOffer() {
+            for (var i = 0; i < billboard.slides.length; i++) {
+                if (billboard.slides[i].outerHTML.includes('/content/dam/guxeu/it/home/billboard/2020/ford-homepage-it-HPR_PUMA_2160x1215-16x9-2160x1215-bb-blue-puma.jpg.renditions.extra-large.jpeg')) {
+                    slideToMove = i;
+                    return billboard.slides[i];
+                }
+            }
+
+            for (var i = 0; i < billboard.slides.length; i++) {
+                if (billboard.slides[i].outerHTML.includes('puma') && !billboard.slides[i].outerHTML.includes('puma-st')) {
+                    slideToMove = i;
+                    return billboard.slides[i];
+                }
+            }
+        }
+    });
+</script>

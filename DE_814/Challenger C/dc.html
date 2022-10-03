@@ -1,0 +1,51 @@
+<script>
+  
+  
+    $(document).ready(function() {
+      
+        function validateModel(){
+
+        let catalogList = ["WAEDX-CF7-2020-PUMADEU202175","WAEDX-CTD-2019-KugaDEU202200","WAEDX-CGW-2021-CX727BEVSUVDEU202100","WAEDX-CNG-2013-MondeoDEU202175","WAEDX-CTW-2021-ExplorerDEU202100"];
+        let val = false;
+
+     catalogList.forEach((el,index)=>{
+       
+     if(window.location.href.includes(el)){
+         val = true;
+     }
+     })
+
+        return val;
+
+    }
+      
+     if(validateModel()){
+          console.log("OT-814 - C - BP-S");
+
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.hpr.personalization.market" : "DE",
+                "profile.hpr.personalization.action" : "BP-S",
+                "profile.hpr.personalization.triggerHomePage" : true,
+                "profile.hpr.personalization.visibleUntil" : d,
+                "profile.hpr.personalization.seen": 0
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+          
+        });
+      
+     }
+ });
+</script>

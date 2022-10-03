@@ -1,0 +1,34 @@
+<script>
+    $(document).ready(function() {
+        setTimeout(setKMIOnClick, 2000);
+    });
+
+    var KmiCounter = 0;
+    function setKMIOnClick() {
+        if ($('.model:contains("Focus")').length == 0 && KmiCounter < 3) {
+            KmiCounter++;
+            return setTimeout(setKMIOnClick, 50);
+        }
+            
+        $('.model:contains("Focus")').on('click', function() {
+            console.log("OT-944 - Focus KMI");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.kmi" : "KMI"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

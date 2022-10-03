@@ -1,0 +1,205 @@
+<!-- CHALLENGER -->
+<script>
+
+    console.log('OT-1053');
+ 
+    $(function(){
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1053:ab:od:price-test:challenger'
+            }
+        }
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    });
+
+    var pricesElements;
+
+    $(document).ready(function() {
+
+        var field = 'vn';
+        var url = window.location.href;
+
+        if (url.includes('/owner/my-vehicle/book-a-service')) {
+
+            if((url.indexOf('?' + field + '=') != -1) || (url.indexOf('&' + field + '=') != -1)) {
+                console.log('Deeplinked from email or owners dashboard');
+            } else {
+
+                // Create a loading screen while all this happens
+                var loader = $('<div class="loader-1053" id="loader-1053"></div>');
+                $('body').append(loader);
+
+                // If this is the vehicle step, skip it
+                if (url.includes('#/vehicle-step')) {
+                    skipVehicleStep();
+                }
+
+                // Hide first step
+                document.getElementById('osb-step-index_1').style.display = 'none';
+
+                updateStepNumbers();
+        
+                // Keep checking for services step to hide the prices
+                var checkServicesStep = setInterval(function() {
+        
+                    pricesElements = document.querySelectorAll('.osb-service-cost');
+        
+                    if (pricesElements != undefined && pricesElements != null && pricesElements.length > 0) {
+        
+                        for (var i = 0; i < pricesElements.length; i++) {
+                            pricesElements[i].style.display = 'none';
+                        }
+        
+                        clearInterval(checkServicesStep);
+                    }
+                }, 1000);
+            }
+        }
+    });
+
+    function toggleLoader(show) {
+        if (show) {
+            document.getElementById('loader-1053').style.display = 'block';
+        } else {
+            document.getElementById('loader-1053').style.display = 'none';
+        }
+    }
+
+    function skipVehicleStep() {
+
+        var alternateButton = document.getElementById('osb-selection-label-2');
+
+        toggleLoader(true);
+       
+        // Switch to manual input
+        if (alternateButton) {
+            alternateButton.click();
+            enterVehicleDetails();
+        } else {
+
+            var checkAlternate = setInterval(function() {
+
+                alternateButton = document.getElementById('osb-selection-label-2');
+
+                if (alternateButton != undefined && alternateButton != null) {
+                    clearInterval(checkAlternate);
+                    enterVehicleDetails();
+                }
+            }, 500);
+        }
+    }
+
+    function enterVehicleDetails() {
+
+        var modelSelect;
+        var modelOptions;
+        var yearSelect;
+        var yearOptions;
+        var milageInput;
+        var findButton;
+        var count = 0;
+
+        var checkOptions = setInterval(function() {
+
+            modelSelect = document.querySelectorAll('.osb-manual-selection .osb-dropdown .selectize-input')[0];
+
+            if (modelSelect != undefined && modelSelect != null) {
+
+                clearInterval(checkOptions);
+                modelSelect.click();
+
+                modelOptions = document.querySelectorAll('.ui-select-choices-row');
+
+                for (var i = 0; i < modelOptions.length; i++) {
+                    if (modelOptions[i].innerHTML.includes('TBC')) {
+                        modelOptions[i].click();
+                        break;
+                    }
+                }
+
+                yearSelect = document.querySelectorAll('.osb-manual-selection .osb-dropdown .selectize-input')[1];
+
+                yearSelect.click();
+
+                yearOptions = document.querySelectorAll('.ui-select-choices-row');
+
+                if (yearOptions.length > 0) {
+                    // Clicks the last one.
+                    yearOptions[yearOptions.length-1].click();
+                }
+                
+                /// ISSUES HERE
+                milageInput = document.getElementsByName('mileageInput')[1];
+
+                // AND HERE
+                milageInput.value = '10000';
+                
+                $('input[name="mileageInput"]').trigger("change");
+    
+                // Look for find button
+                var lookFind = setInterval(function(){ 
+                    
+                    findButton = document.querySelector('.osb-vehicle-selection .osb-button-primary.osb-button-submit');
+    
+                    if (findButton != undefined && findButton != null) {
+    
+                        count++
+                        findButton.click();
+                        toggleLoader(false);
+                        clearInterval(lookFind);           
+                    }
+                }, 500);                
+            }
+        }, 500);
+
+    }
+
+    function updateStepNumbers() {
+
+        var stepNumbers = document.querySelectorAll('.osb-step-index');
+        for (var i = 0; i < stepNumbers.length; i++) {
+
+            stepNumbers[i].textContent = i;
+            
+        }
+    }
+         
+</script>
+
+
+<style>
+
+    .osb-review-section.osb-selected-vehicle {
+        display: none;
+    }
+
+    .osb-estimated-cost {
+        display: none;
+    }
+
+    .osb-service-cost {
+        display: none;
+    }
+
+    .osb-service-price {
+        display: none;
+    }
+
+    .loader-1053 {
+        display: none;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+    }
+
+    #osb-app .osb-steps-indicator .osb-step.completed .osb-step-selected-item span {
+        font-family: Antenna,Arial,Helvetica,sans-serif;
+    }
+
+</style>

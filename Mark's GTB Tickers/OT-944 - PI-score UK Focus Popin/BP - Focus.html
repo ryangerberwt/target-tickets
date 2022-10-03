@@ -1,0 +1,77 @@
+<script>
+    $(document).ready(function() {
+        console.log("OT-944 - Focus BP");
+        
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.piscored.focus.market" : "UK",
+                "profile.piscored.focus.action.bp" : "BP"
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+
+        var TdrCounter = 0;
+        function bindTDRClickEvent() {
+            if (/summary/i.test(window.location.href)) {
+                TdrCounter++;
+                if ($('.link-wizard-overlay:contains("Request a Test Drive")').length == 0 && TdrCounter < 3)
+                    return setTimeout(bindTDRClickEvent, 250);
+
+                $('.link-wizard-overlay:contains("Request a Test Drive")').on('click', function() {
+                    FocusCounter = 0;
+                    bindFocusClickEvent();
+                });
+            } else {
+                TdrCounter = 0;
+            }
+        }
+
+        var FocusCounter = 0;
+        function bindFocusClickEvent() {
+            if ($('.overlay-container.wizard-overlay.visible:contains("Request a Test Drive")').length == 0 && FocusCounter < 3) {
+                FocusCounter++;
+                return setTimeout(bindFocusClickEvent, 250);
+            }
+
+            if ($('.overlay-container.wizard-overlay.visible:contains("Request a Test Drive") .model:contains("Focus")').length == 0 && FocusCounter < 3) {
+                FocusCounter++;
+                return setTimeout(bindFocusClickEvent, 250);
+            }
+
+            $('.overlay-container.wizard-overlay.visible:contains("Request a Test Drive") .model:contains("Focus")').on('click', function() {
+                console.log("OT-944 - Focus TDR");
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.piscored.focus.market" : "UK",
+                        "profile.piscored.focus.action.tdr" : "TDR"
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+            });
+            
+        }
+
+        
+
+        $(window).on("hashchange", bindTDRClickEvent);
+    });
+</script>

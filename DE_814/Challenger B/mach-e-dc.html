@@ -1,0 +1,51 @@
+<script>
+    var $ = jQuery;
+   
+     $(document).ready(function() {
+       
+         function validateModel(){
+ 
+         let catalogList = ["WAEDX-CGW-2022-Mach-EDEU202225"];
+         let val = false;
+ 
+      catalogList.forEach((el,index)=>{
+        
+      if(window.location.href.includes(el)){
+          val = true;
+      }
+      })
+ 
+         return val;
+ 
+     }
+       
+      if(validateModel()){
+           console.log("OT-814 - C - BP-S");
+ 
+         var d = new Date();
+         d.setTime(d.getTime() + 1209600000);
+ 
+         adobe.target.getOffer({
+             'mbox': "global-mbox",
+             'params': {
+                 "profile.hpr.personalization.market" : "DE",
+                 "profile.hpr.personalization.action" : "BP-S",
+                 "profile.hpr.personalization.triggerHomePage" : true,
+                 "profile.hpr.personalization.visibleUntil" : d,
+                 "profile.hpr.personalization.seen": 0
+             },
+             'success': function(offer) {
+                 adobe.target.applyOffer( {
+                     'mbox': 'global-mbox',
+                     'offer': offer
+                 });
+             },
+             'error': function(status, error) {
+                 console.log('Error', status, error);
+             }
+           
+         });
+       
+      }
+  });
+ </script>

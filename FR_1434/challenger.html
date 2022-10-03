@@ -1,0 +1,63 @@
+<script>
+    jQuery(document).ready(function () {
+        console.log('OT-1434 - Challenger')
+
+
+        window.targetCampaign = {
+            page: {
+                campaignName: 'tt:nwp:opt-1434:ab:tdr:with-video call:challenger'
+
+            }
+        }
+
+        _satellite.track('genericTestingImpressionIDWorkaround');
+        console.log('done firing -- first pass');
+
+        jQuery('<div style="display:none;"  id="tdr-1434" />').appendTo("body");
+        jQuery('#tdr-1434').load('https://www.ford.fr/content/overlays/acc-wizard-overlays/tdr-chal');
+        async function waitForElm(selector) {
+            return new Promise(resolve => {
+                if (document.querySelector(selector)) {
+                    return resolve(document.querySelector(selector));
+                }
+                const observer = new MutationObserver(mutations => {
+                    if (document.querySelector(selector)) {
+                        resolve(document.querySelector(selector));
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            });
+        }
+
+
+        setTimeout(function () {
+
+            window.targetCampaign = {
+                page: {
+                    campaignName: ''
+                }
+            }
+            _satellite.track('');
+            console.log('done firing -- second pass');
+        }, 250)
+
+        setTimeout(function () {
+            waitForElm(".content#gux3").then(result => {
+                console.log("results ", result);
+                var ch = result;
+                var rep = document.querySelector("#tdr-1434 .content#gux3");
+                console.log("rep ", rep);
+                console.log("ch ", ch)
+                ch.replaceWith(rep);
+
+            });
+        }, 1500)
+
+    })
+
+
+</script>

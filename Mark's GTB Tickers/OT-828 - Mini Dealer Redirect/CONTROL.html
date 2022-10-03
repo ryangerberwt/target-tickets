@@ -1,0 +1,17 @@
+<script>
+
+    console.log('OT-828');
+ 
+    $(function(){
+     
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-828:ab:vhp:mini-dealer-redirect:control'
+            }
+        }
+         
+        _satellite.track('genericTestingImpressionIDWorkaround');
+     
+    });
+     
+</script>

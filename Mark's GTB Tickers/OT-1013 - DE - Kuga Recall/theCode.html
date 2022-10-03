@@ -1,0 +1,106 @@
+<script type="text/javascript">
+    let kugaVin 
+    change = function () {
+        if (document.querySelector('#dash-overlay') && document.querySelector('#dash-overlay').classList.contains('show')) {
+            if (document.querySelector('.dash-your-ford-details')) {
+                console.log("VIN: " + document.querySelector('.dash-vehicle-attributes div:nth-child(4)').innerText);
+                kugaVin = document.querySelector('.dash-vehicle-attributes div:nth-child(4)').innerText;
+            console.log("kugaVin : " + kugaVin);
+                checkVinForRecall(kugaVin);
+            } else {
+                var counter = 0;
+                var checkExist = setInterval(function() {
+                    if (counter > 20) {
+                        // It runs under 10 times on my phone.
+                        clearInterval(checkExist);
+                    } else {
+                        counter++;
+                    }
+                    console.log("timer");
+                    if (document.querySelector('.dash-your-ford-details')) {
+                        kugaVin = document.querySelector('.dash-vehicle-attributes div:nth-child(4)').innerText;
+                        console.log("kugaVin : " + kugaVin);
+                        console.log("Exists!");
+                        clearInterval(checkExist);
+                        checkVinForRecall(kugaVin)
+                    }
+                }, 100); // check every 100ms
+                console.log('CANT FIND THAT BUTTON')
+            }
+        } else {
+            console.log('NO I CANT FIND IT')
+        }
+
+        function checkVinForRecall(vin) {
+
+            const application_id = document.querySelector('span[data-application-id]').attributes[
+                'data-application-id'].value
+            fetch('https://api.mps.ford.com/api/recall/v1/recalls?vin='+ vin +'&language=DE&region=DE&country=DEU', {
+                    "headers": {
+                        "accept": "application/json, text/plain, */*",
+                        "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+                        "application-id": application_id,
+                        "auth-token": fma.CATBundle.access_token,
+                        "sec-fetch-dest": "empty",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "cross-site"
+                    },
+                    "referrer": "https://www.ford.de/dashboard",
+                    "referrerPolicy": "no-referrer-when-downgrade",
+                    "body": null,
+                    "method": "GET",
+                    "mode": "cors",
+                    "credentials": "omit"
+                }).then((response) => {
+                    return response.json()
+                        .then(((data) => {
+
+                            if (data[0].recalls.length === 0) return
+                            data[0].recalls.forEach(recall => {
+                                if (recall.id === '20S34' || recall.id === '20S44') {
+                                    changeCta()
+                                } else {
+                                    return
+                                }
+                            })
+
+                            return data
+                        }))
+                })
+                .catch(err => console.log('The Code errored here', err))
+        }
+
+        function changeCta() {
+            document.querySelector('.dash-your-ford-notification-link > p > a').innerText = 'Mehr Details';
+            document.querySelector('.dash-your-ford-notification-link > p > a[href]').href  = "www.ford.de/service/reparatur-wartung/service-reparaturen/rueckrufaktionen/ford-kuga-plug-in-hybrid-sicherheitsrueckruf";
+
+            window.targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-1013:xt:od:kuga-recall"
+                }
+            }
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        }
+    }
+  
+      //var elemToObserve = document.getElementById('dash-overlay')
+    MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+    var observer = new MutationObserver(function (mutations, observer) {
+    // fired when a mutation occurs
+    
+    mutations.forEach(function (mutation) {
+            if (mutation.target.id =="dash-overlay" ) {
+                console.log(mutations, observer);
+                change();
+            }
+        });
+    });
+
+    // define what element should be observed by the observer
+    // and what types of mutations trigger the callback
+    observer.observe(document, {
+        subtree: true,
+        attributes: true
+    });
+</script>

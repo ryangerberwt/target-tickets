@@ -1,0 +1,264 @@
+<!-- The DC -->
+<script type="text/javascript">
+    var $ = jQuery;
+    var dataStored = false;
+    var globalInfo = undefined;
+    var targetErrors = targetErrors || [];
+    var disclaimers_813 = [];
+    console.log("DC -ALL-OT-813");
+
+    jQuery('<div style="display:none;"  id="promo" />').appendTo("body");
+    jQuery('#promo').load('https://www.ford.de/kaufberatung/kaufen/angebote-im-ueberblick/privatkunden .configuration');
+
+    $(document).ready(function () {
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+
+        var ENV = {
+            services: {}
+        };
+
+        /* Help to receive data about all models from API */
+
+        $(document).ready(function (services) {
+            var parseRegExp = /catalogID\=([^\/]+)/i;
+            function getCarIDs() {
+                var parsedCurrentURL = parseRegExp.exec(location.href);
+                var id, code, features = "";
+                if (parsedCurrentURL == null)
+                    return undefined;
+                else if (parsedCurrentURL.length == 0)
+                    return undefined;
+
+                var tempList = parsedCurrentURL[1].split('&');
+                for (var i = 0; i < tempList.length; i++) {
+                    var key_value = tempList[i].split('=');
+                    if (key_value.length == 1) {
+                        id = tempList[i];
+                    } else if (key_value[0] == "series") {
+                        code = key_value[1];
+                    } else {
+                        features += features == "" ? key_value[1] : "," + key_value[1];
+                    }
+                }
+
+                return { id, code, features };
+            }
+
+            function getCarConfiguration(IDs, callback) {
+
+                if (isNull(IDs))
+                    return callback("Information not set");
+
+                var theLine = IDs.id;
+
+                if (IDs.code != undefined && IDs.code != "") {
+                    theLine += "~" + IDs.code;
+                }
+
+                if (IDs.features != undefined && IDs.features != "") {
+                    theLine += (theLine.includes("~") ? "," : "~") + IDs.features.replaceAll("included", "");
+                }
+
+                if (isNull(theLine))
+                    return callback("Information not set");
+
+                var key = [theLine].join("");
+
+                var data = sessionStorage.getItem(key);
+
+                if (data != null)
+                    return callback(undefined, JSON.parse(data), key);
+
+                var url = [
+                    "https://www.servicescache.ford.com/api",
+                    "/vehicleModel/",
+                    "v1",
+                    "/load?locale=",
+                    "de_DE",
+                    "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                    "default",
+                    "&config=",
+                    theLine
+                ].join("");
+                $.ajax({
+                    url: url,
+                    xhrFields: {
+                        withCredentials: false
+                    }
+                }).done(function (response) {
+                    if (response.status && response.status.statusCode === 200) {
+                        return callback(undefined, response.data, key);
+                    }
+                    callback("Bad response status");
+                }).fail(function () {
+                    callback("Request failed");
+                });
+            }
+
+            function sanitizeAPIResponse(data, IDs) {
+                var fuelPerformance = typeof data.specs !== "undefined" && typeof data.specs.fuel_and_performance !== "undefined" ? data.specs.fuel_and_performance.children : {};
+                var car = "";
+                try {
+                    car = getCarName(data, IDs);
+                } catch (ex) {
+                    overrideLog(ex);
+                    return undefined;
+                }
+                return {
+                    carName: car.name,
+                    subName: car.secondary,
+                }
+            }
+
+            function getCarName(data, IDs) {
+                var carName, subName = "";
+                carName = data.props['nameplate-label'];
+                if (carName.includes("car") || carName.includes("Car"))
+                    carName = carName.replace("Car", "").replace("car", "").trim();
+                if (!carName.toLowerCase().includes("ford"))
+                    carName = "Ford " + carName;
+                if (IDs.code != undefined && IDs.code != "") {
+                    var selectedSeries = data.features.selectedByMarketing.filter(function (el) {
+                        return el.code == 'series';
+                    });
+                    if (selectedSeries.length > 0) {
+                        subName = (selectedSeries[0].children != undefined ? (selectedSeries[0].children.length > 0 ? selectedSeries[0].children[0].name : "") : "");
+                        subName = (subName != "" ? subName : (selectedSeries[0].features != undefined ? (selectedSeries[0].features.length > 0 ? selectedSeries[0].features[0].name : "") : ""));
+                    }
+                    if (subName == "") {
+                        var series = data.features.byMarketing.filter(function (el) {
+                            return el.code == 'series';
+                        });
+                        if (series.length > 0) {
+                            if (series[0].features != undefined) {
+                                if (series[0].features.length > 0) {
+                                    var sub = series[0].features.filter(function (el) {
+                                        return el.code == IDs.code;
+                                    });
+                                    if (sub.length > 0) {
+                                        subName = sub[0].name;
+                                    }
+                                }
+                            }
+                            if (subName == "") {
+                                if (series[0].children != undefined) {
+                                    if (series[0].children.length > 0) {
+                                        var sub = series[0].children.filter(function (el) {
+                                            return el.code == IDs.code;
+                                        });
+                                        if (sub.length > 0) {
+                                            subName = sub[0].name;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (carName == ("Ford " + subName) || carName == subName) {
+                    subName = "";
+                }
+                return {
+                    name: carName,
+                    secondary: subName
+                }
+            }
+
+            services.sanitizeAPIResponse = sanitizeAPIResponse;
+            services.describeCall = getCarConfiguration;
+            services.getCarIDs = getCarIDs;
+        }(ENV.services));
+
+        /* Get model basic info */
+
+        var thresholdCounter = 0;
+
+        function reRun(error) {
+            thresholdCounter++;
+            overrideLog(error);
+            if (thresholdCounter < 100) {
+                setTimeout(runInformationsGathering, 250);
+            }
+        }
+
+        function overrideLog(error) {
+            if (/targetDebug=813/i.test(window.location.href)) {
+                console.log(error);
+            }
+            targetErrors.push({ ticket: "813", error });
+        }
+
+        function isNull(obj) {
+            return obj == undefined || obj == "";
+        }
+
+        function runInformationsGathering() {
+            if (!/summary/i.test(window.location.href)) {
+                if (jQuery('div[class*="loading-spinner"]').length > 0) {
+                    isRunning = false;
+                    return reRun("Still loading");
+                }
+
+                var currentIDs = ENV.services.getCarIDs();
+                if (isNull(currentIDs))
+                    return reRun("currentIDs not set");
+
+                ENV.services.describeCall(currentIDs, function (err, result, key) {
+                    if (err)
+                        return reRun(err);
+                    var vehicleInfo = ENV.services.sanitizeAPIResponse(result, currentIDs);
+                    console.log("vehicle info before save >> ", vehicleInfo);
+                    globalInfo = vehicleInfo;
+                    if (vehicleInfo.carName.includes("kuga")) {
+                        let arr = vehicleInfo.carName.split(" ")
+                        let n = arr[arr.length - 1]
+                        let key = n[0].toUpperCase() + n.slice(1);
+                        vehicleInfo.carName = arr[0] + " " + key;
+                    }
+
+                    adobe.target.getOffer({
+                        'mbox': 'global-mbox',
+                        'params': {
+                            'profile.market': "DE",
+                            "profile.ticket": "OT-813",
+                            "profile.carName": vehicleInfo.carName,
+                            "profile.subName": vehicleInfo.subName,
+                            "profile.vehicleType": "PV",
+
+                        },
+                        'success': function (offer) {
+                            adobe.target.applyOffer({
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                            dataStored = true;
+                        },
+                        'error': function (status, error) {
+                            overrideLog({ message: "Error", status, error });
+                        }
+                    });
+
+                    adobe.target.trackEvent({
+                        'mbox': 'global-mbox',
+                        'params': {
+                            'summary': 'summary-get-data'
+                        }
+                    });
+
+                    let myInterval = setInterval(function () {
+                        if (jQuery('#promo > span[data-offers]') !== undefined) {
+                            let pro = jQuery('#promo > span[data-offers]').data().offers[0].nameplateOffers;
+                            localStorage.setItem("promo", JSON.stringify(pro));
+                            clearInterval(myInterval);
+                        }
+                    }, 1000)
+                });
+            }
+        }
+        $(window).on("hashchange", runInformationsGathering);
+        runInformationsGathering();
+    }());
+</script>

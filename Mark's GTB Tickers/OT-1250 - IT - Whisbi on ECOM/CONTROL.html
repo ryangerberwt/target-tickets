@@ -1,0 +1,32 @@
+<script>
+    var counter_1250 = -1;
+    $(document).ready(function() {
+        counter_1250 = -1;
+        setTimeout(hideControl_1250, 250);
+        //hideControl_1250();
+    });
+    function hideControl_1250() {
+        if ($('.content-loading').length > 0) 
+            return setTimeout(hideControl_1250, 250);
+
+        counter_1250++;
+        if (counter_1250 == 10) {
+            fireImpression();
+        }
+            
+        if ($('.dealer-icon').length > 0) {
+            fireImpression();
+        } else {
+            return setTimeout(hideControl_1250, 250);
+        }
+    }
+    function fireImpression() {
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: "tt:nwp:opt-1250:ab:bp:whisbi-ecom:control"
+            }
+        };
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+    
+</script>

@@ -1,0 +1,141 @@
+<script type="text/javascript">
+    console.log('OT-1520');
+    var selectElementRoot = '.jss43';
+    var selectElementComboBox = '.MuiInputBase-root.MuiInput-root.MuiInputBase-formControl.MuiInput-formControl[data-automation="payment-method-dropdown"]';
+    var selectElementInput = 'input[name="payment-method"]';
+    var selectElementHeading = '.MuiBox-root.jss41.jss40';
+    var radioButtonElements = 'input[name="paymentOptions"]';
+    var ddl = '#budget-filter__payment-method';
+    var ddlID = 'budget-filter__payment-method';
+    var htmlToAdd;
+    setTimeout(function () {
+        var $ = jQuery;
+
+        $(document).ready(function () {
+            fireImpressionId();
+            setTimeout(function () {
+                console.log('clicking');
+                setOnClick();
+                $('body').click();
+                //Check for root element
+                waitForEl(selectElementRoot, 500, 10, doTheMagic);
+
+            }, 750);
+        });
+
+        function doTheMagic() {
+            //Before we append this, first hide selectElementRoot
+            //Then when we select a certain radio button we update the value in selectElementInput
+            /*$(selectElementRoot)[0].style.display = 'none';
+            $(selectElementRoot)[0].style.opacity = 0;*/
+            htmlToAdd = `
+                <fieldset>
+                    <input type="radio" name="paymentOptions" checked id="cashOption" value="Cash">
+                    <label for="cashOption">Cash</label>
+                    <br />
+                    <input type="radio" name="paymentOptions" id="financeOption" value="Finance">
+                    <label for="financeOption">Finance</label>
+                    <br />
+                </fieldset>
+                `;
+            $(selectElementHeading).append(htmlToAdd);
+            onRadioChange(radioButtonElements, ddl);
+        }
+
+        function waitForEl(el, timeOut, maxRuns, method) {
+            var actualRuns = 0;
+            let waitForMe = setInterval(function () {
+                console.log('actual runs ' + actualRuns);
+                if (!isNull(el)) {
+                    console.log('element found');
+                    console.dir($(el));
+                    clearInterval(waitForMe);
+                    method();
+                }
+                else if (actualRuns >= maxRuns) {
+                    console.log('Max runs reached... Skipping');
+                    clearInterval(waitForMe);
+                    return false;
+                }
+
+                else {
+                    actualRuns++;
+                }
+            }, timeOut);
+
+        }
+
+        function onRadioChange(el, elTarget) {
+            if (!isNull(el)) {
+                $(el).on("click", function () {
+                    console.log("onRadioChange");
+                    console.log($(elTarget).attr('class'));
+                    updateValue($(this).val(), $(elTarget));
+                });
+            }
+        }
+
+        function updateValue(valToApply, target) {
+            console.log("apply the val " + valToApply);
+            if (valToApply !== undefined && valToApply !== '') {
+                $(target).text(valToApply);
+                let timer = setInterval(function () {
+                    if (document.getElementById(ddlID).nextElementSibling.attributes !== undefined && document.getElementById(ddlID).nextElementSibling.attributes.length > 0) { 
+                        document.getElementById(ddlID).nextElementSibling.attributes.value.nodeValue = valToApply.toLowerCase();
+                        clearInterval(timer);
+                    } else {
+                        console.log('waiting');
+                    }
+                }, 500);
+            }
+        }
+
+        function isNull(el) {
+            if ($(el) !== undefined && $(el).length > 0) {
+                return false;
+            }
+            return true;
+        }
+
+
+        function fireImpressionId() {
+            console.log('firing impression id');
+            window.targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-1520:ab:vsr:finance-radio:challenger", //Change this to your impressionID
+                },
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        }
+
+        function setOnClick() {
+            window.addEventListener('click', function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+                _satellite.track('');
+
+            });
+        }
+
+        //We don't always need this but adding it here for reference
+        function setOnKeyUp() {
+            window.addEventListener('keyUp', function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+                _satellite.track('');
+
+            });
+        }
+
+
+    }, 1000)
+
+
+</script>

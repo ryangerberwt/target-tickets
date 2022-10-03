@@ -1,0 +1,165 @@
+<script>
+    console.log('OT-1645 | Control | Header Links')
+    const targetNode = jQuery('div[data-analytics-content-type="global nav header"] > ul')[2];
+    const config = { attributes: true, childList: true, subtree: true };
+    try {
+        var enableLogs = false;
+        var _log = console.log;
+        console.log = function (logMsg) {
+            if (enableLogs) {
+
+                _log.apply(console, arguments);
+            }
+        }
+        //Added because we sometimes use the console.dir function to display vars
+        var _dir = console.dir;
+        console.dir = function (dirMsg) {
+            if (enableLogs) {
+                _dir.apply(console, arguments);
+            }
+        }
+        //setTimeout(function () {
+
+        if (window.location.pathname === '/') {
+
+            window.addEventListener('click', function (e) {
+                //console.log('clicked'); addMutationObserver
+                if (getCookie('hasAccepted') === undefined) {
+                    var now = new Date();
+                    now.setTime(now.getTime() + 24 * 3600 * 1000);
+                    document.cookie = "hasAccepted=true;path=/;expires=" + now.toUTCString();
+                    if (e.target.dataset !== undefined && e.target.dataset !== null && e.target.dataset.accContextType === 'cookiesAgree') {
+                        setTimeout(function () {
+                            runLogic();
+                        }, 1000);
+
+                    }
+                } else {
+                    console.log('cookie has been accepted');
+                }
+            });
+            setTimeout(function () {
+                runLogic();
+            }, 1000);
+            jQuery('body').click();
+            addMutationObserver();
+
+        } else {
+            jQuery(document).ready(function () {
+                console.log('pathname is ' + window.location.pathname);
+                console.log('window has loaded');
+                setTimeout(function () {
+                    runLogic();
+                }, 1000);
+            });
+        }
+
+
+        //}, 1000);
+
+        //TODO: Add menu hover function (might need to use a mutation observer) to fire the
+        //Impression ID when the menu opens.
+        function addMutationObserver() {
+
+            const callback = function (mutationsList, observer) {
+                // Use traditional 'for loops' for IE 11
+                for (const mutation of mutationsList) {
+
+                    if (mutation.type === 'attributes') {
+
+                        if (mutation.attributeName === 'class') {
+                            mutation.target.className === 'has-children is-active' ? fireImpressionID() : console.log('menu is not open');
+                        }
+                    }
+                }
+            };
+            const observer = new MutationObserver(callback);
+            initMutationObserver(observer)
+
+        }
+
+        function initMutationObserver(_observer) {
+            _observer.observe(targetNode, config);
+        }
+        function runLogic() {
+            console.log('Running Logic');
+        }
+
+        function fireImpressionID() {
+            var theCookie = getCookie('1645-impressionid-control-fired');
+            console.log('FIREIMPRESSIONID - ' + theCookie);
+            if (theCookie === undefined || theCookie === null) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: 'tt:nwp:opt-1645:ab:nav:nav-menu-headers:control'
+                    }
+                };
+                _satellite.track("genericTestingImpressionIDWorkaround");
+                console.log('done firing -- first pass');
+                setCookieForImpressionID(24, '/', '1645-impressionid-control-fired', true);
+                console.log('We fired the impressionID ' + window.targetCampaign.page.campaignName);
+                setTimeout(function () {
+                    setOnClick();
+                    console.log('setOnClick done');
+                    jQuery('body').click();
+                }, 500);
+
+            }
+        }
+
+        function setOnClick() {
+            window.addEventListener('click', function () {
+                if (window.targetCampaign !== undefined) {
+                    window.targetCampaign = {
+                        page: {
+                            campaignName: ""
+                        }
+                    }
+                }
+
+                console.dir(window.targetCampaign);
+                console.log('blocking impression on event listener')
+
+            });
+        }
+
+        function getCookie(name) {
+            function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+            var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+            return match ? match[1] : null;
+        }
+
+        function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+            console.log("setting cookie for impression ID");
+            if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+                console.log("no cookie set --- setting now");
+                var now = new Date();
+                now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+                document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+                console.log("cookie is set");
+                return true;
+            } else {
+                console.log("Cookie is still valid");
+                return false;
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
+</script>
+
+<style>
+    a.customLinks {
+        font-size: 1.625rem !important;
+        font-weight: 400 !important;
+        letter-spacing: 2.5px !important;
+        line-height: 1.15 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    .richtext-menu>div>ul>li:hover a.customLinks {
+        color: #102b4e !important;
+    }
+</style>

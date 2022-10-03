@@ -1,0 +1,62 @@
+<script>
+    var $; 
+    var enableLogs = true;
+var _log = console.log;
+    console.log = function(logMsg){
+        if(enableLogs){
+ 
+            _log.apply(console,arguments);
+        }
+    }  
+    console.log('OT-1521 | Cookie Banner | Control')
+
+    window.onload = function() {
+        let waitForJquery = setInterval(function(){
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                console.log('jQuery loaded');
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                run();
+            } else {
+                console.log("Not loaded - will check again in 500ms");
+            }
+        },500);
+    }
+
+    function run(){
+        console.log('In run!');
+
+        /* Fix To Prevent multiple re-fires of impression ID*/
+        window.addEventListener('keyup', blockImpressionId());
+        window.addEventListener('click', blockImpressionId());
+
+    }
+
+    function fireImpressionId() {
+        //console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1521:ab:as:cookie-banner:control",
+            },
+        };
+
+        _satellite.track("");
+    }
+    function blockImpressionId(){
+        if (window.targetCampaign.page.campaignName !== "") {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+        }
+        console.log('firing impression on event listener')
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    }
+
+    
+ 
+
+
+</script>

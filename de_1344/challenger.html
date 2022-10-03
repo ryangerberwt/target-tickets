@@ -1,0 +1,46 @@
+<script>
+
+  var $ = jQuery; // < 1 > - $ is no longer initialized by Ford. Target has built in jQuery. Most of our scripts use the $.
+  var targetErrors = targetErrors || [];
+  console.log('OT-1344');
+    $(window).on("hashchange",function() {
+      console.log('Checking rules');
+      console.log(window.location.href);
+      if (window.location.href.indexOf('/kaufberatung/kaufen/bp/ice-inventory?context=showroom#/summary') > 0 || 
+      (window.location.href.indexOf('/kaufberatung/kaufen/bp/ice#/') > 0 && window.location.href.indexOf('/summary?')>0)) {
+        console.log('Rules passed');
+          elementLoaded('button[aria-label="Klicken Sie hier, um zum nächsten Schritt im Bestellprozess zu gelangen und einen Händler auszuwählen."]', function(el) {
+              $('button[aria-label="Klicken Sie hier, um zum nächsten Schritt im Bestellprozess zu gelangen und einen Händler auszuwählen."]')[0].textContent = "WEITER";
+              $('button[aria-label="Klicken Sie hier, um zum nächsten Schritt im Bestellprozess zu gelangen und einen Händler auszuwählen."]')[1].textContent = "WEITER";
+          });
+          
+              window.targetCampaign = window.targetCampaign || {
+  page: {
+      campaignName: 'tt:nwp:opt-1344:ab:bp:ngc-ice-summary:challenger'
+  }
+    }
+    _satellite.track('genericTestingImpressionIDWorkaround');
+  
+      }else{
+        console.log('rules failed');
+        console.log('Current URL : ' + window.location.href);
+      }
+  });
+
+  function elementLoaded(el, cb) {
+    console.log('checking');
+  if ($(el).length) {
+    // Element is now loaded.
+    cb($(el));
+  } else {
+    // Repeat every 500ms.
+    setTimeout(function() {
+      elementLoaded(el, cb)
+    }, 1000);
+  }
+}
+
+
+
+
+</script>

@@ -1,0 +1,100 @@
+<script>
+    console.log('OT-1618 | Control')
+    var $;
+    var enableLogs = false;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                // You can place the rest of your script(s) here
+                runLogic();
+            }
+        }, 500);
+    }
+
+    function runLogic() {
+        console.log('Running Logic');
+        fireImpressionID();
+    }
+
+    function fireImpressionID() {
+        var theCookie = getCookie('1618-impression-control-fired');
+        console.log('FIREIMPRESSIONID - ' + theCookie);
+        if (theCookie === undefined || theCookie === null) {
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1618:ab:hp:stacked-carousel:control'
+                }
+            };
+            //_satellite.track('');
+            _satellite.track("genericTestingImpressionIDWorkaround");
+            console.log('done firing -- first pass');
+            setCookieForImpressionID(24, '/', '1618-impression-control-fired', true);
+            console.log('We fired the impressionID ' + window.targetCampaign.page.campaignName);
+            setTimeout(function () {
+                setOnClick();
+                console.log('setOnClick done');
+                $('body').click();
+            },500);
+
+        }
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            if (window.targetCampaign !== undefined) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('blocking impression on event listener')
+            //_satellite.track('');
+
+        });
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+            console.log("no cookie set --- setting now");
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            console.log("cookie is set");
+            return true;
+        } else {
+            console.log("Cookie is still valid");
+            return false;
+        }
+    }
+
+
+</script>

@@ -1,0 +1,195 @@
+<script>
+    // This runs on every page.
+    console.log("OT-839 - ALL");
+    // Mini Showroom - This is on every page
+    setTimeout(function () {
+
+        var run = true;
+        var counter = 0;
+
+        while (run) {
+            if ($('.site-link-title:contains("Modelle")').length > 0) {
+                $('.site-link-title:contains("Modelle")')[0].onmouseover = function () {
+                    executeChanges();
+                };
+                $('.vehicle-menu-item:contains("Familienautos")')[0].onclick = function () {
+                    executeChanges();
+                };
+                run = false;
+            }
+            counter = counter + 1;
+            if (counter == 10) {
+                run = false;
+            }
+        }
+
+        function executeChanges() {
+            if ($('.vehicle-menu-item.is-active:contains("Familienautos")').length > 0) {
+                setTimeout(function () {
+                    var added = false;
+                    if(getVehicle("FOCUS").length === 0) {
+                        added = true;
+                        $('.vehicle-menu-item.is-active:contains("Familienautos")').find('.vehicle-menu-content .vehicle-tiles').append(getFocusHTML());
+                    }
+                    if(getVehicle("MONDEO").length === 0){
+                        added = true;
+                        $('.vehicle-menu-item.is-active:contains("Familienautos")').find('.vehicle-menu-content .vehicle-tiles').append(getModeoHTML());
+                    }
+                    if(getVehicle("TOURNEO COURIER").length === 0){
+                        added = true;
+                        $('.vehicle-menu-item.is-active:contains("Familienautos")').find('.vehicle-menu-content .vehicle-tiles').append(getGetTourneoHTML());
+                    }
+
+                    // if (added) {
+                    //     $('.site-link-title:contains("Kaufberatung")').click();
+                    //     setTimeout(function() {
+                    //         $('.site-link-title:contains("Modelle")').trigger('mouseenter')
+                    //     }, 50);
+                    // }
+                }, 250);    
+            }
+        }
+
+        function getVehicle(car) {
+            return $('.vehicle-menu-item.is-active:contains("Familienautos")').find('.vehicle-menu-content .vehicle-tiles > div:contains("' + car + '")');
+        }
+
+        function getFocusHTML() {
+            return '<div data-ng-repeat="vehicle in vehiclesByCategory[\'PKW\'] track by (vehicle.name + $index)" data-category-index="0" class="tile small-12 large-4 xlarge-3 ng-scope" data-nameplatecode="WAEDX-CGE-2018-C519FocusDEU202025" data-ng-mini-showroom-repeat-callback="">\n' +
+                '\n' +
+                '    <a class="model-shot-link" data-ng-href="/fahrzeuge/ford-focus?vehicleNavCategory=pv" data-ng-click="extendLink($event)" tabindex="4" href="/fahrzeuge/ford-focus?vehicleNavCategory=pv">\n' +
+                '        <img class="model-shot-placeholder" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAYAAAA7KqwyAAAABGdBTUEAALGPC/xhBQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+AGHA07DpzN/ckAAABIaVRYdENvbW1lbnQAAAAAAENSRUFUT1I6IGdkLWpwZWcgdjEuMCAodXNpbmcgSUpHIEpQRUcgdjYyKSwgZGVmYXVsdCBxdWFsaXR5Ctrb0JYAAAAPSURBVCjPY2AYBaOACgAAAkkAAQysdekAAAAASUVORK5CYII=" alt="FORD FOCUS">\n' +
+                '        <img class="model-shot" data-ng-src="//www.fordeumedia-c.ford.com/nas/gforcenaslive/deu/cge09/yyt/images/deucge09yytbs-ffvs-d3acmaa(a)(a)pn4fzshowroom_0_0.png" src="//www.fordeumedia-c.ford.com/nas/gforcenaslive/deu/cge09/yyt/images/deucge09yytbs-ffvs-d3acmaa(a)(a)pn4fzshowroom_0_0.png" alt="FORD FOCUS">\n' +
+                '    </a>\n' +
+                '    <div class="info">\n' +
+                '        <a data-ng-href="/fahrzeuge/ford-focus?vehicleNavCategory=pv" data-ng-click="extendLink($event)" tabindex="4" href="/fahrzeuge/ford-focus?vehicleNavCategory=pv">\n' +
+                '            <div class="title-container">\n' +
+                '                <h3 class="model-title" style="height: 64px;">\n' +
+                '                    <span class="model-name ng-binding">FORD FOCUS</span>\n' +
+                '                </h3>\n' +
+                '            </div>\n' +
+                '        </a>\n' +
+                '\n' +
+                '        <div data-ng-vehicle-attributes="" data-attributes="getAttributes(0)" data-vehicle="vehicle" data-vehicle-specific-attributes="vehicleSpecificAttributes" data-get-vehicle-attribute="getVehicleAttribute" class="ng-isolate-scope"><!-- ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" class="make-info ">\n' +
+                '            <div class="make-info-inner">\n' +
+                '                <span class="make-prefix ng-binding">Unverbindliche Aktionspreisempfehlung ab</span>\n' +
+                '                <span class="make-price ng-binding" data-attributeid="price-promotional-bnp" data-ng-bind-html="getVehicleAttribute(attr.attributeId, vehicle)"><span class="vehicle-attribute-group price-promotional-bnp price-finalPrice-grossRetailWithOTRAndIncentives"><span class="vehicle-attribute-prefix"></span><span class="value">18.290</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>\n' +
+                '\n' +
+                '                <span class="make-suffix ng-binding"></span>\n' +
+                '                <sup data-ng-gux-disclosure="" data-disclosure="Unverbindliche Aktionspreisempfehlung" tabindex="4" class="ng-binding ng-isolate-scope initialized" style="display: inline;">1</sup>\n' +
+                '            </div>\n' +
+                '        </div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" class="make-info ">\n' +
+                '            <div class="make-info-inner">\n' +
+                '                <span class="make-prefix ng-binding">UPE ab</span>\n' +
+                '                <span class="make-price ng-binding" data-attributeid="price-retail-with-otr" data-ng-bind-html="getVehicleAttribute(attr.attributeId, vehicle)"><span class="vehicle-attribute-group price-retail-with-otr price-finalPrice-grossRetailWithOTR"><span class="vehicle-attribute-prefix"></span><span class="value">21.000</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>\n' +
+                '\n' +
+                '                <span class="make-suffix ng-binding"></span>\n' +
+                '                <sup data-ng-gux-disclosure="" data-disclosure="UPE" tabindex="4" class="ng-binding ng-isolate-scope initialized" style="display: inline;">2</sup>\n' +
+                '            </div>\n' +
+                '        </div><!-- end ngRepeat: attr in attrs --></div>\n' +
+                '        <!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->\n' +
+                '\n' +
+                '\n' +
+                '    </div>\n' +
+                '</div>'
+        }
+
+        function getModeoHTML() {
+            return '<div data-ng-repeat="vehicle in vehiclesByCategory[\'PKW\'] track by (vehicle.name + $index)" data-category-index="0" class="tile small-12 large-4 xlarge-3 ng-scope" data-nameplatecode="WAEDX-CNG-2013-CD391MondeoDEU202050" data-ng-mini-showroom-repeat-callback="">\n' +
+                '\n' +
+                '    <a class="model-shot-link" data-ng-href="/fahrzeuge/ford-mondeo?vehicleNavCategory=pv" data-ng-click="extendLink($event)" tabindex="5" href="/fahrzeuge/ford-mondeo?vehicleNavCategory=pv">\n' +
+                '        <img class="model-shot-placeholder" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAYAAAA7KqwyAAAABGdBTUEAALGPC/xhBQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+AGHA07DpzN/ckAAABIaVRYdENvbW1lbnQAAAAAAENSRUFUT1I6IGdkLWpwZWcgdjEuMCAodXNpbmcgSUpHIEpQRUcgdjYyKSwgZGVmYXVsdCBxdWFsaXR5Ctrb0JYAAAAPSURBVCjPY2AYBaOACgAAAkkAAQysdekAAAAASUVORK5CYII=" alt="FORD MONDEO">\n' +
+                '        <img class="model-shot" data-ng-src="//www.fordeumedia-c.ford.com/nas/gforcenaslive/deu/cng07/yyu/images/deucng07yyubs-ffvs-j5acmaa(a)(a)pn3gzshowroom_0_0.png" src="//www.fordeumedia-c.ford.com/nas/gforcenaslive/deu/cng07/yyu/images/deucng07yyubs-ffvs-j5acmaa(a)(a)pn3gzshowroom_0_0.png" alt="FORD MONDEO">\n' +
+                '    </a>\n' +
+                '    <div class="info">\n' +
+                '        <a data-ng-href="/fahrzeuge/ford-mondeo?vehicleNavCategory=pv" data-ng-click="extendLink($event)" tabindex="5" href="/fahrzeuge/ford-mondeo?vehicleNavCategory=pv">\n' +
+                '            <div class="title-container">\n' +
+                '                <h3 class="model-title" style="height: 64px;">\n' +
+                '                    <span class="model-name ng-binding">FORD MONDEO</span>\n' +
+                '                </h3>\n' +
+                '            </div>\n' +
+                '        </a>\n' +
+                '\n' +
+                '        <div data-ng-vehicle-attributes="" data-attributes="getAttributes(0)" data-vehicle="vehicle" data-vehicle-specific-attributes="vehicleSpecificAttributes" data-get-vehicle-attribute="getVehicleAttribute" class="ng-isolate-scope"><!-- ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" class="make-info ">\n' +
+                '            <div class="make-info-inner">\n' +
+                '                <span class="make-prefix ng-binding">Unverbindliche Aktionspreisempfehlung ab</span>\n' +
+                '                <span class="make-price ng-binding" data-attributeid="price-promotional-bnp" data-ng-bind-html="getVehicleAttribute(attr.attributeId, vehicle)"><span class="vehicle-attribute-group price-promotional-bnp price-finalPrice-grossRetailWithOTRAndIncentives"><span class="vehicle-attribute-prefix"></span><span class="value">28.290</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>\n' +
+                '\n' +
+                '                <span class="make-suffix ng-binding"></span>\n' +
+                '                <sup data-ng-gux-disclosure="" data-disclosure="Unverbindliche Aktionspreisempfehlung" tabindex="5" class="ng-binding ng-isolate-scope initialized" style="display: inline;">1</sup>\n' +
+                '            </div>\n' +
+                '        </div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" class="make-info ">\n' +
+                '            <div class="make-info-inner">\n' +
+                '                <span class="make-prefix ng-binding">UPE ab</span>\n' +
+                '                <span class="make-price ng-binding" data-attributeid="price-retail-with-otr" data-ng-bind-html="getVehicleAttribute(attr.attributeId, vehicle)"><span class="vehicle-attribute-group price-retail-with-otr price-finalPrice-grossRetailWithOTR"><span class="vehicle-attribute-prefix"></span><span class="value">32.300</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>\n' +
+                '\n' +
+                '                <span class="make-suffix ng-binding"></span>\n' +
+                '                <sup data-ng-gux-disclosure="" data-disclosure="UPE" tabindex="5" class="ng-binding ng-isolate-scope initialized" style="display: inline;">2</sup>\n' +
+                '            </div>\n' +
+                '        </div><!-- end ngRepeat: attr in attrs --></div>\n' +
+                '\n' +
+                '\n' +
+                '\n' +
+                '        <!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length --><div class="model-hev-indicator ng-scope" data-ng-class="{\'item-has-attributes\': vehicle.attributeCount > 0}" data-ng-if="vehicle.isHevIndicatorVisible &amp;&amp; vehicle.hevTechnologies.length">\n' +
+                '        <div class="model-hev-indicator-items">\n' +
+                '            <!-- ngRepeat: hev in vehicle.hevTechnologies track by hev.name --><div data-ng-repeat="hev in vehicle.hevTechnologies track by hev.name" class="model-hev-indicator-item hev-hybrid">\n' +
+                '            Hybrid\n' +
+                '        </div><!-- end ngRepeat: hev in vehicle.hevTechnologies track by hev.name -->\n' +
+                '        </div>\n' +
+                '        <!-- ngIf: vehicle.hevTechnologies.length > 0 --><div data-ng-if="vehicle.hevTechnologies.length > 0" class="model-hev-indicator-available ng-scope">\n' +
+                '\n' +
+                '    </div><!-- end ngIf: vehicle.hevTechnologies.length > 0 -->\n' +
+                '    </div><!-- end ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->\n' +
+                '\n' +
+                '\n' +
+                '\n' +
+                '    </div>\n' +
+                '</div>';
+        }
+
+        function getGetTourneoHTML() {
+            return '<div data-ng-repeat="vehicle in vehiclesByCategory[\'Nutzfahrzeuge\'] track by (vehicle.name + $index)" data-category-index="5" class="tile small-12 large-4 xlarge-3 ng-scope" data-nameplatecode="newTourneoCourierPreLaunch" data-ng-mini-showroom-repeat-callback="">\n' +
+                '\n' +
+                '    <a class="model-shot-link" data-ng-href="/nutzfahrzeuge/ford-tourneo-courier?vehicleNavCategory=cv" data-ng-click="extendLink($event)" tabindex="6" href="/nutzfahrzeuge/ford-tourneo-courier?vehicleNavCategory=cv">\n' +
+                '        <img class="model-shot-placeholder" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAYAAAA7KqwyAAAABGdBTUEAALGPC/xhBQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+AGHA07DpzN/ckAAABIaVRYdENvbW1lbnQAAAAAAENSRUFUT1I6IGdkLWpwZWcgdjEuMCAodXNpbmcgSUpHIEpQRUcgdjYyKSwgZGVmYXVsdCBxdWFsaXR5Ctrb0JYAAAAPSURBVCjPY2AYBaOACgAAAkkAAQysdekAAAAASUVORK5CYII=" alt="FORD TOURNEO COURIER">\n' +
+                '        <img class="model-shot" data-ng-src="/content/dam/guxeu/de/cvs/tourneo-courier/ford-tourneo-courier-de-16x9-768x432-showroom-red.png" src="/content/dam/guxeu/de/cvs/tourneo-courier/ford-tourneo-courier-de-16x9-768x432-showroom-red.png" alt="FORD TOURNEO COURIER">\n' +
+                '    </a>\n' +
+                '    <div class="info">\n' +
+                '        <a data-ng-href="/nutzfahrzeuge/ford-tourneo-courier?vehicleNavCategory=cv" data-ng-click="extendLink($event)" tabindex="6" href="/nutzfahrzeuge/ford-tourneo-courier?vehicleNavCategory=cv">\n' +
+                '            <div class="title-container">\n' +
+                '                <h3 class="model-title" style="height: 64px;">\n' +
+                '                    <span class="model-name ng-binding">FORD TOURNEO COURIER</span>\n' +
+                '                </h3>\n' +
+                '            </div>\n' +
+                '        </a>\n' +
+                '\n' +
+                '        <div data-ng-vehicle-attributes="" data-attributes="getAttributes(5)" data-vehicle="vehicle" data-vehicle-specific-attributes="vehicleSpecificAttributes" data-get-vehicle-attribute="getVehicleAttribute" class="ng-isolate-scope"><!-- ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" class="make-info ">\n' +
+                '            <div class="make-info-inner">\n' +
+                '                <span class="make-prefix ng-binding">Unverbindliche Aktionspreisempfehlung ab</span>\n' +
+                '                <span class="make-price ng-binding" data-attributeid="price-promotional-bnp" data-ng-bind-html="getVehicleAttribute(attr.attributeId, vehicle)"><span class="vehicle-attribute-group price-promotional-bnp price-finalPrice-grossRetailWithOTRAndIncentives"><span class="vehicle-attribute-prefix"></span><span class="value">15.490</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>\n' +
+                '\n' +
+                '                <span class="make-suffix ng-binding">inkl. MwSt.</span>\n' +
+                '                <sup data-ng-gux-disclosure="" data-disclosure="Unverbindliche Aktionspreisempfehlung" tabindex="6" class="ng-binding ng-isolate-scope initialized" style="display: inline;">1</sup>\n' +
+                '            </div>\n' +
+                '        </div><!-- end ngRepeat: attr in attrs --><div data-ng-repeat="attr in attrs" class="make-info ">\n' +
+                '            <div class="make-info-inner">\n' +
+                '                <span class="make-prefix ng-binding">UPE ab</span>\n' +
+                '                <span class="make-price ng-binding" data-attributeid="price-retail-with-otr" data-ng-bind-html="getVehicleAttribute(attr.attributeId, vehicle)"><span class="vehicle-attribute-group price-retail-with-otr price-finalPrice-grossRetailWithOTR"><span class="vehicle-attribute-prefix"></span><span class="value">18.324,99</span><span class="vehicle-attribute-suffix">&nbsp;€</span></span></span>\n' +
+                '\n' +
+                '                <span class="make-suffix ng-binding">inkl. MwSt.</span>\n' +
+                '                <sup data-ng-gux-disclosure="" data-disclosure="UPE" tabindex="6" class="ng-binding ng-isolate-scope initialized" style="display: inline;">2</sup>\n' +
+                '            </div>\n' +
+                '        </div><!-- end ngRepeat: attr in attrs --></div>\n' +
+                '\n' +
+                '\n' +
+                '\n' +
+                '        <!-- ngIf: vehicle.isHevIndicatorVisible && vehicle.hevTechnologies.length -->\n' +
+                '\n' +
+                '\n' +
+                '\n' +
+                '    </div>\n' +
+                '</div>';
+        }
+
+    }, 1000);
+</script>

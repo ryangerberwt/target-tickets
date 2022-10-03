@@ -1,0 +1,25 @@
+<script>
+    setTimeout(function(){
+
+        console.log("OT-835 - Showroom");
+
+        getAndMove("KUGA");     // Third
+        getAndMove("MACH-E");   // Second
+        getAndMove("PUMA");     // First
+
+        function getAndMove(car) {
+            moveVehicle(getVehicle(car));
+        }
+
+        function moveVehicle(object) {
+            if (object.length > 0) {
+                object[0].parentNode.insertBefore(object[0], object[0].parentNode.children[0]);
+            }
+        }
+
+        function getVehicle(car) {
+            return $('.content-wrap > .model-item:contains("'+ car + '")');
+        }
+
+    }, 1000);
+</script>

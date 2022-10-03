@@ -1,0 +1,97 @@
+<!--OSB-C -->
+<script>
+
+    var MBOXName = "OT_1640_BP_C";
+    function addTracking(){
+        adobe.target.trackEvent({
+            "mbox": MBOXName,
+            "params": {
+                "completed": "OSB"
+            }
+        });
+    }
+
+
+
+
+    function waitForElm(selector) {
+        return new Promise(resolve => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector));
+            }
+     
+            const observer = new MutationObserver(mutations => {
+                console.log('selector : ' + selector);
+                if (document.querySelector(selector)){
+                    console.log('resolving');
+                    resolve(document.querySelector(selector));
+                    observer.disconnect();
+                }
+            });
+     
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    }
+
+    function reviewClick(){
+
+        waitForElm('.light-request-booking-button').then((elm) =>{
+
+            console.log('element is ready')
+            elm.on('click touchend',function(){
+                addTracking();
+            })
+
+
+        });
+    }
+
+
+    window.addEventListener("load",function(){
+        console.log('OT-1549');
+        let acc_closed,acc_sub,acc_third = null;
+        let searchInt = setInterval(function(){
+          //console.log('searching');
+           acc_closed = document.querySelector('.vehicle-detail-accordion.opened');
+           acc_sub = document.querySelector('.accordion-title');
+           acc_third = document.querySelector('#accordion-panels--0.panel')
+           stopSearch(acc_closed,acc_sub,acc_third);
+           
+        },50)
+        function stopSearch(a,b,c){
+            
+            if(a != null && b != null && c != null){
+                
+  
+                window.targetCampaign ={
+                    page: {
+                        campaignName: 'tt:nwp:opt-1549:ab:osb:collapse-vin:challenger'
+                    }
+                }
+                
+                _satellite.track('genericTestingImpressionIDWorkaround');
+               
+               clearInterval(searchInt);
+               //console.log('search interval cleared');
+                 if(a.classList.contains('opened')){
+                    
+                    a.classList.remove('opened');
+                    b.classList.remove('header-color')
+                    c.classList.remove('expanded');
+                    
+                 }
+                 else{
+                    a.classList.add('opened');
+                    b.classList.add('header-color')
+                    c.classList.add('expanded');
+                 }
+                 
+               
+            }
+        }
+        
+    })
+    </script>

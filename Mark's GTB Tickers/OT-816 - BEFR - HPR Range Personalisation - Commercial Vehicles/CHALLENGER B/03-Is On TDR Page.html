@@ -1,0 +1,88 @@
+<script>
+    $(document).ready(function(){
+        console.log("OT-816 - B - Is On TDR Page");
+        function vehicleOnList() {
+            if ($('.selected label')[0] == undefined)
+                return setTimeout(vehicleOnList, 50);
+                
+            var car = $('.selected label')[0].innerText;
+
+            switch (car.toLowerCase()) {
+                case "nouvelle fiesta van":
+                case "nouveau transit courier":
+                case "transit connect":
+                case "nouveau transit custom":
+                case "nouveau transit custom nugget":
+                case "nouveau transit custom nugget plus":
+                case "nouveau transit 2t":
+                case "nouveau transit châssis cabine":
+                case "nouveau ranger":
+                case "nouveau ranger raptor":
+                case "nouveau transit bus":
+                case "ranger": 
+                case "fiesta van": 
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        function setVehicleSelected() {
+            var logIt = vehicleOnList();
+
+            if ($('a:contains("Envoyer")').length > 0) {
+                $('a:contains("Envoyer")')[0].onclick = function() { 
+                    logIt = vehicleOnList();
+                    if (logIt) {
+                        adobe.target.getOffer({
+                            'mbox': "global-mbox",
+                            'params': {
+                                "profile.hpr.personalization.market" : "BE-FR",
+                                "profile.hpr.personalization.action" : "TDR-C",
+                                "profile.hpr.personalization.triggerHomePage" : false,
+                                "profile.hpr.personalization.visibleUntil" : "",
+                                "profile.hpr.personalization.seen": ""
+                            },
+                            'success': function(offer) {
+                                adobe.target.applyOffer( {
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                            },
+                            'error': function(status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+                    } 
+                };
+            } 
+            if (logIt) {
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.hpr.personalization.market" : "BE-FR",
+                        "profile.hpr.personalization.action" : "TDR-A",
+                        "profile.hpr.personalization.triggerHomePage" : true,
+                        "profile.hpr.personalization.visibleUntil" : d,
+                        "profile.hpr.personalization.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+            }
+
+            return setTimeout(setVehicleSelected, 50);
+        }
+
+        setVehicleSelected();
+    });
+</script>

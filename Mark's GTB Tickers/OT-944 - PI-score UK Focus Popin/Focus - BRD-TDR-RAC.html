@@ -1,0 +1,112 @@
+<script>
+    $(document).ready(function() {
+        setBRDOnClick();
+        setTDROnClick();
+        setRACOnClick();
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.piscored.focus.market" : "UK",
+                "profile.piscored.focus.action.npp" : "NPP"
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+
+    var RacCounter = 0;
+    function setRACOnClick() {
+        if ($('.link-wizard-overlay:contains("Request a Contact")').length == 0 && RacCounter < 3) {
+            RacCounter++;
+            return setTimeout(setRACOnClick, 250);
+        }
+            
+        
+        $('.link-wizard-overlay:contains("Request a Contact")').on('click', function() {
+            console.log("OT-944 - Focus RAC");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.rac" : "RAC"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+
+    var BrdCounter = 0;
+    function setBRDOnClick() {
+        if ($('.link-overlay:contains("Brochures & Price Lists")').length == 0 && BrdCounter < 3) {
+            BrdCounter++;
+            return setTimeout(setBRDOnClick, 250);
+        }
+            
+        $('.link-overlay:contains("Brochures & Price Lists")').on('click', function() {
+            console.log("OT-944 - Focus BRD");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.brd" : "BRD"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+
+    var TdrCounter = 0;
+    function setTDROnClick() {
+        if ($('.link-wizard-overlay:contains("Request a Test Drive")').length == 0 && TdrCounter < 3) {
+            TdrCounter++;
+            return setTimeout(setTDROnClick, 250);
+        }
+            
+        $('.link-wizard-overlay:contains("Request a Test Drive")').on('click', function() {
+            console.log("OT-944 - Focus TDR");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.focus.market" : "UK",
+                    "profile.piscored.focus.action.tdr" : "TDR"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

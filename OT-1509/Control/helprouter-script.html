@@ -1,0 +1,83 @@
+<script>
+
+var $;
+
+let waitForJquery = setInterval(function(){
+    if(window.jQuery !== undefined){
+        $ = jQuery;
+        clearInterval(waitForJquery);
+        run();    
+    }
+},500);
+
+function run(){
+
+    console.log('OT-1509|Control');
+    var enableLogs = false;
+    var _log = console.log;
+        console.log = function(logMsg){
+            if(enableLogs){
+     
+                _log.apply(console,arguments);
+            }
+        }
+        
+    
+    if(checkForHelpRouter()){
+        $(document).on('click',function(){
+            if((getCookie('openedHelpRouter') === undefined || getCookie('openedHelpRouter') === null || getCookie('openedHelpRouter') === false)){
+                document.cookie = 'openedHelpRouter=true';
+                fireImpressionId();
+            }else{
+                blockImpressionId();
+            }
+        });
+    }
+}
+
+function getCookie(name) {
+    function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+    var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+    return match ? match[1] : null;
+}
+
+function checkForHelpRouter(){
+    if($('div[data-analytics-component-name="help router search input"]') !== undefined && $('div[data-analytics-component-name="help router search input"]').length >= 1){
+        return true;
+    }
+    return false;
+}
+
+function blockImpressionId() {
+    window.targetCampaign = {
+        page: {
+            campaignName: "",
+        },
+    };
+
+    _satellite.track("");
+}
+
+
+function fireImpressionId() {
+    console.log('fireImpressionId Called');
+    if(getCookie('firedImpressionID') === undefined || getCookie('firedImpressionID') === null || getCookie('firedImpressionID') === false){
+
+        document.cookie = 'firedImpressionID=true';
+        console.log('firing');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1509:ab:hp:helprouter-cta:control",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+    }
+    else {
+        console.log("already fired!");
+    }
+}
+
+    
+</script>

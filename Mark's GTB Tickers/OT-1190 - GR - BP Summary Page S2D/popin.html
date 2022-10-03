@@ -1,0 +1,288 @@
+<script>
+    
+        var popupId_1190 = 'js-summary-s2d-popup-1190';
+        var fordLogo_1190 = 'https://gtb-ci.s3-eu-west-1.amazonaws.com/logo.png';
+
+        var popupData_1190 = {
+            popup_last_closed: Number("${profile.gr.popup_last_closed}"),
+            popup_display_count: Number("${profile.gr.popup_display_count}")
+        };
+
+        function updatePopupData_1190(popup_last_closed, popup_display_count) {
+            adobe.target.getOffer({
+                'mbox': 'global-mbox',
+                'params': {
+                    'profile.gr.popup_last_closed': popup_last_closed,
+                    'profile.gr.popup_display_count': popup_display_count
+                },
+                'success': function (offer) {
+                    adobe.target.applyOffer({
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function (status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+
+        var Popup_1190 = {};
+        Popup_1190.isPopupOpen = false;
+        Popup_1190.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+        Popup_1190.openThreshold = 2; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+        Popup_1190.currentTimeStamp = Math.floor(Date.now() / 1000);
+        Popup_1190.setLastClosed = function () {
+            Popup_1190.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+        };
+        Popup_1190.determineIfPopupShows = function () {
+
+            var popupCookie = popupData_1190;
+            var timeBool = false;
+            var limitBool = false;
+            // --------------------------------------------------------
+            // DETERMINE IF 15 DAYS HAS PASSED SINCE LAST POPUP CLOSED
+            // --------------------------------------------------------
+            var lastClosed_minutes = Math.floor(popupCookie.popup_last_closed / 60);
+            var current_minutes = Math.floor(Popup_1190.currentTimeStamp / 60);
+            var minuteDifference = current_minutes - lastClosed_minutes;
+
+            if (minuteDifference >= 21600 && lastClosed_minutes > 0) {
+                popupData_1190.popup_last_closed = 0;
+                popupData_1190.popup_display_count = 1;
+                updatePopupData_1190(popupData_1190.popup_last_closed, popupData_1190.popup_display_count);
+
+                return true; // In order for popup to appear
+            }
+            // ---------------------------------------------
+            // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+            // ---------------------------------------------
+            var timeDifference = Popup_1190.currentTimeStamp - popupCookie.popup_last_closed;
+
+            if (timeDifference > Popup_1190.showPopupAfter) {
+                timeBool = true;
+            } else {
+                console.log("SHOW AFTER FAILED");
+                console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup_1190.showPopupAfter);
+            }
+
+            // ---------------------------------------------
+            // LIMIT OPEN THRESHOLD
+            // ---------------------------------------------
+            if (popupCookie.popup_display_count <= Popup_1190.openThreshold && timeBool === true) {
+
+                if (popupCookie.popup_last_closed != null) {
+                    // INCREASE OPEN COUNTER BY 1
+                    Popup_1190.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                    Popup_1190.setLastClosed();
+                }
+
+                limitBool = true;
+            }
+            console.log("TIMEBOOL : " + timeBool);
+            console.log("LIMITBOOL: " + limitBool);
+
+            return (timeBool && limitBool);
+        };
+
+        Popup_1190.setKeyValue = function (key, value) {
+            popupData_1190[key] = value;
+            updatePopupData_1190(popupData_1190.popup_last_closed, popupData_1190.popup_display_count)
+        };
+        
+        function buildPopup_1190() {
+            if (!/summary/i.test(window.location.href))
+                return;
+
+            console.log("building popup - 1190");
+
+            var translations = {
+                mainBody: "Τώρα που ολοκληρώσατε τη διαμόρφωση του αυτοκινήτου που σας ενδιαφέρει, προωθήστε τη σ' έναν Επίσημο Έμπορο και κερδίστε <b>Ford On-line Bonus 300€</b> για την αγορά του.",
+            };
+
+            // Build the popup
+            var popupShell = $('<div class="popup-overlay-1190" id="' + popupId_1190 + '"><div class="popup-dialog-1190"><div class="ppopup-header-1190"><button class="popup-close-1190" onclick="closePopup_1190("clicked_x")">&times;</button></div><div class="popup-body-1190"><img src="' + fordLogo_1190 + '" /><p>' + translations.mainBody + '</p><div style="clear:both;"></div></div></div>');
+            $('body').append(popupShell);
+
+            $('.popup-overlay-1190').on('click', function() {
+                closePopup_1190('clicked_outside_overlay');
+            });
+
+            function onKeyPress(e) {
+                if (e.keyCode == 27) {
+                    closePopup_1190('close_escape_keyboard');
+                }
+            }
+
+            $(document).on("keydown", onKeyPress);
+
+            setTimeout(() => {
+                if (!popupData_1190) {
+
+                    updatePopupData_1190(0, 1);
+                    Popup_1190.setLastClosed();
+                    console.log("Trigger Popup");
+                    console.log("popup data ", popupData_1190)
+                    openPopup_1190();
+                } else if (Popup_1190.determineIfPopupShows()) {
+                    console.log("Trigger Popup");
+                    openPopup_1190();
+                }
+            }, 10000)
+
+        }
+
+        function openPopup_1190() {
+            document.getElementById(popupId_1190).classList.add('active');
+        }
+
+        function closePopup_1190(wayOfDestroy) {
+
+            document.getElementById(popupId_1190).classList.remove('active');
+            document.getElementById(popupId_1190).remove();
+            Popup_1190.setLastClosed();
+
+            adobe.target.trackEvent({
+                "mbox": "GR_1190_close_cta_ctr",
+                "params": {
+                    "wayOfDestroy": wayOfDestroy
+                }
+            });
+
+        }
+        $(document).ready(function(){ $(window).on('hashchange', buildPopup_1190); });      
+</script>
+
+
+<style>
+    .popup-overlay-1190 {
+        position: absolute;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay-1190.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog-1190 {
+        position: absolute;
+        height: auto;
+        width: 350px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+        padding: 20px;
+    }
+
+    @media screen and (min-width: 768px) {
+
+        .popup-dialog-1190 {
+            padding: 40px;
+            height: auto;
+            width: 550px;
+        }
+
+    }
+
+    .ppopup-header-1190 {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close-1190 {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        margin-bottom: 0 !important;
+        padding: 0;
+        color: #102a4d !important;
+        background-color: transparent !important;
+        outline: none;
+    }
+
+    .popup-body-1190 {
+        width: 100%;
+        margin-top: -6%;
+        text-align: center;
+    }
+
+    .popup-body-1190 img {
+        display: block;
+        width: 100%;
+        max-width: 100px;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    .popup-body-1190 h1 {
+        font-family: AFordAntennaRegular, Arial, Helvetica, sans-serif !important;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 40px;
+    }
+
+    .popup-body-1190 p {
+        font-family: FordAntennaRegular, Arial, Helvetica, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.63 !important;
+        letter-spacing: 1px;
+        text-align: center;
+        color: #4d4d4d !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .popup-body-1190 a {
+        color: #06235f;
+        text-decoration: underline;
+        transition: color 0.25s ease;
+    }
+
+    .popup-body-1190 a:hover {
+        color: #2d96cd;
+        text-decoration: underline;
+    }
+
+    .popup-body-1190>p>.cta-button-primary {
+        color: #fff;
+        border-radius: 20px;
+        background: #102b4e;
+        padding: 10px 40px 10px 40px !important;
+        width: 100px;
+    }
+
+    .popup-body-1190>p>.cta-button-primary:hover {
+        background-color: rgb(40, 97, 164) !important;
+        color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px !important;
+    }
+
+    .popup-body-1190>p .cta-button {
+        font-size: 1rem;
+        font-weight: 300;
+        min-width: 131px;
+        text-decoration: none;
+        transition: background-color .3s, color .3s;
+    }
+
+    .toggle-nav-content {
+        pointer-events: auto;
+    }
+</style>

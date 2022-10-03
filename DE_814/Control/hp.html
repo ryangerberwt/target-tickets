@@ -1,0 +1,38 @@
+<script>
+    window.onload = function() {
+        var billboard = null;
+    
+        function waitForBillboard() {
+                    
+                    billboard = document.querySelector("div.carousel.carousel-billboard-homepage.active");
+    
+                    if (!billboard){
+                        return setTimeout(function() {
+                            waitForBillboard();
+                        },50)
+                    }
+        }
+    
+        setTimeout(function(){
+            waitForBillboard();
+            if(billboard != null){
+                console.log(billboard);
+                billboard.addEventListener("click",function(){
+                    
+        
+                    targetCampaign = {
+                            page: {
+                                campaignName: "tt:nwp:opt-814:ab:hp:hpr-hybrid-electric:control"
+                            }
+                        };
+    
+                        _satellite.track("genericTestingImpressionIDWorkaround");
+    
+    
+                    })
+            }
+        }, 1000)
+    }
+                    
+            
+    </script>

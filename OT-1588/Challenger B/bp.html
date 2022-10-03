@@ -1,0 +1,68 @@
+<script>
+  var enableLogs = true;
+  var _log = console.log;
+      console.log = function(logMsg){
+          if(enableLogs){
+   
+              _log.apply(console,arguments);
+          }
+      }
+      //Added because we sometimes use the console.dir function to display vars
+      var _dir = console.dir;
+      console.dir = function(dirMsg){
+          if(enableLogs){
+              _dir.apply(console,arguments);
+          }
+      }
+
+  window.addEventListener('hashchange', () => {
+    console.log('OT-1588 - Build And Price');
+    console.log('Right page? ' + window.location.href.indexOf('summary') >= 0);
+    if (window.location.href.indexOf('summary') >= 0) {
+      window.targetCampaign = {
+        page: {
+          campaignName: 'tt:nwp:opt-1588:ab:bp:hyperlink:var-b'
+        }
+      }
+      _satellite.track('genericTestingImpressionIDWorkaround');
+      console.log('done firing -- first pass');
+      setTimeout(function () {
+        window.targetCampaign = {
+          page: {
+            campaignName: ''
+          }
+        }
+        _satellite.track('');
+        console.log('done firing -- second pass');
+      }, 250)
+
+      setTimeout(function () {
+        let copy = "";
+        let p_tags = document.querySelectorAll('p');
+        let target_p = [...p_tags].filter(node => node.innerText.includes('Ordina online'));
+        console.log('p tags >> ', target_p)
+        target_p.forEach(el => {
+          el.innerHTML = copy = el.innerHTML.replace('Ordina online', '<a href="https://www.ford.it/root/carrello"  style="pointer:cursor;">Ordina online</a>');
+          console.log('element ')
+          var j = el.querySelector('a')
+          if (j != 'undefined') {
+            j.addEventListener('click', function (ev) {
+              ev.preventDefault()
+              document.querySelector('button[data-testid="summary-static-cta"]').click();
+            })
+          }
+        })
+      }, 3000);
+    }
+  }, false);
+  window.addEventListener('load', function () {
+    console.log("challenger B is running");
+  })
+</script>
+<style>
+  .SummaryVehiclePreview__SummaryPreorderText-hg0o7h-12.iaIVLt p a {
+    text-decoration: navajowhite;
+    color: rgb(77, 77, 77);
+    font-weight: bold;
+  }
+</style>

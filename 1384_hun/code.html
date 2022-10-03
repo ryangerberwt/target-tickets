@@ -1,0 +1,362 @@
+<script>
+    console.log('OT-1384');
+
+    $(document).ready(function () {
+        console.log("In Main Function");
+        var steps = /book-a-service/;
+        var url = window.location.href;
+        var popupId = "js-popup-pumanext";
+        var num;
+        var waitForButton;
+        const maxCount = 3;
+        const timeLimit = 900;
+        const promoCodes = ['FORDSZERVIZSZEP','FORDSZERVIZOKT','FORDSZERVIZNOV','FORDSZERVIZSDEC'];
+        const endDates = ["2021.09.30","2021.10.31","2021.1.30","2021.12.31"];
+        //Voucher code
+        let vc ="";
+        let endDate = "";
+        if((new Date).getFullYear() == 2021){
+            if((new Date).getMonth() + 1 == 9){
+                vc = promoCodes[1];
+                endDate = endDates[1]
+
+            }else if((new Date).getMonth() +1 == 10){
+                vc = promoCodes[1];    
+                endDate = endDates[1]
+
+            }else if((new Date).getMonth() + 1 == 11){
+                vc = promoCodes[2];
+                endDate = endDates[2]
+            }
+            else if((new Date).getMonth() +1 == 12){
+                vc = promoCodes[3];
+                endDate = endDates[3]
+            }
+        }
+
+        console.log("VC IS " + vc);
+
+        $(function () {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1384:xt:osb:osb-abandon-popup",
+                },
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        });
+
+
+        function createPopup() {
+
+            var translations = {
+                mainHeading: "Véglegesítse szervizidőpont-foglalását!",
+                primaryCta: "Irány az Online Szerviz Bejelentkezés!",
+                offer: "Használja most a "+vc+" kódot, és 4000 Ft kedvezményt* biztosítunk a szervizszolgáltatások árából bármely márkaszervizünkben!",
+                //voucherCode: "RDV10",
+                // "https://www.ford.fr/services/mon-vehicule/rendez-vous-service#!/vehicle-step",
+                primaryCtaUrl: "https://www.ford.hu/tulajdonosoknak/az-en-fordom/book-a-service#?vc=" + vc,
+                disclaimer: "Az aktuális kuponkód csak a Ford Online Szerviz Bejelentkezés felületén keresztül történő időpont foglalás esetén érvényes "+endDate+"-ig, az elvégzett szerviz szolgáltatással kapcsolatos díjból kerül levonásra. Az ajánlat más kedvezménnyel nem összevonható és egy személy csak egyszer veheti igénybe, illetve egy Ford gépjárműre.",
+            };
+
+            // Get image of configured Puma (exists on page)
+            var carImageUrl =
+                "/content/dam/guxeu/rhd/central/sandbox/training/billboard/ford-pop_up_banner-eu-GettyImages-3x2-1800x1201-bb-man-with-a-labtop-on-a-sofa.jpg";
+
+            // Build the popup
+            var popupShell = $(
+                '<div class="popup-overlay" id="' +
+                popupId +
+                '"><div class="popup-dialog"><div class="popup-header"><button class="popup-close">&times;</button></div><div class="popup-body"><img src="' +
+                carImageUrl +
+                '" /><h1>' +
+                translations.mainHeading +
+                ' </h1><h2 class="heading-small">' +
+                translations.offer +
+                '</h2><a href="' +
+                translations.primaryCtaUrl +
+                '" class="popup-btn" id="js-popup-testdrive">' +
+                translations.primaryCta +
+                "</a><div class='m-small'><sup>*</sup>" +
+                translations.disclaimer +
+                '</div></div><div style="clear:both;"></div></div></div>'
+            );
+            $("body").append(popupShell);
+
+            setTimeout(() => {
+                openPopup(popupId);
+            }, 10000);
+
+        }
+
+        function openPopup(popupId) {
+
+            Scroll = (function () {
+                var x, y;
+
+                function hndlr() {
+                    window.scrollTo(x, y);
+                    //return;
+                }
+                return {
+                    disable: function (x1, y1) {
+                        x = x1;
+                        y = y1;
+                        if (window.addEventListener) {
+                            window.addEventListener("scroll", hndlr);
+                        } else {
+                            window.attachEvent("onscroll", hndlr);
+                        }
+                    },
+                    enable: function () {
+                        if (window.removeEventListener) {
+                            window.removeEventListener("scroll", hndlr);
+                        } else {
+                            window.detachEvent("onscroll", hndlr);
+                        }
+                    },
+                };
+            })();
+            Scroll.disable(0, document.body.scrollTop);
+            document.getElementById(popupId).classList.add("active");
+            document
+                .querySelector(".popup-close")
+                .addEventListener("click", function () {
+                    document.getElementById(popupId).classList.remove("active");
+
+                    Scroll.enable();
+                });
+
+        }
+
+        function closePopup(popupId) {
+            document.getElementById(popupId).classList.remove("active");
+        }
+
+        function currentTime() {
+
+            var date = new Date();
+            var h = date.getHours();
+            var min = date.getMinutes();
+            var sec = date.getSeconds();
+
+            return {
+                hours: h,
+                min: min,
+                sec: sec
+            };
+
+        }
+
+        function storeData() {
+            sessionStorage.setItem("t1", JSON.stringify(currentTime()));
+        }
+
+        function convertToSeconds(obj) {
+
+            var seconds = obj.hours * 60 * 60 + obj.min * 60 + obj.sec;
+
+            return seconds;
+
+        }
+
+        var count = function () {
+
+            num = sessionStorage.getItem("count");
+
+            if (num == undefined || num == "undefined" || num == null) {
+
+                sessionStorage.setItem("count", 0);
+                num = parseInt(sessionStorage.getItem("count"));
+
+                return num;
+
+            } else {
+
+                num = parseInt(sessionStorage.getItem("count")) + 1;
+                return num;
+
+            }
+
+        };
+
+
+        function displaypopup() {
+
+            var countNum = parseInt(count());
+
+            var obj = JSON.parse(sessionStorage.getItem("t1"));
+            
+            var t = Math.abs(
+                parseInt(convertToSeconds(obj)) -
+                parseInt(convertToSeconds(currentTime()))
+            );
+
+
+            console.log('Report for display');
+            console.log('count num is ' + countNum);
+            console.log('t is ' + t);
+            console.log('Stored obj ' + obj);
+            console.log('debug on ' + window.location.href.indexOf('?targetDebug=1384'))
+            if ((countNum <= maxCount && t >= timeLimit) || (window.location.href.indexOf('?targetDebug=1384') > 0) || countNum == 0 ) {
+                    createPopup();
+                    sessionStorage.setItem("count", countNum);
+
+            }else{
+                console.log("Not displaying due to time limit");
+            }
+
+        }
+        if (steps.test(url) && !sessionStorage.getItem("t1")) {
+            storeData();
+        }
+        else if (/tulajdonosoknak/.test(url) && !steps.test(url)) {
+            if (sessionStorage.getItem("t1")) {
+                displaypopup();
+            }
+        }
+
+    });
+
+</script>
+
+
+
+
+<style>
+    .popup-overlay {
+        position: fixed;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+
+    }
+
+    @media screen and (max-width:700px) {
+        .active.popup-overlay {
+            overflow: scroll !important;
+        }
+        .popup-header{
+            height: 38px !important;
+        }
+        .popup-close{
+            top: 35px !important;
+        }
+        .popup-dialog{
+            top: 57% !important;
+        }
+    }
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 320px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+    }
+
+    @media screen and (min-width: 768px) {
+        .popup-dialog {
+            height: auto;
+            width: 500px;
+        }
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+        height: 0px;
+    }
+
+    .popup-close {
+        top:0px;
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        padding: 0;
+        color: #102a4d;
+        background-color: transparent;
+        margin: 8px 0 0 0;
+    }
+
+    .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body h1,
+    .popup-body h2,
+    .popup-body p {
+        padding: 0 20px;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.6rem;
+        font-weight: bold;
+    }
+
+    .popup-btn {
+        display: block;
+        padding: 8px 20px;
+        background-color: #102a4d;
+        text-decoration: none;
+        color: white;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px,
+            rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        font-size: 1.125rem;
+        cursor: pointer;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px auto;
+        max-width: 250px;
+    }
+
+    .popup-btn:hover {
+        color: white;
+    }
+
+    .heading-small {
+        font-size: 1.2rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .m-small {
+        padding: 20px;
+        font-size: 0.8rem;
+    }
+
+    .voucher-code {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 0;
+        padding: 0;
+    }
+</style>

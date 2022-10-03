@@ -1,0 +1,115 @@
+<script>
+
+    console.log('OT-1587 | Control');
+    var $;
+    var eventAdded = false;
+    var impressionId = 'tt:nwp:opt-1587:ab:bp:360-summary-image:control';
+    var  hasAlreadyFired = false;
+    var enableLogs = true;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);           
+                 window.addEventListener('click', function(){
+                    blockImpressionId();
+                });
+                $('body').click();
+
+            }
+        }, 500);
+    }
+    function checkPage() {
+        if (window.location.href.indexOf('summary') >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function blockImpressionId() {
+        console.log('block');
+        window.targetCampaign = {
+            page: {
+                campaignName: ""
+            }
+        }
+
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    }
+
+
+    function fireImpressionID(impressionId, expireInHours, path, cookieName, cookieValue) {
+        console.log('firing');
+        console.log(hasAlreadyFired);
+        if (setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) === true && hasAlreadyFired === false) {
+            hasAlreadyFired = true;
+            window.targetCampaign = {
+                page: {
+                    campaignName: impressionId
+                }
+            }
+            _satellite.track('genericTestingImpressionIDWorkaround');
+            setTimeout(function(){
+                window.targetCampaign = {
+                    page:{
+                      campaignName: ''
+                    }
+                  }
+                  _satellite.track(''); 
+            },250)
+        }
+    }
+
+
+
+    function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+        console.log("setting cookie for impression ID");
+        console.log(getCookie(cookieName));
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === null) {
+            console.log("no cookie set --- setting now");
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            console.log("cookie is set");
+            return true;
+        } else {
+            console.log("Cookie is still valid");
+            return false;
+        }
+    }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+
+    window.onhashchange = function () {
+        if (eventAdded === false && checkPage() === true && hasAlreadyFired === false) {
+            eventAdded = true;
+            console.log('hashchange');
+            fireImpressionID(impressionId, 24, '/', 'ot-1587-control-fired', true);
+
+        };
+    }
+</script>

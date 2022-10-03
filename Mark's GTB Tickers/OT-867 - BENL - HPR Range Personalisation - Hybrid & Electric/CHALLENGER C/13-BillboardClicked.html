@@ -1,0 +1,39 @@
+<script>
+    var p_Market = "BE-NL";
+
+    $(document).ready(function() {
+        var storedData = {
+            market: "${profile.hpr.range.personalisation.market}",
+            clicked: "${profile.hpr.range.personalisation.billboardClicked}",
+            imageToShow: "${profile.hpr.range.personalisation.imageToShow}"
+        }
+        
+        if (storedData.clicked == "true" && storedData.market == p_Market && storedData.imageToShow == "Hybrid & Electric") {
+            setTimeout(function() {
+                if ($('li.full-width:contains("Hybride & Elektrisch")').length > 0) {
+                    if ($('li.full-width:contains("Hybride & Elektrisch")').find('input').length > 0) {
+                        $('li.full-width:contains("Hybride & Elektrisch")').find('input').click();
+                    }
+                }
+            }, 500);
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.hpr.personalization.market" : p_Market,
+                    "profile.hpr.personalization.clicked" : "false",
+                    "profile.hpr.range.personalisation.imageToShow" : "Hybrid & Electric"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+    });
+  </script>

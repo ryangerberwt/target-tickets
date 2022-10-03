@@ -1,0 +1,78 @@
+<script>
+ 
+    var $ = jQuery;
+    console.log('OT-1474 | Challenger | NPP');
+
+    /*
+    *
+    * This should only run if we're on the 
+    * Fiesta or Focus NPP
+    *
+    */
+ 
+    $(document).ready(function () {
+        
+
+        if(checkUrl()){
+            //Do Stuff here
+            fireImpressionId();
+        setTimeout(function () {
+            console.log('clicking');
+            setOnClick();
+            $('body').click();
+        }, 750);
+        }
+
+
+
+
+
+    });
+
+
+    function checkUrl(){
+        return (location.href.indexOf('fiesta') >= 0 ||  location.href.indexOf('focus') >= 0 );
+    }
+ 
+ 
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1474:ab:hp:floating-banner:challenger", //Change this to your impressionID
+            },
+        };
+ 
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+ 
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener');
+            _satellite.track('');
+ 
+        });
+    }
+ 
+    //We don't always need this but adding it here for reference
+    function setOnKeyUp() {
+        window.addEventListener('keyUp', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener')
+            _satellite.track('');
+ 
+        });
+    }
+ 
+</script>

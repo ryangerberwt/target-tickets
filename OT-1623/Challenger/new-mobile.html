@@ -1,0 +1,93 @@
+<script>
+    //wizard-vehicle-selector ng-scope
+        document.onreadystatechange = function () {
+        if (document.readyState === 'complete') {
+            const targetNode = jQuery('.steps-wrapper.full-view').get(0);
+            console.dir(targetNode);
+            const config = { attributes: true, childList: true, subtree: false };
+            const callback = function (mutationsList, observer) {
+                // Use traditional 'for loops' for IE 11
+                for (const mutation of mutationsList) {
+                    console.log('*new mutation*');
+                    console.dir(mutation);
+                    //If a node was added/removed
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+
+                        if (mutation.addedNodes[0].className === 'wizard-form section apd-form ng-scope') {
+                            console.log('form was added');
+                            console.log('mobile flow');
+                            let waitForIt = setInterval(function () {
+                                var disabled_button = document.querySelectorAll('button.ng-binding.ng-scope');
+                                if (disabled_button !== undefined && disabled_button !== null && disabled_button.length > 2) {
+                                    console.log('found');
+                                    disabled_button[2].setAttribute("disabled", "disabled");
+                                    disabled_button[2].style.backgroundColor = "#7777";
+                                    disabled_button[2].addEventListener('touchend', function () {
+                                        setTimeout(function () {
+                                            let inputs = [];
+                                            inputs = document.querySelectorAll('.form-wizard-wrapper input');
+                                            console.log('inputs');
+                                            console.dir(inputs);
+                                            if (inputs !== undefined && inputs !== null && inputs.length > 0) {
+                                                var disabled_button = document.querySelectorAll('button.ng-binding.ng-scope');
+                                                if (disabled_button !== undefined && disabled_button !== null && disabled_button.length == 2) {
+                                                    disabled_button[1].setAttribute("disabled", "disabled");
+                                                    disabled_button[1].style.backgroundColor = "#7777";
+                                                    addInputEventsMobile();
+                                                    //TODO VERY NB - ADD LOGIC FOR BACK BUTTON
+                                                    disabled_button[0].addEventListener('touchend',function(){
+                                                        stepOneLogic();
+                                                    });
+                                                }
+                                            }
+                                        }, 500);
+                                    });
+                                    clearInterval(waitForIt);
+                                } else {
+                                    console.log('waiting for waitforit');
+                                }
+                            }, 500)
+                            //Run form logic
+                        } else if (mutation.addedNodes[0].className === 'wizard-vehicle-selector ng-scope') {
+                            console.log('cars were added');
+                            setTimeout(function () {
+                                var vehicleLinks = document.querySelectorAll('a.select-vehicle-link');
+                                jQuery.each(vehicleLinks, function (i, v) {
+                                    console.dir(v)
+                                    jQuery(v).on('touchend', function () {
+                                        console.log('touched!');
+                                        setTimeout(function () {
+                                            let car_selected = document.querySelectorAll('.vehicle-list-item-wrapper.ng-scope.is-selected').length;
+                                            var disabled_button = document.querySelectorAll('button.ng-binding.ng-scope');
+                                            console.log('çar selected ' + car_selected);
+                                            if (car_selected > 0) {
+                                                disabled_button[2].removeAttribute("disabled");
+                                                disabled_button[2].style.backgroundColor = "#102b4e";
+                                            } else {
+                                                disabled_button[2].setAttribute("disabled", "disabled");
+                                                disabled_button[2].style.backgroundColor = "#7777";
+                                            }
+                                        }, 300);
+                    
+                                    });
+                                });
+                            }, 2000);
+                        }
+
+                    }
+                }
+            };
+
+            const observer = new MutationObserver(callback);
+            initMutationObserver(observer,targetNode,config);
+
+        }
+
+
+    }
+    //Init the observer - call this method to get things started
+    function initMutationObserver(_observer,_targetNode, _config) {
+        _observer.observe(_targetNode, _config);
+    };
+
+</script>

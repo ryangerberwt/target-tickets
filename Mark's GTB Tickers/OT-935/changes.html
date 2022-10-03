@@ -1,0 +1,101 @@
+<!--
+    842 - Complete
+    845 - Complete
+    872 - Complete 
+
+    864 -
+    859 -
+    857 -
+    858 -
+    848 -
+    847 -
+    841 -
+    840 -
+    843 -
+    826 -
+    884 -
+    853 -
+    861 - 
+-->
+<script>
+    // The DC
+
+    var globalInfo = undefined;
+
+    function getCarConfiguration(serviceVersion, IDs, callback) {
+        var key = [IDs.usc, "~", IDs.codeWithFeatures.replace(/\:/g, ",")].join("");
+        
+        var data = sessionStorage.getItem(key);
+
+        if (data != null)
+            return callback(undefined, JSON.parse(data));
+
+        // var url = [
+        //     getEndPointConfiguration().endpoint,
+        //     "/vehicleModel/",
+        //     (serviceVersion ? serviceVersion : "v0"),
+        //     "/load?locale=",
+        //     getEndPointConfiguration().locale,
+        //     "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+        //     "default",
+        //     "&config=",
+        //     IDs.usc,
+        //     "~",
+        //     IDs.codeWithFeatures.replace(/\:/g, ",")
+        // ].join("");
+        // $.ajax({
+        //     url: url,
+        //     xhrFields: {
+        //         withCredentials: !!getEndPointConfiguration().cookieToBsl
+        //     }
+        // }).done(function (response) {
+            if (response.status && response.status.statusCode === 200) {
+                sessionStorage.setItem(key, JSON.stringify(response.data));
+                return callback(undefined, response.data);
+            }
+        //     callback("Bad response status");
+        // }).fail(function () {
+        //     callback("Request failed");
+        // });
+    }
+
+    var thresholdCounter = 0;
+
+    function reRun(error) {
+        thresholdCounter++;
+        if (thresholdCounter < 2) {
+            console.log(error);
+            runInformationsGathering();
+        }
+    }
+
+    // Replace console.log errors in runInformationsGathering with reRun.
+
+    // Loggging
+
+    /*
+        if (globalInfo == undefined)
+            console.log(vehicleInfo);
+        else if (globalInfo.tdr != vehicleInfo.tdr)
+            console.log(vehicleInfo);
+
+        globalInfo = vehicleInfo;
+    */
+
+    // Update Adobe Target Data Send 
+    /* 
+        "profile.contextualiseLink" : vehicleInfo.contextualiseLink != "" ? vehicleInfo.contextualiseLink : vehicleInfo.tdrVehicleCode,
+    */
+    // Remove Looping ReRun
+
+
+</script>
+
+<script>
+    // The Popup
+
+    /*
+        Find optprg-tdr-pop-up-ov-content
+        Replace "ov" part with ticket number on page.
+    */
+</script>

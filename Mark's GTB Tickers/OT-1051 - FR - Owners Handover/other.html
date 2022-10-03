@@ -1,0 +1,118 @@
+<script type="text/javascript">
+    var targetErrors = targetErrors || [];
+    var profile_fr_handover_date = "${profile.fr_handover_state}";
+
+    change = function () {
+        
+        // We're most likely on the main page
+        var result = (
+                    (jQuery('script[src*="puma"]').length > 0) || 
+                    (jQuery('h5').length > 0 && jQuery('h5')[0].innerText.toLowerCase().includes('puma')) || 
+                    (jQuery('.dash-my-vehicles .dash-nav-label').length > 0 && jQuery('.dash-my-vehicles .dash-nav-label')[0].innerText.toLowerCase().includes('puma'))
+                ) ? vehicleFound() : false;
+
+        if (!result) {
+            var counter = 0;
+            var checkExist = setInterval(function() {
+                if (counter > 20) {
+                    clearInterval(checkExist);
+                } else {
+                    counter++;
+                }
+
+                result = (
+                        (jQuery('script[src*="puma"]').length > 0) || 
+                        (jQuery('h5').length > 0 && jQuery('h5')[0].innerText.toLowerCase().includes('puma')) || 
+                        (jQuery('.dash-my-vehicles .dash-nav-label').length > 0 && jQuery('.dash-my-vehicles .dash-nav-label')[0].innerText.toLowerCase().includes('puma'))
+                    ) ? vehicleFound() : false;
+
+                if (result)
+                    clearInterval(checkExist);
+
+            }, 100); // check every 100ms
+            overrideLog('Puma not found');
+        }
+
+        function vehicleFound() {
+            if (window.dash == undefined) {
+                overrideLog("handover not available");
+                return true;
+            }
+
+            if (/targetDebug=1051/i.test(window.location.href)) {
+                if (/ho=post/i.test(window.location.href)) {
+                    window.dash.handover.showPostHandover();
+                } else if (/ho=pre/i.test(window.location.href)) {
+                    window.dash.handover.showPreHandover();
+                }
+
+                return true;
+            }
+
+            if (profile_fr_handover_date == "") {
+                // The user shouldn't have been able to fire this code.
+                return true;
+            }
+            console.log("OT-1051");
+            setDate();
+            
+            var today = new Date();
+            var savedDate = new Date(profile_fr_handover_date);
+            today > savedDate ? window.dash.handover.showPostHandover() : window.dash.handover.showPreHandover();
+
+            return true;
+        }
+
+        function setDate() {
+            if (profile_fr_handover_date == "") {
+                profile_fr_handover_date = new Date();
+                profile_fr_handover_date.setHours(profile_fr_handover_date.getHours() + (14 * 24));
+            }
+            
+
+            adobe.target.getOffer({
+                'mbox': 'global-mbox',
+                'params': {
+                    'profile.fr_handover_state' : profile_fr_handover_date
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+
+        function overrideLog(error) {
+            if (/targetDebug=1051/i.test(window.location.href)) {
+                console.log(error);
+            }
+            
+            targetErrors.push({ticket: "1051", error});
+        }
+    }
+  
+      //var elemToObserve = document.getElementById('dash-overlay')
+    MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+    var observer = new MutationObserver(function (mutations, observer) {
+    // fired when a mutation occurs
+    
+    mutations.forEach(function (mutation) {
+            if (mutation.target.classList.contains('dash-fds-widget-view') && mutation.target.children.length > 0 && mutation.target.children[0].outerHTML.includes('dash-yourford-v2')) {
+                change();
+            }
+        });
+    });
+
+    // define what element should be observed by the observer
+    // and what types of mutations trigger the callback
+    observer.observe(document, {
+        subtree: true,
+        attributes: true
+    });
+</script>

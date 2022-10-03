@@ -1,0 +1,272 @@
+<script>
+
+    console.log('OT-1075');
+
+    $(function(){
+    
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1075:xt:as:england-lockdown'
+            }
+        }
+        
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    
+    });
+
+    var p_Market = 'UK';
+    var popupId = 'js-covid-popup-1075';
+    var fordLogo = 'https://www.ford.co.uk/content/dam/guxeu/global-shared/header/ford-go-further.png';
+
+    var userInfo = {
+        'country': '${profile.geolocation.country}',
+        'state': '${profile.geolocation.state}',
+        'city': '${profile.geolocation.city}',
+        'zip': '${profile.geolocation.zip}'
+    };
+
+    $(document).ready(function() {
+
+        checkUserCountry();
+
+    });
+
+    function checkUserCountry() {
+
+        console.log('User location information: ', userInfo);
+
+        if (userInfo.country == 'united kingdom' || userInfo.country == 'south africa') {
+
+            checkFrequencyCapping();
+
+        }
+
+    }
+
+    function buildPopup() {
+
+        var translations = {
+            mainHeading: 'IMPORTANT COVID-19 ANNOUNCEMENT',
+            mainBody: 'In accordance with government guidelines our physical sales showrooms are currently closed to the public but all digital and virtual sales remain open for business. Dealer workshops are currently set to maintain operations. <br><br>Please request a contact below to speak to your local Ford dealer.',
+            ctaCopy: 'Request a contact',
+            ctaUrl: 'https://www.ford.co.uk/shop/research/request-a-contact'
+        };
+
+        // Build the popup
+        var popupShell = $('<div class="popup-overlay" id="' + 
+            popupId + '"><div class="popup-dialog"><div class="popup-header"><button class="popup-close" onclick="closePopup()">&times;</button></div><div class="popup-body"><img src="' + 
+            fordLogo + '" /><h1>' + 
+            translations.mainHeading + ' </h1><p>' + 
+            translations.mainBody + '</p><a class="popup-btn" href="' + 
+            translations.ctaUrl + '">' + 
+            translations.ctaCopy +' </a><div style="clear:both;"></div></div></div>');
+        $('body').append(popupShell);
+
+        setTimeout(() => {
+            openPopup();
+        }, 2000)
+
+    }
+
+    function openPopup() {
+
+        document.getElementById(popupId).classList.add('active');
+
+    }
+
+    function closePopup() {
+
+        document.getElementById(popupId).classList.remove('active');
+
+    }
+
+    function checkFrequencyCapping() {
+        
+        var now = new Date();
+        var previous = localStorage.getItem('prevOpen1075');
+
+        totalOpened = localStorage.getItem('totalOpened1075');
+
+        if (previous != null) {
+
+            previousOpen = convertTime(previous);
+            previousSeconds = convertToSeconds(previousOpen);
+
+        } else {
+            previousSeconds = 0;
+        }
+
+        nowOpen = convertTime(now);
+        nowSeconds = convertToSeconds(nowOpen);
+
+        if (totalOpened == null) {
+            totalOpened = 0;
+        }
+
+        if (totalOpened <= 3) {
+
+            if (nowSeconds - previousSeconds > 900) {
+
+                totalOpened++;
+                localStorage.setItem('totalOpened1075', totalOpened);
+                localStorage.setItem('prevOpen1075', now);
+    
+                buildPopup();
+    
+            }
+
+        }  
+
+    }
+
+    function convertTime(date) {
+
+        if (typeof(date) == 'string') {
+
+            var newDate = new Date(date);
+
+            var h = newDate.getHours();
+            var min = newDate.getMinutes();
+            var sec = newDate.getSeconds();
+
+
+        } else {
+
+            var h = date.getHours();
+            var min = date.getMinutes();
+            var sec = date.getSeconds();
+
+        }
+
+        return {
+            hours: h,
+            min: min,
+            sec: sec
+        };
+
+    }
+
+    function convertToSeconds(obj) {
+
+        var seconds = obj.hours * 60 * 60 + obj.min * 60 + obj.sec;
+
+        return seconds;
+
+    }
+
+</script>
+
+
+<style>
+
+    .popup-overlay {
+        position: absolute;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 320px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+        padding: 20px;
+    }
+
+    @media screen and (min-width: 768px){
+
+        .popup-dialog {
+            padding: 40px;
+            height: auto;
+            width: 550px;
+        }
+
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        margin-bottom: 0 !important;
+        padding: 0;
+        color: #102a4d !important;
+        background-color: transparent !important;
+        outline: none;
+    }
+
+    .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        max-width: 100px;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+        font-family: Antenna,Arial,Helvetica,sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 40px;
+    }
+
+    .popup-body p {
+        font-family: Antenna,Arial,Helvetica,sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.2rem;
+        font-size: 1.0rem;
+        font-weight: normal;
+    }
+
+    .popup-btn {
+        display: block;
+        padding: 8px 20px;
+        background-color: #102a4d;
+        text-decoration: none;
+        color: white !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px,
+            rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        font-size: 1.125rem;
+        cursor: pointer;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 20px auto;
+        max-width: 250px;
+    }
+
+    .popup-btn:hover {
+        color: white !important;
+        text-decoration: none !important;
+    }
+
+</style>

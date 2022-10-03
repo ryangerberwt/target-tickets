@@ -1,0 +1,36 @@
+<script>
+  
+  window.onload = function(){
+
+    //Fix for the impression ID firing twice.
+    window.addEventListener('click', function (e) {
+                    console.dir(e.target.dataset.accContextType);
+                    if (e.target.dataset.accContextType !== undefined && e.target.dataset.accContextType !== null && e.target.dataset.accContextType !== '' && e.target.dataset.accContextType === 'cookiesAgree') {
+                        console.log('a');
+                        window.targetCampaign = {
+                            page: {
+                                campaignName: 'tt:nwp:opt-1300:ab:hp:cv-model-order:control'
+                            }
+                        }
+
+                        _satellite.track('genericTestingImpressionIDWorkaround');
+                    } else {
+
+
+                        try {
+                            console.log('This is to force it to stop firing');
+                            console.dir(window.targetCampaign);
+                            window.targetCampaign.page.campaignName = "";
+                            console.log('name is ' + window.targetCampaign.page.campaignName)
+                        } catch (ex) {
+                            console.log('Ex is');
+                            console.dir(ex);
+                        }
+
+
+
+                    }
+                })
+    jQuery('body').click();
+  }
+</script>

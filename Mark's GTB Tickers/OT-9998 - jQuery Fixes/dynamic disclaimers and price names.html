@@ -1,0 +1,148 @@
+<script>
+    var StorageHandler = {};
+    StorageHandler.cookie = "opt-gux-fr"; // opt-gux-MARKET ~ for countries with multiple locales, name it MARKET_LANG ~ Always lower case.
+    StorageHandler.getData = function() {
+        var current = JSON.parse(localStorage.getItem(StorageHandler.cookie));
+        if (current == null)
+            return [];
+        else
+            return current;
+    };
+    StorageHandler.saveData = function(key, data) {
+        var current = StorageHandler.getData();
+
+        var exists = StorageHandler.getSpecificData(key);
+
+        if (exists.length > 0) {
+            for (var i = 0; i < current.length; i++) {
+                if (current[i].key == key) {
+                    current[i].data = data;
+                }
+            }
+        } else {
+            current.push({key, data});
+        }
+        localStorage.setItem(StorageHandler.cookie, JSON.stringify(current));
+    };
+    StorageHandler.getSpecificData = function(key) {
+        var current = StorageHandler.getData();
+        return current.filter(function(each) {
+            return each.key == key;
+        });
+    };
+    var disclaimers_1204 = [];
+    function sanitizeAPIResponse(data) {
+
+        var retailPrice = data.price.finalPrice.grossRetailWithOTR;
+        var offerPrice = data.price.finalPrice.grossRetailWithOTRAndIncentives;
+
+        var retailInfo = getPriceNameAndDisclaimerKey(retailPrice);
+        var offerInfo = getPriceNameAndDisclaimerKey(offerPrice);
+
+        retailInfo.type = "Retail";
+        offerInfo.type = "Offer";
+
+        var combined = [];
+        combined.push(retailInfo, offerInfo);
+
+        getDisclaimers(combined);
+
+        return {
+            retailPrice: retailPrice,
+            retailTitle: retailInfo.priceName,
+            offerPrice: offerPrice,
+            offerTitle: offerInfo.priceName,
+        }
+    }
+
+    function getPriceNameAndDisclaimerKey(amount) {
+        var disclaimerKey = "", priceName = "";
+
+        if (isNull(amount))
+            return {disclaimerKey, priceName};
+        
+        var p = jQuery('p').filter(function(i){ return jQuery('p')[i].innerText.includes(formatMoney(amount));});
+
+        for (var i = 0; i < p.length; i++) {
+            disclaimerKey = "", priceName = "";
+            if (!isNull(p[i].nextElementSibling)) {
+                disclaimerKey = p[i].nextElementSibling.innerText;
+            }
+
+            if (!isNull(p[i].previousElementSibling)) {
+                priceName = p[i].previousElementSibling.innerText;
+            }
+        }
+
+        if (isNull(disclaimerKey) || isNull(priceName)) {
+            disclaimerKey = "", priceName = "";
+        }
+        
+        return {disclaimerKey, priceName};
+    }
+
+    function isNull(obj) {
+        return obj == undefined || obj == null || obj == "";
+    }
+
+    function formatMoney(amount) {
+        return Number(Number(amount).toFixed(0)).toLocaleString().replace(/\,/gm, " ")
+    }
+
+    function getDisclaimers(data) {
+        disclaimers_1204 = [];
+        var disclosureContent = $(findDisclaimerContentClass());
+
+        if (disclosureContent == undefined)
+            return setTimeout(getDisclaimers, 250);
+
+        if (disclosureContent.length == 0)
+            return setTimeout(getDisclaimers, 250);
+
+        for (var i = 0; i < data.length; i++) {
+            if (!isNull(data[i].disclaimerKey)) {
+                for (var j = 0; j < disclosureContent.length; j++) {
+                    if (disclosureContent[j].innerText.includes(data[i].disclaimerKey)) {
+                        disclaimers_1204.push({key: "disclaimer" + (i+1), symbol: data[i].disclaimerKey, type: data[i].type, content: findDisclaimer(disclosureContent[j])});
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function findDisclaimer(theContent) {
+        if (theContent.getElementsByTagName('p').length > 0) {
+            return theContent.getElementsByTagName('p')[0].innerHTML;
+        } else {
+            return "";
+        }
+    }
+
+    function findDisclaimerContentClass() {
+        var disclosureContent = $('div[class*="DisclosureContent"]');
+
+        var prevClass = "";
+        var currentClass = "";
+
+        for (var i = 0; i < disclosureContent.length; i++) {
+            var classLists = disclosureContent[i].classList;
+            for (var j = 0; j < classLists.length; j++) {
+                currentClass += "." + classLists[j];
+            }
+
+            if (prevClass != "") {
+                if (prevClass == currentClass) {
+                    return currentClass;
+                } else {
+                    prevClass = currentClass;
+                    currentClass = "";
+                }
+            } else {
+                prevClass = currentClass;
+                currentClass = "";
+            }
+        }
+    }
+    
+</script>

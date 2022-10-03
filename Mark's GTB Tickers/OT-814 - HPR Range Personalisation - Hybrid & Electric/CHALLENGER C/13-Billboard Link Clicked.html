@@ -1,0 +1,37 @@
+<script>
+    var p_Market = "DE";
+
+    $(document).ready(function() {
+        var storedData = {
+            market: "${profile.hpr.personalization.market}",
+            clicked: "${profile.hpr.personalization.clicked}"
+        }
+        
+        if (storedData.clicked == "true" && storedData.market == p_Market) {
+            setTimeout(function() {
+                if ($('li.full-width:contains("Hybrid & Elektrisch")').length > 0) {
+                    if ($('li.full-width:contains("Hybrid & Elektrisch")').find('input').length > 0) {
+                        $('li.full-width:contains("Hybrid & Elektrisch")').find('input').click();
+                    }
+                }
+            }, 500);
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.hpr.personalization.market" : "DE",
+                    "profile.hpr.personalization.clicked" : "false"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+    });
+  </script>

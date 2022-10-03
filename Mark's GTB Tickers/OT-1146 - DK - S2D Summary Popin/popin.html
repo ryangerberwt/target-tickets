@@ -1,0 +1,297 @@
+<script>
+    console.log("1146")
+    var p_Market = 'UK';
+    var popupId = 'js-summary-s2d-popup';
+    var fordLogo = 'https://gtb-ci.s3-eu-west-1.amazonaws.com/logo.png';
+
+    var popupData = {
+        popup_last_closed: Number("${profile.on_one_four_six.popup_last_closed}"),
+        popup_display_count: Number("${profile.on_one_four_six.popup_display_count}")
+    };
+
+
+    function updatePopupData(popup_last_closed, popup_display_count) {
+        adobe.target.getOffer({
+            'mbox': 'global-mbox',
+            'params': {
+                'profile.on_one_four_six.popup_last_closed': popup_last_closed,
+                'profile.on_one_four_six.popup_display_count': popup_display_count
+            },
+            'success': function (offer) {
+                adobe.target.applyOffer({
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function (status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    }
+
+    var Popup = {};
+    Popup.isPopupOpen = false;
+    Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+    Popup.openThreshold = 3; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+    Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+    Popup.setLastClosed = function () {
+        Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+    };
+    Popup.determineIfPopupShows = function () {
+
+        var popupCookie = popupData;
+        var timeBool = false;
+        var limitBool = false;
+
+        // ---------------------------------------------
+        // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+        // ---------------------------------------------
+        var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+        if (timeDifference > Popup.showPopupAfter) {
+            timeBool = true;
+        } else {
+            console.log("SHOW AFTER FAILED");
+            console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+        }
+
+        // ---------------------------------------------
+        // LIMIT OPEN THRESHOLD
+        // ---------------------------------------------
+        if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+            if (popupCookie.popup_last_closed != null) {
+                // INCREASE OPEN COUNTER BY 1
+                Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                Popup.setLastClosed();
+            }
+
+            limitBool = true;
+        }
+        console.log("TIMEBOOL : " + timeBool);
+        console.log("LIMITBOOL: " + limitBool);
+
+        return (timeBool && limitBool);
+    };
+
+    Popup.setKeyValue = function (key, value) {
+
+        popupData[key] = value;
+
+        updatePopupData(popupData.popup_last_closed, popupData.popup_display_count)
+    };
+
+    function buildPopup() {
+
+        var translations = {
+            mainBody: 'Byg din Ford, send den til din forhandler og få en værdikupon på 2.500 kr. der kan bruges til køb af tilbehør eller ekstraudstyr hos din lokale Ford-forhandler. Værdikupon kan bruges til køb af f.eks. hundebur eller babagerumsmåtte. Gælder ved køb af ny Ford.',
+        };
+
+        // Build the popup
+        var popupShell = $('<div class="popup-overlay" id="' + popupId + '" onclick="closePopup()"><div class="popup-dialog"><div class="popup-header"><button class="popup-close" onclick="closePopup()">&times;</button></div><div class="popup-body"><img src="' + fordLogo + '" /><p>' + translations.mainBody + '</p><div style="clear:both;"></div></div></div>');
+        $('body').append(popupShell);
+
+        setTimeout(() => {
+            if (!popupData) {
+
+                updatePopupData(0, 1);
+                Popup.setLastClosed();
+                console.log("Trigger Popup first load");
+                console.log("popup data ", popupData)
+               openPopup();
+            } else if (Popup.determineIfPopupShows()) {
+                console.log("Trigger Popup second load");
+                openPopup();
+            }
+        }, 2000)
+
+    }
+
+    function openPopup() {
+
+        document.getElementById(popupId).classList.add('active');
+
+    }
+
+
+    function closePopup() {
+
+        document.getElementById(popupId).classList.remove('active');
+        document.getElementById(popupId).remove();
+
+        adobe.target.trackEvent({
+            "mbox": "UK_1149_close_cta_ctr",
+            "params": {
+                "linkClicked": "true"
+            }
+        });
+
+    }
+
+    // $(document).ready(function () {
+    //     if (window.location.href.indexOf("summary") > -1 && Popup.determineIfPopupShows()) {
+    //         console.log('OT-1146 | 3.0 Summary');
+    //         buildPopup();
+    //     }
+
+        
+            window.addEventListener('load',function(){
+
+                if(/summary/i.test(window.location.href)){
+                buildPopup();
+            }
+        
+
+
+            })
+            window.addEventListener("hashchange",function(){
+
+                if(/summary/i.test(window.location.href)){
+                buildPopup();
+            }
+        
+
+            })
+
+           
+            
+        
+
+
+   // });
+
+</script>
+
+
+<style>
+    .popup-overlay {
+        position: absolute;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 350px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+        padding: 20px;
+    }
+
+    @media screen and (min-width: 768px) {
+
+        .popup-dialog {
+            padding: 40px;
+            height: auto;
+            width: 550px;
+        }
+
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        margin-bottom: 0 !important;
+        padding: 0;
+        color: #102a4d !important;
+        background-color: transparent !important;
+        outline: none;
+    }
+
+    .popup-body {
+        width: 100%;
+        margin-top: -6%;
+        text-align: center;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        max-width: 100px;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+        font-family: Antenna, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 40px;
+    }
+
+    .popup-body p {
+        font-family: FordAntennaRegular, Arial, Helvetica, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: normal !important;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.63 !important;
+        letter-spacing: 1px;
+        text-align: center;
+        color: #4d4d4d !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    .popup-body a {
+        color: #06235f;
+        text-decoration: underline;
+        transition: color 0.25s ease;
+    }
+
+    .popup-body a:hover {
+        color: #2d96cd;
+        text-decoration: underline;
+    }
+
+    .popup-body>p>.cta-button-primary {
+        color: #fff;
+        border-radius: 20px;
+        background: #102b4e;
+        padding: 10px 40px 10px 40px !important;
+        width: 100px;
+    }
+
+    .popup-body>p>.cta-button-primary:hover {
+        background-color: rgb(40, 97, 164) !important;
+        color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px !important;
+    }
+
+    .popup-body>p .cta-button {
+        font-size: 1rem;
+        font-weight: 300;
+        min-width: 131px;
+        text-decoration: none;
+        transition: background-color .3s, color .3s;
+    }
+
+    .toggle-nav-content {
+        pointer-events: auto;
+    }
+</style>

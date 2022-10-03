@@ -1,0 +1,125 @@
+<script>
+
+    var targetErrors = targetErrors || [];
+    var counter_1250 = -1;
+    var ngc_interval_1250;
+    console.log("OT-1250");
+
+    $(document).ready(function() {
+        counter_1250 = -1;
+        setTimeout(hideControl_1250, 250);
+        //hideControl_1250();
+    });
+
+    function hideControl_1250() {
+        if ($('.content-loading').length > 0) 
+            return setTimeout(hideControl_1250, 250);
+
+        counter_1250++;
+        if (counter_1250 == 10) {
+            loadWhisbi_1250();
+        }
+            
+        if ($('.dealer-icon').length > 0) {
+            $('.dealer-icon')[0].style.display = 'none';
+            loadWhisbi_1250();
+        } else {
+            return setTimeout(hideControl_1250, 250);
+        }
+    }
+
+    function loadWhisbi_1250() {
+        var Script_1250_Whisbi = document.createElement('script');
+
+        Script_1250_Whisbi.type = "text/javascript";
+        Script_1250_Whisbi.defer = true
+        Script_1250_Whisbi.src = 'https://static.whisbi.com/b3c5443f-7be0-4b31-8742-673742d4d972/connect.js';
+
+        document.body.appendChild(Script_1250_Whisbi);
+
+        ngc_interval_1250 = setInterval(checkWhisbiPosition, 100);
+    }
+
+    function checkWhisbiPosition() {
+        var whis = $('div[id*="wb_drag_wrapper"]');
+
+        if (whis.length > 0) {
+            whis[0].style.display = "unset";
+            var barHeight = 0;
+
+            var barHeight = /carrello/i.test(window.location.href) ? carrello_1250()
+                                : /riepilogo-ordine/i.test(window.location.href) ? riepilogo_ordine_1250()
+                                : /checkout/i.test(window.location.href) ? checkout_1250()
+                                : 0;
+
+            whis[0].style.bottom = barHeight + "px";
+        }
+    }
+
+    barHeight_1250 = 0;
+    offsetTop_1250 = 0;
+    className_1250 = "";
+
+    function setVariables_1250() {
+        if (className_1250 != "") {
+            try { 
+                if ($(className_1250)[0].offsetWidth != 0 && $(className_1250)[0].offsetHeight != 0) {
+                    barHeight_1250 = $(className_1250).first()[0].clientHeight; 
+                    offsetTop_1250 = $(className_1250)[0].offsetTop;
+                }
+            } catch (ex) { 
+                
+            }
+        }
+    }
+
+    function debugLog(error) {
+            if (/targetDebug=1245/i.test(window.location.href)) {
+                console.log(error);
+            }
+
+            targetErrors.push({ ticket: "1245", error: error });
+        }
+
+    function carrello_1250() {
+        className_1250 = ".pricing-rail-box";
+        setVariables_1250();
+
+        return getBarHeight_1250();
+    }
+
+    function getBarHeight_1250() {
+        if (window.innerHeight - (barHeight_1250 + offsetTop_1250) >= 15) {
+            var diff = window.innerHeight - (barHeight_1250 + offsetTop_1250) - 15;
+            return barHeight_1250 + diff;
+        } else if (window.innerHeight - (barHeight_1250 + offsetTop_1250) < 0) {
+            return 0;
+        }
+    }
+
+    function riepilogo_ordine_1250() {
+        className_1250 = ".order-summary-footer";
+        setVariables_1250();
+
+        return getBarHeight_1250();
+    }
+    
+    function checkout_1250() {
+        className_1250 = ".timer-container";
+        setVariables_1250();
+
+        if ((barHeight_1250 + offsetTop_1250) > 0) {
+            if ((window.innerHeight - offsetTop_1250) >= 100) {
+                return 0;
+            }
+            else if (window.innerHeight - (barHeight_1250 + offsetTop_1250) >= 15) {
+                var diff = window.innerHeight - (barHeight_1250 + offsetTop_1250) - 15;
+                return barHeight_1250 + diff;
+            } else if (window.innerHeight - (barHeight_1250 + offsetTop_1250) < 0) {
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+</script>

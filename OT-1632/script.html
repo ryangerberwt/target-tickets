@@ -1,0 +1,26 @@
+<script>
+    var MBOXName = "ES_BP_A_Popin";
+    //Opening of a popin
+    adobe.target.trackEvent({
+        "mbox": MBOXName,
+        "params": {
+            "open": "pop-up-open"
+        }
+    });
+
+    //Clicking a CTA
+    adobe.target.trackEvent({
+        "mbox": MBOXName,
+        "params": {
+            linkClicked: "true"
+        }
+    });
+
+    //Reaching the summary page on NGC
+    adobe.target.trackEvent({
+        'mbox': MBOXName,
+        'params': {
+            'summary': 'summary-get-data'
+        }
+    });
+</script>

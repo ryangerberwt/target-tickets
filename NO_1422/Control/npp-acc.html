@@ -1,0 +1,83 @@
+<script>
+    var storedData_1422;
+    var $ = jQuery;
+    var targetErrors = targetErrors || [];
+    console.log('OT-1422 | MACH-E NPP | CONTROL');
+    var myinterval;
+    var myMarket = "NO";
+    var myTicket = "1422";
+    var preventRun = false;
+    var enableLogs = false;
+    var _log = console.log;
+        console.log = function(logMsg){
+            if(enableLogs){
+     
+                _log.apply(console,arguments);
+            }
+        }
+        //Added because we sometimes use the console.dir function to display vars
+        var _dir = console.dir;
+        console.dir = function(dirMsg){
+            if(enableLogs){
+                _dir.apply(console,arguments);
+            }
+        }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours,path,cookieName,cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+          console.log("no cookie set --- setting now");
+          var now = new Date();
+          now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+          document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+          console.log("cookie is set");
+          window.targetCampaign =  {
+            page: {
+                campaignName: "tt:nwp:opt-1422:ab:tdr:tdra-tdrc:control",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+        } else {
+          console.log("Cookie is still valid");
+        }
+      }
+    console.log('NPP ACC 3.0');
+
+    // Vehicle Info
+    if (localStorage.getItem('carInfo') === null) {
+        storedData_1422 = {
+            visited: false
+        }
+    } else {
+        storedData_1422 = {
+            visited: JSON.parse(localStorage.getItem('carInfo')).visited
+        }
+    }
+
+
+    // Popup Data
+    // Just in case data from a different Market gets through
+    // Also checks if a vehicleCode is available, if it doesn't it won't display.
+    var display_1422;
+    if (display_1422 = "NO" == myMarket && "1422" == myTicket && storedData_1422.visited === true){
+        var popupData_1422 = {
+            osbpopup_abondoned: "${profile.no.osbpopup.abondoned}"
+        };
+        console.log("popup data", popupData_1422);
+
+        $(document).ready(function () {
+            console.log('OT-1422 | OSB Popup');
+
+            setCookieForImpressionID(0.25,'/','1422-control-fired','true')
+            }
+            )};
+
+            //end of createPopup function
+        </script>

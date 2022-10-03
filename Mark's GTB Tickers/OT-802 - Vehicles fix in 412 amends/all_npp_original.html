@@ -1,0 +1,213 @@
+<!-- 29 Oct 2019, 15:14 - Thorks -->
+<script type="text/javascript">
+    FordPersonalisation.guxFrameworkDeferred.then(function() {
+        var bundle, ENV = {
+            services: {}
+        };
+        (bundle = ENV).dataSources = [
+            {
+                billboard: "/content/offers-library/explorer-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-explorer-plug-in-hybrid",
+                code: "WAEDX-CTW-2020-U625NExplorerDEU202000"
+            },{
+                billboard: "/content/offers-library/puma-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-puma",
+                code: "WAEDX-CF7-2020-BX726DEU202025"
+            },{
+                billboard: "/content/offers-library/new-kuga-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-kuga",
+                code: "WAEDX-CTD-2019-CX482KugaDEU202050"
+            },{
+                billboard: "/content/offers-library/ka-plus-active-carousel-offer",
+                url: "/fahrzeuge/ford-ka-plus/ausstattungsvarianten/active",
+                code: "WAEDX-CDU-2018-KaplusDEU201850",
+                specific: "active"
+            },{
+                billboard: "/content/offers-library/ka-plus-carousel-offer",
+                url: "/fahrzeuge/ford-ka-plus",
+                code: "WAEDX-CDU-2018-KaplusDEU201850"
+            },{
+                billboard: "/content/offers-library/fiesta-active-carousel-offer",
+                url: "/fahrzeuge/ford-fiesta/ausstattungsvarianten/active",
+                code: "00M",
+                specific: "active"
+            },{
+                billboard: "/content/offers-library/fiesta-vignale-carousel-offer",
+                url: "/fahrzeuge/ford-fiesta/ausstattungsvarianten/vignale",
+                code: "00M",
+                specific: "vignale"
+            }, {
+                billboard: "/content/offers-library/fiesta-st-carousel-offer",
+                url: "/fahrzeuge/ford-fiesta-st",
+                code: "00M",
+                specific: "st"
+            }, {
+                billboard: "/content/offers-library/tourneo-courier-carousel-offer",
+                url: "/fahrzeuge/ford-tourneo-courier",
+                code: "courier"
+            }, {
+                billboard: "/content/offers-library/ecosport-carousel-offer",
+                url: "/fahrzeuge/ford-ecosport",
+                code: "WAEDX-CR6-2018-EcosportB515DEU201875"
+            }, {
+                billboard: "/content/offers-library/focus-st-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-focus-st",
+                code: "WAEDX-CGE-2018-C519FocusDEU201975",
+                specific: "st"
+            },/*{
+                billboard: "/content/offers-library/focus-active-carousel-offer",
+                url: "/fahrzeuge/ford-focus/ausstattungsvarianten/active",
+                code: "WAEDX-CGE-2018-C519FocusDEU201975",
+                specific: "active"
+            },*/ {
+                billboard: "/content/offers-library/new-focus-vignale-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-focus/ausstattungsvarianten/vignale",
+                code: "WAEDX-CGE-2018-C519FocusDEU201975",
+                specific: "vignale"
+            }, {
+                billboard: "/content/offers-library/new-focus-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-focus",
+                code: "WAEDX-CGE-2018-C519FocusDEU201975"
+            },  {
+                billboard: "/content/offers-library/focus-rs-carousel-offer",
+                url: "/fahrzeuge/ford-focus-rs",
+                code: "00L",
+                specific: "rs"
+            }, {
+                billboard: "/content/offers-library/focus-carousel-offer",
+                url: "/fahrzeuge/ford-focus",
+                code: "00L"
+            }, {
+                billboard: "/content/offers-library/c-max-carousel-offer",
+                url: "/fahrzeuge/ford-c-max",
+                code: "00P"
+            }, {
+                billboard: "/content/offers-library/kuga-vignale-carousel-offer",
+                url: "/fahrzeuge/ford-kuga/ausstattungsvarianten/vignale",
+                code: "00W",
+                specific: "vignale"
+            }, {
+                billboard: "/content/offers-library/kuga-carousel-offer",
+                url: "/fahrzeuge/ford-kuga",
+                code: "00W"
+            }, {
+                billboard: "/content/offers-library/mondeo-vignale-carousel-offer",
+                url: "/fahrzeuge/ford-mondeo/ausstattungsvarianten/vignale",
+                code: "00R",
+                specific: "vignale"
+            }, {
+                billboard: "/content/offers-library/new-mondeo-carousel-offer",
+                url: "/fahrzeuge/der-neue-ford-mondeo",
+                code: "00R",
+                specific: "hybrid"
+            }, {
+                billboard: "/content/offers-library/mondeo-carousel-offer",
+                url: "/fahrzeuge/ford-mondeo",
+                code: "00R"
+            }, {
+                billboard: "/content/offers-library/s-max-vignale-carousel-offer",
+                url: "/fahrzeuge/ford-s-max/ausstattungsvarianten/vignale",
+                code: "00A",
+                specific: "vignale"
+            }, {
+                billboard: "/content/offers-library/s-max-carousel-offer",
+                url: "/fahrzeuge/ford-s-max",
+                code: "00A"
+            }, {
+                billboard: "/content/offers-library/galaxy-carousel-offer",
+                url: "/fahrzeuge/ford-galaxy",
+                code: "002"
+            }, {
+                billboard: "/content/offers-library/edge-vignale-carousel-offer",
+                url: "/fahrzeuge/ford-edge/ausstattungsvarianten/vignale",
+                code: "00E",
+                specific: "vignale"
+            }, {
+                billboard: "/content/offers-library/edge-carousel-offer",
+                url: "/fahrzeuge/ford-edge",
+                code: "00E"
+            }, {
+                billboard: "/content/offers-library/tourneo-connect-carousel-offer",
+                url: "/fahrzeuge/ford-tourneo-connect",
+                code: "authored-tourneo-connect-2017"
+            }, {
+                billboard: "/content/offers-library/ranger-raptor-carousel-offer",
+                url: "/nutzfahrzeuge/ford-ranger-raptor",
+                code: "SU_NG"
+            }, {
+                billboard: "/content/offers-library/ranger-carousel-offer",
+                url: "/nutzfahrzeuge/ford-ranger",
+                code: "authored-ranger-2017"
+            }, {
+                billboard: "/content/offers-library/tourneo-custom-carousel-offer",
+                url: "/fahrzeuge/ford-tourneo-custom",
+                code: "newTourneoCustomPreLaunch"
+            }, {
+                billboard: "/content/offers-library/mustang-carousel-offer",
+                url: "/fahrzeuge/ford-mustang",
+                code: "WAEDX-CZG-2019-MustangS550DEU201900"
+            }
+            , {billboard: "/content/offers-library/fiesta-returning", url: "/fahrzeuge/ford-fiesta", code: "00M" ,specific: "fiesta"}
+            , {billboard: "/content/offers-library/fiesta-st-carousel-offer", url: "/fahrzeuge/ford-fiesta/ausstattungsvarianten/st-line", code: "00M", specific: "fiesta-st" }
+            /*, {billboard: "/content/offers-library/focus-carousel-offer", url: "/fahrzeuge/ford-focus/ausstattungsvarianten/active", code: "006", specific: "focus-active"}*/
+            /*, {billboard: "/content/offers-library/focus-st-carousel-offer", url: "/fahrzeuge/der-neue-ford-focus-st", code: "00L-YYF" }*/
+            , {billboard: "/content/offers-library/focus-st-carousel-offer", url: "/fahrzeuge/ford-focus/ausstattungsvarianten/st", code: "006", specific: "focus-st" }
+            , {billboard: "/content/offers-library/s-max-st-line-carousel-offer", url: "/fahrzeuge/ford-s-max/ausstattungsvarianten/st-line", code: "00A" }
+            , {billboard: "/content/offers-library/transit-connect-carousel-offer", url: "/nutzfahrzeuge/ford-transit-connect", code: "transit-connect" }
+            , {billboard: "/content/offers-library/transit-courier-carousel-offer", url: "/nutzfahrzeuge/ford-transit-courier", code: "transit-courier" }
+            , {billboard: "/content/offers-library/transit-custom-carousel-offer", url: "/nutzfahrzeuge/ford-transit-custom", code: "transit-custom" }
+            , {billboard: "/content/offers-library/transit-carousel-offer", url: "/nutzfahrzeuge/ford-transit", code: "ford-transit" }],
+            bundle.forbidenFallback = ["WAEDX-CDU-2018-KaplusDEU201850", "00M", "WAEDX-CGE-2018-NewFocusC519DEU201875", "00L", "00W", "00R", "00A", "00E"],
+            bundle.getBillboardURI = function(carCode, specific) {
+                for (var i = 0; i < bundle.dataSources.length; i++)
+                    if (bundle.dataSources[i].code === carCode)
+                        console.log(carCode)
+                if (specific) {
+                    if (specific === bundle.dataSources[i].specific) return bundle.dataSources[i].billboard
+                } else if (!bundle.dataSources[i].specific) return bundle.dataSources[i].billboard;
+                return undefined
+            },
+            bundle.getCarInformationByUrl = function(url) {
+                for (var i = 0; i < bundle.dataSources.length; i++)
+                    if (url.split("?")[0] === bundle.dataSources[i].url) return bundle.dataSources[i];
+                //if (-1 !== url.indexOf(bundle.dataSources[i].url)) return bundle.dataSources[i];
+                return undefined
+            },
+            function(bundle) {
+                bundle.storage = {}, bundle.storage.createCookie = function(name, value) {
+                    localStorage.setItem("optprg-" + name, value)
+                }, bundle.storage.readCookie = function(name) {
+                    return localStorage.getItem("optprg-" + name)
+                }, bundle.storage.eraseCookie = function(name) {
+                    localStorage.removeItem("optprg-" + name)
+                }, bundle.storage.readAndParse = function(name) {
+                    var storedData, fromCookie = bundle.storage.readCookie(name);
+                    if (!fromCookie) return !1;
+                    try {
+                        storedData = JSON.parse(fromCookie)
+                    } catch (e) {
+                        throw "Failed to parse stored data!"
+                    }
+                    return storedData
+                }
+            }(ENV.services),
+            function initialize() {
+                var currentVisitedConfiguration = ENV.getCarInformationByUrl(window.location.pathname);
+                //var currentVisitedConfiguration = ENV.getCarInformationByUrl(location.href);
+
+                console.log("FOUND:");
+                console.dir(currentVisitedConfiguration);
+
+                currentVisitedConfiguration && (adobe.target.trackEvent({
+                    mbox: "de-412-billboard-personalisation",
+                    params: {
+                        visited: "tracked-NPP"
+                    }
+                }),
+                    ENV.services.storage.createCookie("visited-car-model", JSON.stringify({
+                        carCode: currentVisitedConfiguration.code,
+                        specific: currentVisitedConfiguration.specific
+                    }), 14))
+            }()
+    });
+</script>

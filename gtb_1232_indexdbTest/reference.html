@@ -1,0 +1,95 @@
+<script>
+let dbName = "books";
+    let dbVersion = 1
+
+    /*
+    Open the connection
+    */
+    let openRequest = indexedDB.open(dbName, dbVersion);
+
+    /*
+      Successful Connection - We can work with the db
+    */
+    openRequest.onsuccess = function () {
+      /*
+        Perform the request to the object store books.add(book)
+      */
+      let db = openRequest.result;
+      alert('success');
+      /*
+        Create a transaction, mentioning all the stores it’s going to access
+      */
+      let transaction = db.transaction(dbName, "readwrite");
+      /*
+        Get an object store to operate on it
+      */
+      let books = transaction.objectStore(dbName);
+      let book = {
+        id: 'js',
+        price: 10,
+        created: new Date()
+      };
+      let request = books.add(book);
+
+    
+      request.onsuccess = function(){
+        console.log("Book added to the store", request.result);
+      }
+      request.onerror = function(){
+        console.log('error');
+        console.dir(request.error);
+      }
+
+
+    };
+    openRequest.onupgradeneeded = function (event) {
+      // the existing database version is less than 2 (or it doesn't exist)
+      let db = openRequest.result;
+
+      if (event.oldVersion = dbVersion) {
+        console.log('matched versions');
+      }
+      switch (event.oldVersion) { // existing db version
+        case 0:
+          // version 0 means that the client had no database
+          // perform initialization
+          console.log('no db');
+          break;
+        case event.oldVersion < dbVersion:
+          // client had version 1
+          // update
+          console.log('db is old');
+          let deleteRequest = indexedDB.deleteDatabase(dbName);
+
+          deleteRequest.onerror = function(){
+            console.error('Error',deleteRequest.error);
+          }
+          break;
+        default:
+          console.log('defualt');
+          break;
+      }
+      if (!db.objectStoreNames.contains(dbName)) {
+        db.createObjectStore(dbName, { keyPath: 'id' });
+      }
+
+      /*To delete use 
+        db.deleteObjectStore('books')
+      */
+    };
+
+    openRequest.onblocked = function () {
+      // this event shouldn't trigger if we handle onversionchange correctly
+
+      // it means that there's another open connection to the same database
+      // and it wasn't closed after db.onversionchange triggered for it
+      alert('blocked');
+    };
+    openRequest.onerror = function () {
+      console.error("Error", openRequest.error);
+    };
+
+    function addToDB(id, name) {
+
+    }
+    </script>

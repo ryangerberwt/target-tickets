@@ -1,0 +1,76 @@
+<script>
+    $(document).ready(function(){
+        console.log("OT-817 - B - KMI-A-C");
+        function vehicleOnList() {
+            if ($('.selected label')[0] == undefined)
+                return setTimeout(vehicleOnList, 50);
+            var cars = $('.selected label')
+
+            for (var i = 0; i < cars.length; i++) {
+                switch (cars[i].innerText.toLowerCase()) {
+                    case "new fiesta van":
+                    case "new transit courier":
+                    case "transit connect":
+                    case "new transit custom":
+                    case "new transit custom nugget":
+                    case "new transit custom nugget plus":
+                    case "new transit 2t":
+                    case "new transit chassis cabine":
+                    case "new ranger":
+                    case "new ranger raptor":
+                    case "new transit bus":
+                    case "ranger":
+                    case "fiesta van":
+                        return true;
+                    default:
+                        break;
+                }
+            }
+
+            return false;    
+        }
+        function adobeLog(action) {
+            var d = new Date();
+            d.setTime(d.getTime() + 1209600000);
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.hpr.personalization.market" : "BE-NL",
+                    "profile.hpr.personalization.action" : action,
+                    "profile.hpr.personalization.triggerHomePage" : true,
+                    "profile.hpr.personalization.visibleUntil" : d,
+                    "profile.hpr.personalization.seen": 0
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+        function setVehicleSelected() {
+            var logIt = vehicleOnList();
+
+            if ($('a:contains("Envoyer")').length > 0) {
+                $('a:contains("Envoyer")')[0].onclick = function() { 
+                    logIt = vehicleOnList();
+                    if (logIt) {
+                        adobeLog("KMI-C");
+                    } 
+                };
+            } 
+            if (logIt) {
+                adobeLog("KMI-A");
+            }
+
+            return setTimeout(setVehicleSelected, 50);
+        }
+
+        setVehicleSelected();
+    });
+</script>

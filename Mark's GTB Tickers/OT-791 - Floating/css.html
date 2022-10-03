@@ -1,0 +1,135 @@
+<style>
+
+    /*
+       gJRhEQ => hGGXtP
+       kfKLKE => liWsoy, lbQlHs
+    */
+
+    #hidePlaceholder {
+        height: 40px;
+        align-self: center;
+    }
+    
+    #hidePlaceholder .hGGXtP {
+        visibility: hidden !important;
+    }
+    
+    /* SLIM BUTTON ON INTRO */
+
+    #root .hGGXtP {
+        height: 40px;
+        /*width: 22.7%;*/
+        min-width: 275px;
+        align-self: center;
+    }
+
+    /* MODEL AND RANGE FLOAT-BUTTON STYLING */
+    /* This ensures the extra float buttons are always hidden */
+    .float-button { 
+        display: none !important
+    }
+
+    .float-button > button:first-child,
+    .float-button > button:nth-child(2) {
+        position: fixed;
+        width: 275px !important;
+        z-index: 99;
+        bottom: 0;
+        transform: translate(0, -50%);
+    }
+
+    /* OTHER BUTTONS */
+    @media (min-width: 992px) {
+        .liWsoy, .lbQlHs {
+            width: 22.7% !important;
+            align-self: center;
+            bottom: 0;
+            transform: translate(0, -50%);
+        }
+    }
+
+    @media (max-width: 991px) {
+        .liWsoy, .lbQlHs {
+            position: unset !important;
+        }
+    }
+
+    /* INTRO */
+
+    @media (min-width: 991px) and (max-height: 701px) {
+            #root .hGGXtP {
+            position: fixed;
+            bottom: 0;
+            transform: translate(0, 75%);
+        }
+    }
+
+    #root .hGGXtP {
+        bottom: 0;
+    }
+
+    /* MODEL AND RANGE */
+
+    @media (min-width: 991px) and (max-width: 1199px) and (max-height: 841px) {
+        .float-button > button:first-child {
+            right: 50%;
+            margin-right: 37px !important;
+        }
+        .float-button > button:nth-child(2) {
+            left: 50%;
+            margin-left: 114px !important;
+        }
+    }
+
+    @media (min-width: 1200px) and (max-height: 841px) {
+        .float-button > button:first-child {
+            right: 50%;
+            margin-right: 76px !important;
+        }
+        .float-button > button:nth-child(2) {
+            left: 50%;
+            margin-left: 76px !important;
+        }
+    }
+
+    @media (max-height: 841px) and (min-width: 992px) {
+        .old-buttons {
+            display: none !important;
+        }
+        .float-button { 
+            display: unset !important
+        }
+    }
+
+    /* COLOR AND INTERIOR */
+
+    @media (min-width: 991px) and (max-width: 1199px) and (max-height: 841px) {
+        .liWsoy, .lbQlHs {
+            position: fixed;
+        }
+    }
+
+    @media (min-width: 1200px) and (max-height: 841px) {
+        .liWsoy, .lbQlHs {
+            position: fixed;
+        }
+    }
+
+    /* MOBILE POPUP CHANGES ? ? ? */
+
+    @media (max-width: 991px) {
+        /* This is for some popup, with an error message I think */
+        #root .Dialog-t9yl1k-0 {
+            left: auto !important;
+        }
+    }
+
+    /* MORE HACKY CHANGES */
+    .override-old-buttons {
+        display: unset !important;
+    }
+    .override-float-buttons {
+        display: none !important;
+    }
+    
+</style>

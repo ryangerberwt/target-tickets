@@ -1,0 +1,194 @@
+<!-- C - Show Image -->
+<script type="text/javascript">
+    !(function() {
+        var _enabledDebugLog,
+            debugLog = ((_enabledDebugLog =
+                -1 !== window.location.search.indexOf("jsDebugEx=") ||
+                "localhost" === window.location.hostname),
+                function() {
+                    if (_enabledDebugLog)
+                        for (var i = 0; i < arguments.length; i++) console.log(arguments[i]);
+                });
+        var bundle,
+            ENV = { services: {}, constructions: {} };
+        function initialize() {
+            console.log("start check for visited-car-model");
+
+            var storedData = {
+                market: "${profile.hpr.range.personalisation.market}", 
+                action: "${profile.hpr.range.personalisation.action}", 
+                triggerHomePage: "${profile.hpr.range.personalisation.triggerHomePage}",
+                vehicleViewed: "${profile.hpr.range.personalisation.vehicleViewed}",
+                imageToShow: "${profile.hpr.range.personalisation.imageToShow}",
+
+                seen: Number("${profile.hpr.range.personalisation.seen}"),
+                visibleUntil: Number("${profile.hpr.range.personalisation.visibleUntil}")
+            };
+
+            if (storedData.market != 'BE-NL')
+                return;
+            if (storedData.triggerHomePage != "true")
+                return;
+            if (storedData.seen > 2)
+                return;
+            if (new Date().getTime() > storedData.visibleUntil)
+                return;
+            if (storedData.imageToShow != "SUV")
+                return;
+            
+            console.log('OT-869 - C - Show Image');
+
+            targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-869:ab:hp:hpr-suv:var-c"
+                }
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+
+            function waitForBillboard(billboardURI) {
+                if (billboardURI) {
+                    var billboard = $("div.carousel.carousel-billboard-homepage.active").data("flexslider");
+                    if (!billboard)
+                        return setTimeout(function() {
+                            waitForBillboard(billboardURI);
+                        }, 50);
+
+                    ((function realInitialize(billboardURI, flexslider) {
+                        flexslider.addSlide(ENV.constructions.createMockUp(), 0),
+                            ENV.services.remoteOffer(billboardURI, function(err) {
+                                err && (flexslider.removeSlide(0), debugLog(err));
+                            });
+                    })(billboardURI, billboard));
+
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.hpr.range.personalisation.market" : "BE-NL",
+                            "profile.hpr.range.personalisation.seen" : storedData.seen++
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                    setMetricOnClick();
+                }
+            }
+
+            function setMetricOnClick() {
+                if ($('#optprg-returning-slide-billboard').length == 0)
+                    return setTimeout(setMetricOnClick, 250);
+                
+                $('#optprg-returning-slide-billboard').on('click', function() {
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.hpr.range.personalisation.market" : "BE-NL",
+                            "profile.hpr.range.personalisation.billboardClicked" : "true",
+                            "profile.hpr.range.personalisation.imageToShow" : "SUV",
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                    adobe.target.trackEvent({
+                        "mbox": "BE_NL_869_Billboard",
+                        "params": {
+                            "linkClicked": "true"
+                        }
+                    });
+                });
+            }
+
+            waitForBillboard("/content/snippets/target/suv-showroom");
+        }
+        ((ENV.constructions.createMockUp = function() {
+                return (function DOMBuilder(obj) {
+                    if (obj) {
+                        if ($.isArray(obj)) {
+                            var i,
+                                arr = [];
+                            for (i = 0; i < obj.length; i++)
+                                obj[i] instanceof $
+                                    ? arr.push(obj[i])
+                                    : arr.push(DOMBuilder(obj[i]));
+                            return arr;
+                        }
+                        if (obj instanceof $) return obj;
+                        if ($.isFunction(obj)) return DOMBuilder(obj());
+                        if (!obj.type) return obj.html || obj.text || undefined;
+                        if (obj.hasOwnProperty("render") && !obj.render) return undefined;
+                        var $e = $("<" + obj.type + ">");
+                        if (
+                            (obj.id && $e.prop("id", obj.id),
+                            obj.className && $e.addClass(obj.className),
+                            $.isPlainObject(obj.data) &&
+                            obj.data.key &&
+                            $e.data(obj.data.key, obj.data.value),
+                                obj.html ? $e.html(obj.html) : $e.text(obj.text || ""),
+                            obj.child && $e.append(DOMBuilder(obj.child)),
+                                $.isPlainObject(obj.handlers))
+                        )
+                            for (var evName in obj.handlers)
+                                $e.on(evName, obj.handlers[evName]);
+                        if ($.isPlainObject(obj.props))
+                            for (var propName in obj.props)
+                                $e.prop(propName, obj.props[propName]);
+                        return $.isFunction(obj.callback) && obj.callback($e), $e;
+                    }
+                })({
+                    type: "article",
+                    className: "carousel-slide slider-model-detail target-slide",
+                    id: "optprg-returning-slide-billboard",
+                    child: [
+                        {
+                            type: "div",
+                            className: "carousel-content",
+                            child: [{ type: "div", className: "content" }]
+                        }
+                    ]
+                });
+            }),
+            (function(bundle) {
+                FordPersonalisation &&
+                FordPersonalisation.target &&
+                "function" == typeof FordPersonalisation.target.getRemoteTargetOffer
+                    ? (bundle.remoteOffer = function remoteOffer(remoteURL, cb) {
+                        FordPersonalisation.target.getRemoteTargetOffer(
+                            remoteURL,
+                            "#optprg-returning-slide-billboard .content",
+                            function() {
+                                cb();
+                            },
+                            function() {
+                                cb("Error");
+                            },
+                            !1,
+                            !1,
+                            !0,
+                            !1
+                        );
+                    })
+                    : (bundle.remoteOffer = function() {
+                        debugLog(
+                            "ERROR: FordPersonalisation.target.getRemoteTargetOffer is not function!"
+                        );
+                    });
+            })(ENV.services),
+            FordPersonalisation.guxFrameworkDeferred.then(function() {
+                (FordPersonalisation.ptemplate.set("return"), initialize());
+            }));
+    })();
+</script>

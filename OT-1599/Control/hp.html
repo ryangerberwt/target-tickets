@@ -1,0 +1,93 @@
+<script>
+    console.log('OT-1599 | Control')
+    var $;
+    var enableLogs = false;
+    var hasControl = false;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+            _log.apply(console, arguments);
+        }
+    }
+    //Funtion that checks if Jquery if it loaded
+    window.onload = function () {
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                $ = jQuery;
+              ;
+                run();
+            } else {
+                // jQuery is not loaded
+                console.log("Not loaded - will check again in 500ms");
+            }
+        }, 500);
+    };
+
+
+    function setCookieForImpressionID(expireInHours) {
+        console.log('setting cookie for impression ID');
+        if (getCookie('1599-control-impression-id') === undefined || getCookie('1599-control-impression-id') === '' || getCookie('1599-control-impression-id') === null) {
+            console.log('no cookie set --- setting now');
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = '1599-control-impression-id=fired;expires=' + now.toUTCString();
+            console.log('cookie is set');
+            return true;
+        }else{
+            console.log('Cookie is still valid');
+            return false;
+        }
+    }
+
+    function run() {
+        console.log('Executing main code');
+
+
+            let waitForElement = setInterval(function () {
+                if ($('a[class="cta-pill cta-pill-primary initialized-contextualLinks view-visible"]>span') !== undefined
+                    && $('a[class="cta-pill cta-pill-primary initialized-contextualLinks view-visible"]>span') !== null
+                    && $('a[class="cta-pill cta-pill-primary initialized-contextualLinks view-visible"]>span').length > 0) {
+                    clearInterval(waitForElement);
+                    hasControl = true;
+                }
+            },500);
+        
+
+        window.addEventListener("click", function () {
+            if (window.targetCampaign.page.campaignName !== "") {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+            }
+            console.log('firing impression on event listener click')
+            _satellite.track('genericTestingImpressionIDWorkaround');
+        });
+
+        /* Fix To Prevent multiple re-fires of impression ID*/
+        window.addEventListener("keyup", function () {
+            if (window.targetCampaign.page.campaignName !== "") {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+            }
+            console.log('firing impression on event listener keyup')
+            _satellite.track('genericTestingImpressionIDWorkaround');
+        });
+        if (setCookieForImpressionID(1) === true && hasControl === true) {
+            setTimeout(function () {
+                console.log('setting impression ID')
+                window.targetCampaign = {
+                    page: {
+                        campaignName: "tt:nwp:opt-1599:ab:hp:onder-online:control",
+                    },
+                };
+                _satellite.track("impression-xt-popin");
+            }, 1000);
+        }
+    }
+</script>

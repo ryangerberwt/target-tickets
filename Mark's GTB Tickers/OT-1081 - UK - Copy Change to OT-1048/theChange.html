@@ -1,0 +1,369 @@
+<script>
+    var popupId = 'js-lockdown-popup';
+    var fordLogo = 'https://www.ford.co.uk/content/dam/guxeu/global-shared/header/ford-go-further.png.renditions.extra-large.png';
+
+    var IPlist = [
+        '2.96.17.',
+        '31.120.9.0',
+        '31.111.69.', 
+        '5.80.155.', 
+        '31.103.253.', 
+        '2.30.163.',
+        '51.9.179.',
+        '31.103.69.',
+        '31.125.123.',
+        '31.116.147.', 
+        '31.205.1.', 
+        '2.220.133.', 
+        '31.112.45.',
+        '31.99.66.0',
+        '46.208.85.',
+        '2.126.176.',
+        '5.69.180.', 
+        '2.121.40.', 
+        '5.64.194.', 
+        '31.91.34.',
+        '51.7.78.', 
+        '2.29.73.', 
+        '2.223.163.', 
+        '2.101.105.',
+        '31.119.251.', 
+        '46.65.153.', 
+        '31.119.210.',
+        '31.123.9.',
+        '2.99.25.',
+        '31.113.217.',
+        '5.69.30.',
+        '2.100.173.',
+        '46.208.15.',
+        '31.51.100.',
+        '31.55.120.',
+        '62.255.176.',
+        '31.53.130.',
+        '31.118.51.',
+        '31.113.51.',
+        '31.118.21.',
+        '2.99.31.',
+        '31.111.36.',
+        '2.102.89.',
+        '31.117.197.',
+        '31.119.48.',
+        '46.65.49.',
+        '31.116.192.',
+        '2.221.205.',
+        '2.223.15.',
+        '2.97.133.',
+        '31.117.230.',
+        '2.120.59.',
+        '5.71.223.',
+        '2.102.52.',
+        '31.114.100.',
+        '31.6.73.',
+        '31.120.61.',
+        '2.100.122.',
+        '31.110.88.',
+        '31.123.215.',
+        '31.98.1.',
+        '31.93.100.',
+        '31.112.110.',
+        '2.100.113.',
+        '31.126.3.',
+        '31.49.171.',
+        '31.104.239.',
+        '2.27.51.',
+        '31.119.88.',
+        '31.98.241.',
+        '31.114.164.',
+        '31.65.145.',
+        '2.223.103.',
+        '31.99.2.',
+        '2.102.114.',
+        '31.112.202.',
+        '31.99.122.',
+        '2.30.246.',
+        '31.115.16.',
+        '31.125.111.',
+        '5.67.190.',
+        '5.71.243.',
+        '31.87.35.',
+        '31.103.242.',
+        '2.103.190.',
+        '31.113.3.',
+        '31.94.233.',
+        '2.219.123.',
+        '31.83.106.',
+        '2.124.132.',
+        '31.118.229.',
+        '2.27.48.',
+        '31.51.221.',
+        '2.97.136.',
+        '2.101.102.',
+        '46.254.202.',
+        '2.97.139.',
+        '31.117.142.',
+        '5.69.187.',
+        '31.116.49.',
+    ]
+
+    var cityList = [
+        'Caerwent',
+        'Cardiff',
+        'Llanteg',
+        'Colwyn Bay',
+        'Chepstow',
+        'Clydach',
+        'Bangor',
+        'Dowlais',
+        'Plasnewyd',
+        'Holyhead',
+        'Nantgarw',
+        'Mountain Ash',
+        'Llanrwst',
+        'Ystrad Mynach',
+        'Old Colwyn',
+        'Saint Mellons',
+        'Prestatyn',
+        'Llanfihangel-geneur-glyn',
+        'Abergavenny',
+        'Pontrhydyfen',
+        'Treforest',
+        'Rogerstone',
+        'Bryngwran',
+        'Llansannan',
+        'Sirhowy',
+        'Abermule',
+        'Chepstow',
+        'Crumlin',
+        'Aberdulais',
+        'Beddau',
+        'Gorslas',
+        'Lisvane',
+        'Rhosllanerchrugog',
+        'Abertridwr',
+        'Carmarthen',
+        'Deganwy',
+        'Cefn-y-bedd',
+        'Ynysddu',
+        'Bynea',
+        'Frongoch',
+        'Montgomery',
+        'Kenfig Hill',
+        'Bassaleg',
+        'Pontypridd',
+        'Blackwood',
+        'Llantwit Major',
+        'Crundale',
+        'Welshpool',
+        'Caldicot',
+        'Buttington',
+        'Tremadoc',
+        'Ponthir',
+        'Newbridge',
+        'Roath',
+        'Aberdare',
+        'Trefriw',
+        'Caerphilly',
+        'Cwmbran',
+        'Tenby',
+        'Pontypool',
+        'Cwmafan',
+        'Penrhos-Lligwy',
+        'Leighton',
+        'Holt',
+        'Landore',
+        'Gelligaer',
+        'Felin Fach',
+        'Briton Ferry',
+        'Llanfaethlu',
+        'Boverton',
+        'Abersychan',
+        'Newgale',
+        'Hengoed'
+    ]
+
+    $(document).ready(function() {
+        buildPopup();
+
+        $.get("https://ipinfo.io?token=84cea0737d6c08", function(response) {
+            checkByIp(response);
+        }, "jsonp");
+    });
+
+    function checkByIp(response) {
+        var ipAddress = response.ip;
+        var country = response.country;
+
+        if (/targetDebug=1081/i.test(window.location.href)) {
+            setTimeout(() => {
+                openPopup();
+            }, 1000);
+        } else if (country == 'UK' || country == 'GB') {
+            for (var i = 0; i < IPlist.length; i++) {
+                if (ipAddress.includes(IPlist[i])) {
+                    setTimeout(() => {
+                        openPopup();
+                    }, 1000);
+                }
+
+            }
+        }
+    }
+
+    function buildPopup() {
+
+        var translations = {
+            mainHeading: 'IMPORTANT COVID-19 ANNOUNCEMENT​',
+            mainBody: 'Ford Motor Company Limited wants you to keep safe during the current situation. Our dealerships are open and will be following the Ford Care Code to keep you safe.​ </br> For more information on this, please click <a target="_blank" href="https://www.ford.co.uk/useful-information/care-code">here</a>.',
+        };
+
+        // Build the popup
+        var popupShell = $('<div class="popup-overlay" id="' + popupId + '"><div class="popup-dialog"><div class="popup-header"><button class="popup-close" onclick="closePopup()">&times;</button></div><div class="popup-body"><img src="' + fordLogo + '" /><h1>' + translations.mainHeading + ' </h1><p>' + translations.mainBody + '</p><div style="clear:both;"></div></div></div>');
+        $('body').append(popupShell);
+
+    }
+
+    function openPopup() {
+
+        window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1048:xt:as:wales-lockdown'
+            }
+        }
+         
+        _satellite.track('genericTestingImpressionIDWorkaround');
+
+        var opened = localStorage.getItem('opened');
+
+        if (opened == null) {
+            opened = 0;
+        }
+
+        if (opened <= 3) {
+
+            document.getElementById(popupId).classList.add('active');
+
+            opened++;
+
+            localStorage.setItem('opened', opened);
+
+        } 
+
+    }
+
+    function closePopup() {
+
+        document.getElementById(popupId).classList.remove('active');
+
+    }
+
+</script>
+
+
+<style>
+
+    .popup-overlay {
+        position: absolute;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 520px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+        padding: 20px;
+    }
+
+    @media screen and (min-width: 768px){
+
+        .popup-dialog {
+            padding: 40px;
+            height: auto;
+            width: 550px;
+        }
+
+    }
+
+    @media screen and (max-width: 991px){
+        .popup-dialog {
+            width: 85%;
+        }
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        margin-bottom: 0 !important;
+        padding: 0;
+        color: #102a4d !important;
+        background-color: transparent !important;
+        outline: none;
+    }
+
+    .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        max-width: 100px;
+        margin: 0 auto;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+        font-family: Antenna,Arial,Helvetica,sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 40px;
+    }
+
+    .popup-body p {
+        font-family: Antenna,Arial,Helvetica,sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.2rem;
+        font-size: 1.0rem;
+        font-weight: normal;
+    }
+
+    .popup-body a {
+        color: #06235f;
+        text-decoration: underline;
+        transition: color 0.25s ease;
+    }
+
+    .popup-body a:hover {
+        color: #2d96cd;
+        text-decoration: underline;
+    }
+
+</style>

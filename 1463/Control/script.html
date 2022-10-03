@@ -1,0 +1,62 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1463 Control');
+
+
+    $(document).ready(function () {
+        fireImpressionId();
+        setTimeout(function () {
+            setOnKeyUp();
+            //console.log('clicking ');
+            setOnClick();
+            $('body').click();
+        }, 750);
+    })
+
+
+
+
+    function fireImpressionId() {
+        //console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1463:ab:tdr:reduce-spacing:control",
+            },
+        };
+
+        _satellite.track("");
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            //console.log('firing impression on event listener')
+            _satellite.track('');
+
+        });
+    }
+
+    function setOnKeyUp() {
+        window.addEventListener('keyUp', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            //console.log('firing impression on event listener')
+            _satellite.track('');
+
+        });
+    }
+
+
+
+
+</script>

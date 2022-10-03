@@ -1,0 +1,38 @@
+<!-- B - NPP Visited -->
+<script>
+
+    window.addEventListener("load",function(){
+  
+      if(!window.location.href.includes('bnpShowroom')){
+        console.log("1032 - NPP Visited");
+        
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.market" : "UK",
+                "profile.action" : "NPP Visited",
+                "profile.triggerHomePage" : true,
+                
+                
+                "profile.seen": 0
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+        
+      }
+  
+    
+      
+    })
+      
+        
+      
+  </script>

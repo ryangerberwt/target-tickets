@@ -1,0 +1,120 @@
+<script>
+    console.log('OT-714');
+    var targetCampaign = targetCampaign || {};
+
+    targetCampaign = {
+        page: {
+            campaignName: "tt:nwp:opt-714:ab:bp:preventivo:challenger"
+        }
+    };
+
+    _satellite.track("genericTestingImpressionIDWorkaround");
+
+    var prevPage = '';
+
+    setInterval(function() {
+        if (document.URL.indexOf('/summary/') > 0) {
+            if (prevPage != 'summary') {
+                prevPage = 'summary';
+                executeSevenOneFourChanges(0);
+            }
+        } else if (prevPage != 'other') {
+            prevPage = 'other';
+        }
+    }, 500);
+
+    function executeSevenOneFourChanges(time) {
+
+        var btnFoundAndUpdatedDesktop = false;
+        var btnFoundAndUpdatedMobile = false;
+
+        setTimeout(function() {
+            console.log('OT-714-Timeout');
+            var buttonsDesktop = $('.vehicle-view-cta.show-for-large-up').children();
+            var buttonsMobile = $('.vehicle-view-cta.hide-for-large-up').children();
+
+            buttonsDesktop.each(function(i) {
+                if (buttonsDesktop[i].classList.contains('cta-button-primary')) {
+                    btnFoundAndUpdatedDesktop = true;
+                    buttonsDesktop[i].classList.remove('cta-button-primary');
+                    buttonsDesktop[i].classList.add('cta-button-secondary');
+                } else {
+                    buttonsDesktop[i].classList.remove('cta-button-secondary');
+                    buttonsDesktop[i].classList.add('cta-button-primary');
+                }
+
+                if (buttonsDesktop[i].innerText.trim().toLowerCase() == 'Richiedi Preventivo'.toLowerCase()) {
+                    buttonsDesktop[i].parentNode.insertBefore(buttonsDesktop[i], buttonsDesktop[i].parentNode.children[1])
+                }
+            });
+
+            buttonsMobile.each(function(i) {
+                if (buttonsMobile[i].classList.contains('cta-button-primary')) {
+                    btnFoundAndUpdatedMobile = true;
+                    buttonsMobile[i].classList.remove('cta-button-primary');
+                    buttonsMobile[i].classList.add('cta-button-secondary');
+                } else {
+                    buttonsMobile[i].classList.remove('cta-button-secondary');
+                    buttonsMobile[i].classList.add('cta-button-primary');
+                }
+
+                if (buttonsMobile[i].innerText.trim().toLowerCase() == 'Richiedi Preventivo'.toLowerCase()) {
+                    buttonsMobile[i].parentNode.insertBefore(buttonsMobile[i], buttonsMobile[i].parentNode.children[1])
+                }
+            });
+
+            var cloningDivDesktop = $('.vehicle-view-cta.show-for-large-up').clone();
+
+            if (cloningDivDesktop[0].children[0].classList.contains('cta-button-secondary')) {
+                cloningDivDesktop[0].children[0].style.display ='none';
+            }
+
+            cloningDivDesktop[0].style.display = 'block';
+            cloningDivDesktop[0].style.marginTop = '100px';
+            cloningDivDesktop[0].style.float = 'right';
+            cloningDivDesktop[0].style.marginRight = '15px';
+
+            var cloningDivMobile = $('.vehicle-view-cta.hide-for-large-up').clone();
+
+            if (cloningDivMobile[0].children[0].classList.contains('cta-button-secondary')) {
+                cloningDivMobile[0].children[0].style.display ='none';
+            }
+
+            var divElement = $('.pricing-finance-wrapper').children().last();
+            divElement.html(cloningDivDesktop);
+            divElement.last().append(cloningDivMobile);
+
+            if (!btnFoundAndUpdatedDesktop) {
+                var findAndUpdateButtonDesktop = setInterval(updateButtonDesktop, 100);
+                function updateButtonDesktop() {
+                    if (btnFoundAndUpdatedDesktop) {
+                        clearInterval(findAndUpdateButtonDesktop);
+                    } else {
+                        buttonsDesktop = $('.vehicle-view-cta.show-for-large-up').children();
+                        if (buttonsDesktop[i].innerText.trim().toLowerCase() == 'Visualizza costo mensile'.toLowerCase()) {
+                            btnFoundAndUpdatedDesktop = true;
+                            buttonsDesktop[i].classList.remove('cta-button-primary');
+                            buttonsDesktop[i].classList.add('cta-button-secondary');
+                        }
+                    }
+                }
+            }
+
+            if (!btnFoundAndUpdatedMobile) {
+                var findAndUpdateButtonMobile = setInterval(updateButtonMobile, 100);
+                function updateButtonMobile() {
+                    if (btnFoundAndUpdatedMobile) {
+                        clearInterval(findAndUpdateButtonMobile);
+                    } else {
+                        buttonsMobile = $('.vehicle-view-cta.hide-for-large-up').children();
+                        if (buttonsMobile[i].innerText.trim().toLowerCase() == 'Visualizza costo mensile'.toLowerCase()) {
+                            btnFoundAndUpdatedMobile = true;
+                            buttonsMobile[i].classList.remove('cta-button-primary');
+                            buttonsMobile[i].classList.add('cta-button-secondary');
+                        }
+                    }
+                }
+            }
+        }, time);
+    }
+</script>

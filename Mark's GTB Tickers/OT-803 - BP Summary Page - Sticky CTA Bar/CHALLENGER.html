@@ -1,0 +1,56 @@
+<script>
+    if (navigator.userAgent.toLowerCase().indexOf('mobile') < 0) {
+        var targetCampaign = targetCampaign || {};
+
+        targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-803:ab:log:bpsumstickyctabar:challenger"
+            }
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+        var interval;
+        if (document.cookie.indexOf('guxfoe-cookiedisclaimer') < 0) {
+            console.log('cookie visible');
+            var interval = setInterval(cookieLoop, 100);
+
+            function cookieLoop() {
+                if (document.cookie.indexOf('guxfoe-cookiedisclaimer') < 0) {
+                    var cookieHeight = $('.cookie-disclaimer').height();
+                    $('.reserveProgressBar')[0].style.cssText = 'bottom: ' + cookieHeight + 'px !important';
+                } else {
+                    //Cookie gone
+                    console.log('cookie not visible');
+                    clearInterval(interval);
+                    $('.reserveProgressBar')[0].style.cssText = 'bottom: 0 !important';
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    @media (min-width:1000px) {
+
+        .reserveProgressBar {
+            bottom: 0 !important;
+            z-index: 10 !important;
+            position: fixed !important;
+            width: 100% !important;
+            padding: 0 !important;
+            background: linear-gradient(90deg, rgb(247, 247, 247) 0%, rgb(255, 255, 255) 100%) !important;
+        }
+
+        .reserveProgressBar button {
+            box-shadow: 0 0 0 0 !important;
+            -moz-box-shadow: 0 0 0 0 !important;
+            -o-box-shadow: 0 0 0 0 !important;
+            -webkit-box-shadow: 0 0 0 0 !important;
+        }
+
+        .ReserveProgressBar__ProgressBarList-sc-13kezfk-1 {
+            background: transparent !important;
+        }
+    }
+</style>

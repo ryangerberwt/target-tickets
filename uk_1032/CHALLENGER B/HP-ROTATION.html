@@ -1,0 +1,236 @@
+<!-- C - Show Image -->
+<script type="text/javascript">
+    !(function() {
+        var _enabledDebugLog,
+            debugLog = ((_enabledDebugLog =
+                -1 !== window.location.search.indexOf("jsDebugEx=") ||
+                "localhost" === window.location.hostname),
+                function() {
+                    if (_enabledDebugLog)
+                        for (var i = 0; i < arguments.length; i++) console.log(arguments[i]);
+                });
+        var bundle,
+            ENV = { services: {}, constructions: {} };
+        function initialize() {
+            console.log("start check for visited-car-model");
+
+            var storedData = {
+                market: "${profile.market}", 
+                action: "${profile.action}", 
+                triggerHomePage: "${profile.triggerHomePage}",
+                
+                
+
+                seen: Number("${profile.seen}"),
+                
+            };
+
+            if (storedData.market != 'UK')
+                return;
+            if (storedData.triggerHomePage != "true")
+                return;
+            if (storedData.seen > 2)
+                return;
+          
+            
+            
+            console.log('OT-1032 - B - Show Image');
+
+            function waitForBillboard(billboardURI) {
+                if (billboardURI) {
+                    var billboard = $("div.carousel.carousel-billboard-homepage.active").data("flexslider");
+                    if (!billboard)
+                        return setTimeout(function() {
+                            waitForBillboard(billboardURI);
+                        }, 50);
+
+                    ((function realInitialize(billboardURI, flexslider) {
+                        flexslider.addSlide(ENV.constructions.createMockUp(), 0),
+                            ENV.services.remoteOffer(billboardURI, function(err) {
+                                err && (flexslider.removeSlide(0), debugLog(err));
+                            });
+                    })(billboardURI, billboard));
+
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.market" : "UK",
+                            "profile.seen" : storedData.seen++
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                    setMetricOnClick();
+                }
+            }
+
+            function setMetricOnClick() {
+                if ($('#optprg-returning-slide-billboard').length == 0)
+                    return setTimeout(setMetricOnClick, 250);
+                
+                $('#optprg-returning-slide-billboard').on('click', function() {
+                    adobe.target.getOffer({
+                        'mbox': "global-mbox",
+                        'params': {
+                            "profile.market" : "UK",
+                            "profile.billboardClicked" : "true",
+                            
+                        },
+                        'success': function(offer) {
+                            adobe.target.applyOffer( {
+                                'mbox': 'global-mbox',
+                                'offer': offer
+                            });
+                        },
+                        'error': function(status, error) {
+                            console.log('Error', status, error);
+                        }
+                    });
+                    adobe.target.trackEvent({
+                        "mbox": "UK_1032_Billboard",
+                        "params": {
+                            "linkClicked": "true"
+                        }
+                    });
+                });
+            }
+
+            waitForBillboard("/content/offers-library/cv-hpr");
+        }
+        ((ENV.constructions.createMockUp = function() {
+                return (function DOMBuilder(obj) {
+                    if (obj) {
+                        if ($.isArray(obj)) {
+                            var i,
+                                arr = [];
+                            for (i = 0; i < obj.length; i++)
+                                obj[i] instanceof $
+                                    ? arr.push(obj[i])
+                                    : arr.push(DOMBuilder(obj[i]));
+                            return arr;
+                        }
+                        if (obj instanceof $) return obj;
+                        if ($.isFunction(obj)) return DOMBuilder(obj());
+                        if (!obj.type) return obj.html || obj.text || undefined;
+                        if (obj.hasOwnProperty("render") && !obj.render) return undefined;
+                        var $e = $("<" + obj.type + ">");
+                        if (
+                            (obj.id && $e.prop("id", obj.id),
+                            obj.className && $e.addClass(obj.className),
+                            $.isPlainObject(obj.data) &&
+                            obj.data.key &&
+                            $e.data(obj.data.key, obj.data.value),
+                                obj.html ? $e.html(obj.html) : $e.text(obj.text || ""),
+                            obj.child && $e.append(DOMBuilder(obj.child)),
+                                $.isPlainObject(obj.handlers))
+                        )
+                            for (var evName in obj.handlers)
+                                $e.on(evName, obj.handlers[evName]);
+                        if ($.isPlainObject(obj.props))
+                            for (var propName in obj.props)
+                                $e.prop(propName, obj.props[propName]);
+                        return $.isFunction(obj.callback) && obj.callback($e), $e;
+                    }
+                })({
+                    type: "article",
+                    className: "carousel-slide slider-model-detail target-slide",
+                    id: "optprg-returning-slide-billboard",
+                    child: [
+                        {
+                            type: "div",
+                            className: "carousel-content",
+                            child: [{ type: "div", className: "content" }]
+                        }
+                    ]
+                });
+            }),
+            (function(bundle) {
+                FordPersonalisation &&
+                FordPersonalisation.target &&
+                "function" == typeof FordPersonalisation.target.getRemoteTargetOffer
+                    ? (bundle.remoteOffer = function remoteOffer(remoteURL, cb) {
+                        FordPersonalisation.target.getRemoteTargetOffer(
+                            remoteURL,
+                            "#optprg-returning-slide-billboard .content",
+                            function() {
+                                cb();
+                            },
+                            function() {
+                                cb("Error");
+                            },
+                            !1,
+                            !1,
+                            !0,
+                            !1
+                        );
+                    })
+                    : (bundle.remoteOffer = function() {
+                        debugLog(
+                            "ERROR: FordPersonalisation.target.getRemoteTargetOffer is not function!"
+                        );
+                    });
+            })(ENV.services),
+            FordPersonalisation.guxFrameworkDeferred.then(function() {
+                (FordPersonalisation.ptemplate.set("return"), initialize());
+            }));
+    })();
+
+
+    $(document).ready(function () {
+        /*flexslider.removeSlide($('.carousel-slide.slider-model-detail')[6]);*/
+
+        
+        elementLoaded('.flex-control-nav.flex-control-paging>li', function (el) {
+            if(el.length === 6){
+                var b = $("div.carousel.carousel-billboard-homepage.active").data("flexslider");
+                b.removeSlide(b.count);
+                 /*Onclick handler for billboard*/
+                 $('a.billboard-link-layer[href="/commercial-vehicles"]').on('click',function(e){
+                    e.preventDefault();
+                    window.targetCampaign = window.targetCampaign || {
+                        page: {
+                            campaignName: 'tt:nwp:opt-1032:ab:hp:hpr-cv:var-b'
+                        }
+                    }
+                    _satellite.track('genericTestingImpressionIDWorkaround');
+                    let redirect = setTimeout(doRedirect,500);
+
+                 });
+            }
+        },6)
+
+        
+        function doRedirect(){
+            debugger;
+            window.location.href = "/commercial-vehicles";
+        }
+
+
+        function elementLoaded(el, cb,len) {
+             if ($(el).length === len) {
+                // Element is now loaded.
+                cb($(el));
+            } else {
+                // Repeat every 1250ms.
+                setTimeout(function () {
+                    elementLoaded(el, cb,len)
+                }, 1250);
+            }
+        
+     }
+    });
+
+</script>
+<style>
+    #optprg-returning-slide-billboard .genericCarousel .carousel-arrows
+    {
+        visibility: hidden !important;
+    }
+</style>

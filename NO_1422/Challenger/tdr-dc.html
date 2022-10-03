@@ -1,0 +1,82 @@
+<script>
+    var $ = jQuery;
+    $(document).ready(function () {
+        console.log('doc ready');
+
+        var enableLogs = false;
+        var _log = console.log;
+            console.log = function(logMsg){
+                if(enableLogs){
+         
+                    _log.apply(console,arguments);
+                }
+            }
+            //Added because we sometimes use the console.dir function to display vars
+            var _dir = console.dir;
+            console.dir = function(dirMsg){
+                if(enableLogs){
+                    _dir.apply(console,arguments);
+                }
+            }
+
+        if (window.location.href.indexOf('ford.no/kjoepe/neste-steg/bestill-proevekjoering')) {
+            console.log('on URL');
+            localStorage.setItem('carInfo', JSON.stringify({
+                'carName': '',
+                'imgSrc': '',
+                'visited': true
+            }));
+
+            setTimeout(function () {
+
+
+
+                let interVal = setInterval(function () {
+                    console.log('set interval');
+                    if (
+                        $('div.vehicle-list') !== undefined
+                        && $('div.vehicle-list').length > 0
+                        && $('.vehicle-list-item') !== undefined
+                        && $('.vehicle-list-item').length > 0
+                    ) {
+                        $('.vehicle-list-item').on('click', function (e) {
+                            if (e.target.nodeName === 'IMG' || e.target.nodeName === 'A') {
+                                setTimeout(function () {
+                                    console.log($('figure').hasClass('is-selected'));
+                                    if ($('figure').hasClass('is-selected') === true) {
+                                        var imgSrc;
+                                        var carName = carName = $('figure.is-selected').children().children('figcaption')[0].innerText;
+                                        console.log('selected element target is ');
+                                        console.dir(e.target);
+                                        if (e.target.nodeName === 'IMG') {
+                                            imgSrc = e.target.currentSrc;
+                                            console.log('IMG current SRC is ' + imgSrc);
+
+                                        } else if (e.target.nodeName === 'A') {
+                                            imgSrc = e.target.parentElement.previousElementSibling.children[0].children[0].currentSrc;
+                                            console.log('A current SRC is ' + imgSrc);
+                                            carName = e.target.innerText;
+                                        }
+                                        console.log('car selected');
+                                        localStorage.setItem('carInfo', JSON.stringify({
+                                            'carName': carName,
+                                            'imgSrc': imgSrc,
+                                            'visited': true
+                                        }));
+                                    } else {
+                                        console.log('no car selected')
+                                        localStorage.setItem('carInfo', null);
+                                    }
+                                }, 250);
+                            };
+
+                        });
+                        console.log('clear interval');
+                        clearInterval(interVal);
+                    }
+                }, 750);
+
+            }, 1000)
+        }
+    });
+</script>

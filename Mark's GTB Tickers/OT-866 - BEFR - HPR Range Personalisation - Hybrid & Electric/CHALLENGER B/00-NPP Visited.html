@@ -1,0 +1,30 @@
+<!-- B - NPP Visited -->
+<script>
+    $(document).ready(function() {
+        console.log("OT-866 - B - NPP Visited");
+        
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.hpr.range.personalisation.market" : "BE-FR",
+                "profile.hpr.range.personalisation.action" : "NPP Visited",
+                "profile.hpr.range.personalisation.triggerHomePage" : true,
+                "profile.hpr.range.personalisation.imageToShow" : "Hybrid & Electric",
+                "profile.hpr.range.personalisation.visibleUntil" : d,
+                "profile.hpr.range.personalisation.seen": 0
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+</script>

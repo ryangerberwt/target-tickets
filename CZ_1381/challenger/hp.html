@@ -1,0 +1,149 @@
+<script>
+    $(document).ready(function () {
+        var str = '';
+
+        var promo_list;
+        setTimeout(function () {
+            var billboard_paragraph = null;
+        
+            var storedData_1381 = {
+                carName: "${profile.carName}",
+                subName: "${profile.subName}",
+                vehicleType: "${profile.vehicleType}",
+                promo: getPromo()
+            }
+
+
+            function getPromo() {
+             if (localStorage.getItem("promo") != undefined && localStorage.getItem("promo") != null && localStorage.getItem("promo") != '') {
+                 return JSON.parse(localStorage.getItem("promo"))
+ 
+             }
+             return '';
+         }
+            console.log(storedData_1381.carName);
+
+
+            var promo_pages = {
+                //PROMOTIONAL PAGES - PV
+                Fiesta: "https://www.ford.cz/osobni-vozy/fiesta/mimoradna-nabidka/personal",
+                Puma: "https://www.ford.cz/osobni-vozy/puma/mimoradna-nabidka/personal",
+                Focus: "https://www.ford.cz/osobni-vozy/novy-focus/mimoradna-nabidka/mimoradna-nabidka",
+                "Tourneo Connect": "https://www.ford.cz/osobni-vozy/tourneo-connect/promotions/personal",
+                Kuga: "https://www.ford.cz/osobni-vozy/kuga-promotions/mimoradna-nabidka/personal",
+                Mondeo: "https://www.ford.cz/osobni-vozy/mondeo/mimoradna-nabidka/personal",
+                Galaxy: "https://www.ford.cz/osobni-vozy/galaxy/mimoradna-nabidka/personal",
+                "Tourneo Custom": "https://www.ford.cz/osobni-vozy/nove-tourneo-custom/mimoradna-nabidka/personal",
+                "Tourneo Connect": "https://www.ford.cz/pred-nakupem/dalsi-kroky/mimoradna-nabidka/mimoradna-nabidka-vozy",
+                "S-Max": "https://www.ford.cz/osobni-vozy/s-max/mimoradna-nabidka/personal",
+                "Ecosport": "https://www.ford.cz/pred-nakupem/dalsi-kroky/mimoradna-nabidka/mimoradna-nabidka-vozy",
+                Mustang: "https://www.ford.cz/pred-nakupem/dalsi-kroky/mimoradna-nabidka/mimoradna-nabidka-vozy",
+
+                //PROMOTIONAL PAGES - CV
+                "Fiesta Van": "https://www.ford.cz/pred-nakupem/dalsi-kroky/mimoradna-nabidka/mimoradna-nabidka-uzitkove-vozy",
+                "Transit Courier": "https://www.ford.cz/dodavky-pick-upy/novy-transit-courier/mimoradna-nabidka/personal",
+                "Transit Connect": "https://www.ford.cz/dodavky-pick-upy/transit-connect/mimoradna-nabidka/personal",
+                "Transit Custom": "https://www.ford.cz/dodavky-pick-upy/novy-transit-custom/mimoradna-nabidka/personal",
+                "Transit Van": "https://www.ford.cz/dodavky-pick-upy/transit/mimoradna-nabidka/personal",
+                "Transit Double Cab Van": "https://www.ford.cz/dodavky-pick-upy/transit/mimoradna-nabidka/personal",
+                "Transit Minibus": "https://www.ford.cz/pred-nakupem/dalsi-kroky/mimoradna-nabidka/mimoradna-nabidka-uzitkove-vozy",
+                "Transit Chassis Cab": "https://www.ford.cz/dodavky-pick-upy/transit-podvozky/mimoradna-nabidka/personal",
+                "Transit Chassis Double Cab": "https://www.ford.cz/dodavky-pick-upy/transit-podvozky/mimoradna-nabidka/personal",
+                "Ranger Single Cab": "https://www.ford.cz/dodavky-pick-upy/ranger/mimoradna-nabidka/personal",
+                "Ranger Double Cab": "https://www.ford.cz/dodavky-pick-upy/ranger/mimoradna-nabidka/personal",
+                "Ranger Raptor": "https://www.ford.cz/dodavky-pick-upy/ranger-raptor/mimoradna-nabidka/personal",
+
+            }
+            var ctaURL = promo_pages[JSON.stringify(storedData_1381.carName.replace("Ford", ""))];
+            console.log(ctaURL);
+
+
+            function getLink(storedData) {
+                console.log(storedData.vehicleType);
+                if (storedData.vehicleType == "PV" || storedData.vehicleType == "CV") {
+                    let promo_list = JSON.parse(localStorage.getItem("promo"));
+                    if (promo_list != null) {
+                        for (let i = 0; i < promo_list.length; i++) {
+                            for (let val in promo_list[i]) {
+                                if (storedData.carName.toUpperCase().indexOf(promo_list[i].name) > -1) {
+                                    for (let prop in promo_pages) {
+                                        if (storedData.carName.includes(prop)) {
+                                            str = promo_pages[prop];
+                                            console.log("LINK " + str);
+                                        }
+                                    }
+                                }
+                                else {
+                                    str = "https://www.ford.cz/pred-nakupem/dalsi-kroky/mimoradna-nabidka/mimoradna-nabidka-vozy";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            getLink(storedData_1381);
+
+            console.log("OT-1381");
+
+            /*async function waitForElm(selector) {
+                return new Promise(resolve => {
+
+                    if (document.querySelectorAll(selector)) {
+                        return resolve(document.querySelectorAll(selector));
+                    }
+
+                    const observer = new MutationObserver(mutations => {
+                        if (document.querySelectorAll(selector)) {
+                            resolve(document.querySelectorAll(selector));
+                            observer.disconnect();
+                        }
+                    });
+
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
+                });
+            }*/
+
+            /*waitForElm(".billboard-paragraph h2").then(result => {
+
+                if (storedData_1381.carName != '' && str != '') {
+
+                    billboard_paragraph = [...result].filter(el => el.innerText.includes("Aktuální zvýhodněná nabídka"));
+
+                    if (billboard_paragraph.length > 0) {
+
+                        billboard_paragraph[0].innerHTML = "Objevte zvýhodněnou nabídku pro model " + storedData_1381.carName;
+
+                        let billboard_link = billboard_paragraph[0].parentElement.closest(".billboard-paragraph").nextElementSibling;
+                        billboard_link.href = str;
+
+                    }
+                }
+
+            })*/
+
+            let x = setInterval(function () {
+              if (storedData_1381.carName != '' && str != '') {
+                  if ($('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2') !== undefined && $('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2').length > 0) {
+                      $('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2').eq(0).text("Objevte zvýhodněnou nabídku pro mode " + storedData_1381.carName);
+                      $('.billboard-link-layer.at-element-click-tracking.initialized.initialized-contextualLinks').attr('href', str)
+                      //$('.cta-button.cta-button-primary.initialized.initialized-contextualLinks[data-cta-name="view promotions"]').attr('href',str)
+                      $('div.richtext-gridgallery-header-grey.richtext-inner').children('h2').text('Prozkoumejte modelovou řadu Ford');
+                      clearInterval(x);
+                  }
+              } else {
+                  clearInterval(x);
+              }
+          }, 250)
+
+
+
+
+
+        }, 1000)
+    })
+
+</script>

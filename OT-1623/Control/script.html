@@ -1,0 +1,64 @@
+<script>
+
+    window.onload = function () {
+
+
+        setTimeout(function () {
+            if (getCookie('1623-control-impressionid-fired') === null) {
+                setCookieForImpressionID(1, '/', '1623-control-impressionid-fired', true);
+            }
+        }, 500)
+
+        function fireImpressionId() {
+            //console.log('firing')
+            window.targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-1623:ab:tdr:grey-out-cta:control",
+                },
+            };
+            console.dir(window.targetCampaign);
+            _satellite.track("genericTestingImpressionIDWorkaround");
+
+            setTimeout(function () {
+                setOnClick();
+                jQuery('body').click();
+            }, 250);
+        }
+
+        function getCookie(name) {
+            function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+            var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+            return match ? match[1] : null;
+        }
+
+        function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+            if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+                var now = new Date();
+                now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+                document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+                setTimeout(function () {
+                    fireImpressionId();
+                }, 500);
+
+            }
+        }
+
+        function setOnClick() {
+            window.addEventListener('click', function () {
+                //console.log('clicking');
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+                //_satellite.track('genericTestingImpressionIDWorkaround');
+            });
+
+
+        }
+
+
+    }
+
+
+</script>

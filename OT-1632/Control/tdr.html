@@ -1,0 +1,88 @@
+<script>
+    var $ = jQuery;
+    var nodes;
+    var isMobile = false;
+
+    var enableLogs = true;
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+
+    console.log('OT-1632 Control');
+
+    $(document).ready(function () {
+        if (getCookie('1632-control-impressionid-fired') === null) {
+            setCookieForImpressionID(1, '/', '1632-control-impressionid-fired', true);
+        }
+
+    });
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours, path, cookieName, cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+            console.log("no cookie set --- setting now");
+            var now = new Date();
+            now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+            document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+            console.log("cookie is set");
+            setTimeout(function(){
+                fireImpressionId();
+            },500);
+
+        } else {
+            console.log("Cookie is still valid");
+        }
+    }
+
+
+    function fireImpressionId() {
+        console.log('Firing impression ID');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1632:ab:tdr:reduce-spacing:control",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+        setTimeout(function(){
+            setOnClick();
+            $('body').click();
+        },500);
+    }
+
+
+    function setOnClick() {
+        console.log('setOnClick');
+        window.addEventListener('click', function () {
+            console.log('click');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            //_satellite.track('genericTestingImpressionIDWorkaround');
+        });
+
+
+    }
+
+</script>

@@ -1,0 +1,227 @@
+<script type="application/javascript">
+    //var image = undefined;
+    var image = "/content/dam/guxeu/rhd/central/cars/2019-puma/launch/billboards/ford-puma-eu-BX726_19MY-21x9-2160x925-NP_BB_D_clean.jpg";
+    var overlayLogo = "/content/dam/guxeu/global-shared/logos/ford-care_code-eu-FCC_Logo_horizontal_white_RGB-2074x732.png";
+    var globalData;
+    var billboard;
+    var carouselLoadInterval;
+    var offer;
+    var slideToRemove = 4;
+    var remoteURL = "/content/snippets/target/bot-hpr-slide01";
+    var customCopy = "High on tech. Low on emissions.";
+    var customCopyH2 = "Test drive the Puma at home."
+    var customCTA = "Request a contact";
+    var disclaimer = "Model shown is a Ford Puma ST-Line X";
+    var customDestinationURL = "/content/overlays/wizard-overlays/request-a-contact?vehicleCode=CF701";
+    var customDestinationClickthrough = "Request a contact";
+    var targetCampaign = targetCampaign || {};
+   
+    function createOffer() {
+     console.log("createOffer");
+     return function DOMBuilder(obj) {
+      if (obj) {
+       if ($.isArray(obj)) {
+        var i, arr = [];
+        for (i = 0; i < obj.length; i++) obj[i] instanceof $ ? arr.push(obj[i]) : arr.push(DOMBuilder(obj[i]));
+        return arr
+       }
+       if (obj instanceof $) return obj;
+       if ($.isFunction(obj)) return DOMBuilder(obj());
+       if (!obj.type) return obj.html || obj.text || undefined;
+       if (obj.hasOwnProperty("render") && !obj.render) return undefined;
+       var $e = $("<" + obj.type + ">");
+       if (obj.id && $e.prop("id", obj.id), obj.className && $e.addClass(obj.className), $.isPlainObject(obj.data) && obj.data.key && $e.data(obj.data.key, obj.data.value), obj.html ? $e.html(obj.html) : $e.text(obj.text || ""), obj.child && $e.append(DOMBuilder(obj.child)), $.isPlainObject(obj.handlers))
+        for (var evName in obj.handlers) $e.on(evName, obj.handlers[evName]);
+       if ($.isPlainObject(obj.props))
+        for (var propName in obj.props) $e.prop(propName, obj.props[propName]);
+       return $.isFunction(obj.callback) && obj.callback($e), $e
+      }
+     }({
+      type: "article",
+      className: "carousel-slide slider-model-detail target-slide",
+      id: "optprg-returning-slide-billboard",
+      child: [{
+       type: "div",
+       className: "carousel-content",
+       child: [{
+        type: "div",
+        className: "content",
+        child: [{
+         type: "div",
+         className: "section billboard"
+        }]
+       }]
+      }]
+     })
+    }
+   
+    function processData(data) {
+        // New Code
+        try {
+
+            // EXTRA HEADING
+            var h3 = $(data.body).find("h2").first().clone();
+            h3[0].id = "subHeading_983";
+            $(data.body).find("h2").parent().append(h3);
+            $(data).find("h2")[1].parentNode.insertBefore($(data).find("h2")[1], $(data).find("h2")[1].parentNode.children[1])
+            $(data).find("#subHeading_983")[0].outerHTML = $(data).find("#subHeading_983")[0].outerHTML.replace("h2", "h3")
+            $(data).find("#subHeading_983")[0].innerHTML = customCopyH2;
+            
+            $(data).find('h3 a').parent().contents().unwrap().wrap('<h4/>');
+            // ALIGNMENT CHANGES
+            if (data.body.getElementsByTagName("h2").length > 0) {
+                data.body.getElementsByTagName("h2")[0].style.textAlign = "";
+                data.body.getElementsByTagName("h2")[0].id = "mainHeading_983";
+            }
+                
+            
+            if (data.body.getElementsByTagName("h3").length > 0) {
+                data.body.getElementsByTagName("h3")[0].style.textAlign = "";
+            }
+                
+            
+            if (data.body.getElementsByTagName('h4').length > 0) {
+                data.body.getElementsByTagName("h4")[0].style.textAlign = "";
+                data.body.getElementsByTagName("h4")[0].id = "ctaHeading_983";
+            }
+
+            // STYLING CHANGES
+            $(data).find("h4 a").removeClass("link-chevron").removeClass("link-chevron-white").addClass("cta-button").addClass("cta-button-primary");
+
+            // IMAGE
+            for (var i = 0; i < $(data).find('source').length; i++) {
+                var tempImage = image;
+                switch ($(data).find('source')[i].media) {
+                    case "(min-width: 1200px)": tempImage += ".renditions.extra-large.jpeg";
+                        break;
+                    case "(min-width: 992px)": tempImage += ".renditions.large.jpeg";
+                        break;
+                    case "(min-width: 768px)": tempImage += ".renditions.small.jpeg"; //medium not found
+                        break;
+                    case "(min-width: 480px)": tempImage += ".renditions.small.jpeg";
+                        break;
+                    case "(min-width: 0px)": tempImage += ".renditions.extra-small.jpeg";
+                        break;
+                }
+
+                $(data).find('source')[i].srcset = tempImage;
+            }
+            //$(data).find('source').attr("srcset", image);
+            $(data).find('img').removeAttr("src").attr("src", image).attr("alt", "").attr("title", "");
+
+            var theDisclaimer = "<div class='billboard-disclaimer' id='disclaimer_983'>" + disclaimer + "</div>";
+            $(data).find('#mainHeading_983').parent().append(theDisclaimer);
+
+            var theOverlay = "<div id='divHeading_983'><img id='imgHeading_983' src='" + overlayLogo + "' /></div>";
+            $(data).find('#mainHeading_983').parent().append(theOverlay);
+
+        } catch (ex) {
+            console.log(ex);
+        }
+
+        
+        
+        data.body.getElementsByTagName("h2")[0].innerHTML = customCopy;
+        data.body.getElementsByTagName("h4")[0].children[0].innerHTML = customCTA;
+        //custom destination URL here and clickthrough for analytics
+        data.body.getElementsByTagName("a")[1].href = customDestinationURL;
+        data.body.getElementsByTagName("a")[1].attributes["data-cta-name"] = customDestinationClickthrough;
+        offer[0].getElementsByClassName("section billboard")[0].append(data.body.getElementsByClassName("billboard-content")[0]);
+    }
+   
+    function loadComplete() {
+     console.log("handler");
+     if (this.status == 200 && this.responseXML != null) {
+      processData(this.responseXML);
+     } else {
+      console.log("error on request");
+     }
+    }
+   
+    function customisationInit() {
+     if (!billboard) {
+      offer = createOffer();
+      var client = new XMLHttpRequest();
+      client.onload = loadComplete;
+      client.open("GET", remoteURL);
+      client.responseType = "document";
+      client.send();
+      carouselLoadInterval = setInterval(checkCarouselLoaded, 50);
+     }
+    }
+   
+    function checkCarouselLoaded() {
+     console.log("checkCarouselLoaded");
+     billboard = $("div.carousel.carousel-billboard-nameplate.active").data("flexslider");
+     if (billboard != undefined) {
+      clearInterval(carouselLoadInterval);
+      customiseCarousel();
+     }
+    }
+   
+    function customiseCarousel() {
+     console.log("customiseCarousel");
+     billboard.pause();
+     billboard.removeSlide(0); // Removes the first one
+     billboard.addSlide(offer, 0);
+     
+     billboard.play();
+      
+   
+     FordPersonalisation.ptemplate.set("return");
+    }
+
+    $(document).ready(function() {
+        console.log("OT-983");
+        if (image != undefined) {
+            window.targetCampaign = {
+                page: {
+                    campaignName: "tt:nwp:opt-983:ab:hp:mindset-conf-uk:challenger"
+                }
+            }
+            _satellite.track("genericTestingImpressionIDWorkaround");
+            customisationInit();
+        }
+    });
+</script>
+
+<style>
+
+    #disclaimer_983 {
+        text-align: left;
+        font-size: .8125rem !important;
+        margin: 20px 0 10px 0 !important;
+        color: white;
+    }
+
+    @media only screen and (max-width: 767px) {
+        #mainHeading_983, #subHeading_983, #ctaHeading_983 {
+            text-align: center !important;
+        }  
+        #imgHeading_983 {
+            display: none;
+        }  
+    }
+    @media only screen and (min-width: 768px) and (max-width: 990px) {
+        #mainHeading_983, #subHeading_983, #ctaHeading_983 {
+            text-align: left !important;
+        }
+        #imgHeading_983 {
+            width: 200px !important;
+            position: absolute;
+            right: 0;
+            bottom: 14px !important;
+        }  
+    }
+    @media only screen and (min-width: 991px) {
+        #mainHeading_983, #subHeading_983, #ctaHeading_983 {
+            text-align: right !important;
+        }
+        #imgHeading_983 {
+            width: 200px !important;
+            bottom: 40px;
+            right: 0;
+            position: absolute;
+        }
+    }  
+</style>

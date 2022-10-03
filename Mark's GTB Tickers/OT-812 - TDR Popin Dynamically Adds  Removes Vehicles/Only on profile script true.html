@@ -1,0 +1,807 @@
+<script type = "text/javascript">
+    (function () {
+
+        /* Libraries included */
+        /**
+         *  Log just when url search part match 'jsDebugEx='
+         *   --> Arbitrary number of argumentsa
+         *
+         * #def name debugLog
+         */
+
+        var debugLog = (function () {
+            var _enabledDebugLog = window.location.search.indexOf('jsDebugEx=') !== -1 || window.location.hostname === "localhost";
+            return function () {
+                if (_enabledDebugLog) {
+                    for (var i = 0; i < arguments.length; i++) {
+                        console.log(arguments[i]);
+                    }
+                }
+            };
+        }());
+
+        /**
+         *
+         *	DOM builder
+         *	(requires jQuery)
+         *
+         * #def name DOMBuilder
+         *
+         *	SYNTAX:
+         *	jQueryobject DOMbuilder(srcObject);
+         *
+         *	srcObject = DOMobject || [array of DOMobject] || jQueryObject || [array of jQueryObject] || function (returning srcObject);
+         *
+         *	DOMobject = {
+         *		type: 'div',
+         *		id: 'elm-id' || null,
+            render: boolean, // You can decide if element will be rendered
+         *		className: 'elm-class' || 'elm-class-1 elm-class-2' || null,
+         *		data: { key: key, value: value } || null,
+         *		text: 'Text content' || null,
+         *		html: 'HTML content' || null,		// if html provided, text is ignored
+         *		child: srcObject || null
+         *		handlers: { eventID: function, ... } || null,
+         *		callback: function($element) || null
+         *		} || [ array of DOMobj ]
+         *
+         */
+        function DOMBuilder(obj) {
+            if (!obj) return;
+            if ($.isArray(obj)) {
+                var i, arr = [];
+                for (i = 0; i < obj.length; i++) {
+                    (obj[i] instanceof $) ? arr.push(obj[i]): arr.push(DOMBuilder(obj[i]));
+                }
+                return arr;
+            } else if (obj instanceof $) return obj;
+            else if ($.isFunction(obj)) return DOMBuilder(obj());
+            else {
+                if (!obj.type) return obj.html || obj.text || undefined;
+                if (obj.hasOwnProperty("render") && !obj.render)
+                    return undefined;
+                var $e = $('<' + obj.type + '>');
+                if (obj.id) $e.prop('id', obj.id);
+                if (obj.className) $e.addClass(obj.className);
+                if ($.isPlainObject(obj.data) && obj.data.key) $e.data(obj.data.key, obj.data.value);
+                obj.html ? $e.html(obj.html) : $e.text(obj.text || '');
+                if (obj.child) $e.append(DOMBuilder(obj.child));
+                if ($.isPlainObject(obj.handlers)) {
+                    for (var evName in obj.handlers) $e.on(evName, obj.handlers[evName]);
+                }
+                if ($.isPlainObject(obj.props)) {
+                    for (var propName in obj.props) $e.prop(propName, obj.props[propName]);
+                }
+                if ($.isFunction(obj.callback)) obj.callback($e);
+                return $e;
+            }
+        }
+
+        /**
+         * JS VARIANT "Challenger" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            debugLog("TDR PopUp Challenger entered");
+            var Constructions = {};
+            var ENV = {
+                elements: {},
+                data: {}
+            };
+
+            // Configurations
+            /* Market configuration */
+
+            (function (environment) {
+                environment.MarketConfiguration = {
+                    // Define overlay URL
+                    overlay: "/overlay/content/overlays/target/tdr-popin",
+                    // Define delay in ms before opening overlay
+                    delayBeforeOpenOverlay: 2000,
+                    // Define where to store data
+                    storageCookieName: "optprg-visited-car-informations-v2",
+                    // Determine in days when should cookie disappear
+                    storageCookieExpiration: 15,
+
+                    // Panel with informations like CO2
+                    carDataSelector: "#global-ux .summary-wrapper .vehicle-info-view .vehicle-data .vehicle-data-row",
+                    // Selectors to disclaimers in summary page
+                    disclaimersSelector: "#global-ux .disclosure-text > ul.disclosure-list",
+                    // Selector to offer price (if exists)
+                    offerPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-promotional-bnp",
+                    // Selector to retail price (if exists)
+                    retailPriceSelector: "#global-ux .vehicle-view-container .vehicle-view-content.left-content .vehicle-view-price .price-retail-with-otr",
+
+                    // Determine which data will be grabed from summary page
+                    summaryPageDataDestinations: [{
+                        // Image of car
+                        query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.right-content > div > img",
+                        prop: "src",
+                        key: "img"
+                    }, {
+                        // Find a dealer link
+                        query: "a[data-contextual-link=\"dealer-locator\"]",
+                        prop: "href",
+                        key: "findDealer"
+                    }, {
+                        // Car nameplate name
+                        query: "#build-price-configurator > div.app-view > div > div:nth-child(5) > section > div.vehicle-view-container > div.vehicle-view-content.left-content > h3 > strong",
+                        text: true,
+                        key: "carName"
+                    }]
+                };
+            }(ENV));
+
+            var MBOXName = "NL_SummaryPage_tdrV2PopUp_v2";
+            var MBOXFallbackTimeout = 300;
+
+            /* Define texts - easily move across markets */
+            (function (environment) {
+                var translations = {
+                    heading: "De Ford <span class='nameplate-model'> <nameplate> </span> zelf ervaren?",
+                    offerPricePrefix: "Actieprijs: ",
+                    // offerPriceSuffix: " ",
+                    dutyFree: "Horse Taxe", // duty free - commercial vehicles
+                    // priceValidText: "Les prix affichés correspondent à ceux affichés lors de la dernière configuration. ", // Legal Disclaimer
+                    co2Information: "Brandstofverbruik gecombineerd (l/100km): <ltValue> <ltUnit>. CO<sub>2</sub> emissie gecombineerd (g/km): <coValue> <coUnit>.",
+
+                    //mainPriceLabel: "Unverbindliche Aktionspreisempfehlung",
+                    // mainPriceLabelNoOfferPrice: "Vanafprijs",
+
+                    retailPricePrefix: "Vanafprijs: ",
+                    // retailPriceSuffix: " €",
+
+                    priceTooltipHeading: "Belangrijke informatie",
+                    bookTDRButton: "Reserveer proefrit",
+
+                    disclaimer1: "Het opgegeven brandstofverbruik en CO2-uitstoot zijn gemeten volgens de technische vereisten en specificaties van EU-richtlijn 80/1268/EEC en EU-verordening (EG) 715/2007 zoals aangepast door (EG) 692/2008. Brandstofverbruik en CO2-uitstoot worden vermeld voor een specifiek voertuigtype en niet voor één auto. De gebruikte standaard testprocedure maakt het mogelijk om verschillende voertuigtypes en verschillende fabrikanten met elkaar te vergelijken. Naast de efficiëntie van de auto zijn het rijgedrag en andere niet-technische factoren van invloed op het brandstofverbruik en de CO2-uitstoot van de auto. CO2 is het broeikasgas dat voornamelijk verantwoordelijk is voor de opwarming van de aarde. Een gids over het brandstofverbruik en de CO2-uitstoot met daarin gegevens van alle nieuwe auto's is op elk verkooppunt gratis beschikbaar of kan gedownload worden op http://www.emissietesten.nl",
+                    // disclaimer2: "Prix prenant en compte la remise présentée valable dans la limite des stocks disponibles, dans le réseau participant. Offre non cumulable réservée aux particuliers.",
+                    // disclaimer3: "Depuis le 1er septembre 2018, les véhicules sont réceptionnés sur la base de la procédure d’essai harmonisée au niveau mondial pour les véhicules légers (WLTP), qui est une nouvelle procédure d’essai plus réaliste permettant de mesurer la consommation de carburant et les émissions de CO2. La procédure WLTP remplace complètement le nouveau cycle européen de conduite (NEDC). Les conditions d’essai étant plus réalistes, la consommation de carburant et les émissions de CO2 mesurées selon la procédure WLTP sont, dans de nombreux cas, plus élevées que celles mesurées selon la procédure NEDC. Pendant la période de transition entre ces deux normes, les données présentées sur ce site indiquent les valeurs de rejet de CO2 et de consommation de carburant sur la base des normes WLTP transposées en NEDC conformément à la méthode de corrélation CO2MPAS développée par la Commission européenne (norme NEDC corrélée). Ces nouvelles normes impactent la fiscalité automobile. Pour plus d’informations merci de contacter votre Concessionnaire. Les valeurs de consommation de carburant et d’émission de CO2 indiquées sont mesurées conformément au Règlement européen n°2017/1151. La procédure de test standard appliquée ici permet de comparer différents véhicules et différentes marques. La consommation réelle de carburant varie selon le véhicule, son niveau d'équipement (finition, options), l'utilisation d'accessoires, le comportement du conducteur et d'autres éléments non techniques. L'utilisation du carburant E85 peut entraîner une surconsommation. Le CO2 est le principal gaz à effet de serre responsable du réchauffement climatique. Un guide officiel ADEME recense les données de consommation de carburant et d'émissions de CO2 pour tout nouveau modèle de voiture particulière. Il est disponible gratuitement dans toute  concession ou peut être téléchargé sur www.ademe.fr. Pour plus d'informations, consultez le site de l'Ademe.",
+                    // disclaimer4: "Die angegebenen Werte wurden nach dem vorgeschriebenen Messverfahren [§ 2 Nrn. 5, 6, 6a Pkw-EnVKV in der jeweils geltenden Fassung] ermittelt."
+                };
+                environment.Localisation = {
+                    formatDate: formatDate,
+                    formatMoney: function (amount) {
+                        return Number((amount).toFixed(0)).toLocaleString().replace(/\,/gm, ".")
+                    },
+                    getTranslation: getTranslation
+                };
+
+                function getTranslation(key, replacements) {
+                    var tr = translations[key];
+                    if (!tr)
+                        return;
+                    if (replacements) {
+                        $(Object.keys(replacements)).each(function (i, replace) {
+                            tr = tr.replace("<" + replace + ">", replacements[replace]);
+                        });
+                    }
+                    return tr;
+                }
+                function formatDate(date) {
+                    return date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
+                }
+            }(ENV));
+
+            // Elements builder
+            // Set cookie.
+            function setCookie(name, value, expires, path, domain, secure) {
+                document.cookie = name + "=" + escape(value) +
+                    ((expires) ? "; expires=" + expires : "") +
+                    ((path) ? "; path=" + path : "") +
+                    ((domain) ? "; domain=" + domain : "") +
+                    ((secure) ? "; secure" : "");
+            }
+
+            // Get cookie.
+            function getCookie(name) {
+                var cookie = " " + document.cookie;
+                var search = " " + name + "=";
+                var setStr = null;
+                var offset = 0;
+                var end = 0;
+                if (cookie.length > 0) {
+                    offset = cookie.indexOf(search);
+                    if (offset != -1) {
+                        offset += search.length;
+                        end = cookie.indexOf(";", offset)
+                        if (end == -1) {
+                            end = cookie.length;
+                        }
+                        setStr = unescape(cookie.substring(offset, end));
+                    }
+                }
+                return (setStr);
+            }
+            /* Generate tooltip */
+
+            (function () {
+
+                var tooltipInstance;
+                var overlay;
+
+                function docGlobUXOnClick(event) {
+                    if (event.target.id === "optprg-tdr-pop-up-price-tooltip" || $(event.target).parents("#optprg-tdr-pop-up-price-tooltip").length)
+                        return;
+                    event.preventDefault();
+                    closeTooltip();
+                }
+                function onResizeOrScrollEvent() {
+                    closeTooltip();
+                }
+                function closeTooltip(event) {
+                    if (event)
+                        event.preventDefault();
+                    if (!tooltipInstance)
+                        return;
+                    overlay.unbind("mousedown", docGlobUXOnClick);
+                    overlay.unbind("scroll", onResizeOrScrollEvent);
+                    $(window).unbind("resize", onResizeOrScrollEvent);
+                    tooltipInstance.remove();
+                    tooltipInstance = undefined;
+                }
+                function tooltip(options, close) {
+                    return DOMBuilder({
+                        type: "div",
+                        className: "gux-tooltip-overlay",
+                        id: "optprg-tdr-pop-up-price-tooltip",
+                        props: {
+                            tabindex: "0"
+                        },
+                        callback: function (element) {
+                            element.attr("style", "position: absolute; top: " + options.top + "px; left: " + options.left + "px;right: auto; bottom: auto; z-index: 10001;");
+                        },
+                        child: [{
+                            type: "h5",
+                            className: "gux-tooltip-overlay-title",
+                            text: options.title
+                        }, {
+                            type: "span",
+                            className: "gux-tooltip-overlay-text",
+                            child: [{
+                                type: "span",
+                                render: options.number ? true : false,
+                                text: "[" + options.number + "]"
+                            }, {
+                                type: "p",
+                                html: options.text
+                            }]
+                        }, {
+                            type: "a",
+                            className: "close-icon",
+                            handlers: {
+                                click: close
+                            },
+                            props: {
+                                tabindex: "0"
+                            }
+                        }]
+                    });
+                }
+                Constructions.openTooltip = function (options) {
+                    closeTooltip();
+
+                    tooltipInstance = tooltip(options, closeTooltip);
+                    $("#global-ux").append(tooltipInstance);
+                    if (!overlay)
+                        overlay = options.overlay.parent();
+                    overlay.on("mousedown", docGlobUXOnClick);
+                    overlay.on("scroll", onResizeOrScrollEvent);
+                    $(window).on("resize", onResizeOrScrollEvent);
+                };
+            }());
+
+            /* Component for show easily price - !this file has connection to tooltip definition */
+
+            Constructions.getPrice = function (options) {
+                return DOMBuilder({
+                    type: "span",
+                    child: [{
+                        type: "span",
+                        className: "vehicle-attribute-group price-finalPrice-grossRetailWithOTRAndIncentives",
+                        child: [{
+                            type: "span",
+                            className: "optprg-vehicle-attribute-prefix",
+                            text: ENV.Localisation.getTranslation(options.pricePrefixName)
+                        }, {
+                            type: "span",
+                            className: "value",
+                            text: options.price
+                        }, {
+                            type: "span",
+                            className: "commercial-vehicle",
+                            text: options.dutyPrice
+                        }, {
+                            type: "span",
+                            className: "optprg-vehicle-attribute-suffix",
+                            text: ENV.Localisation.getTranslation(options.priceSuffixName)
+                        }]
+                    }, {
+                        type: "sup",
+                        render: options.text ? true : false,
+                        props: {
+                            href: "#"
+                        },
+                        child: [{
+                            type: "a",
+                            text: options.number,
+                            handlers: {
+                                click: function (e) {
+                                    e.preventDefault();
+                                    var position = $(this).offset();
+                                    var size = {
+                                        w: $(this).width(),
+                                        h: $(this).height()
+                                    };
+                                    Constructions.openTooltip({
+                                        top: position.top + size.h,
+                                        left: position.left + size.w,
+                                        title: options.heading,
+                                        text: options.text,
+                                        number: options.number,
+                                        overlay: options.overlay
+                                    });
+                                }
+                            }
+                        }]
+                    }]
+                });
+            };
+
+            // Handlers
+            /* Handle close events */
+
+            function initializeCloseHandlers(overlay) {
+                function destroy() {
+                    $(document).unbind("keydown", onKeyPress);
+                }
+
+                var handlers = {
+                    dontShowAgainClose: function (wayOfDestroy, callback) {
+                        adobe.target.trackEvent({
+                            mbox: MBOXName,
+                            params: {
+                                release: wayOfDestroy,
+                                popup: wayOfDestroy
+                            },
+                            success: function () {
+                                if (callback)
+                                    callback();
+                            },
+                            error: function () {
+                                if (callback)
+                                    callback();
+                            }
+                        });
+                        if (callback)
+                            setTimeout(function () {
+                                callback();
+                            }, MBOXFallbackTimeout);
+                        destroy();
+                    },
+                    showAgainClose: function (wayOfDestroy) {
+                        adobe.target.trackEvent({
+                            mbox: MBOXName,
+                            params: {
+                                popup: wayOfDestroy
+                            }
+                        });
+                        destroy();
+                    }
+                };
+
+                function onKeyPress(e) {
+                    if (e.keyCode == 27) {
+                        handlers.dontShowAgainClose("close_escape_keyboard", Popup.setLastClosed());
+                    }
+                }
+
+                $(document).on("keydown", onKeyPress);
+                overlay.find("span.overlay-close").on("click", function (e) {
+                    handlers.dontShowAgainClose("clicked_x", Popup.setLastClosed());
+                });
+
+                overlay.parent(".overlay-container").on("click", function (e) {
+                    if ($(e.target).hasClass("overlay-container"))
+                        handlers.showAgainClose("clicked_outside_overlay", Popup.setLastClosed());
+                });
+
+                return handlers;
+
+            }
+
+
+            /* Helpers for data storage */
+            var Storage = {};
+            Storage.createCookie = function (name, value, days) {
+                if (typeof localStorage !== "undefined")
+                    localStorage.setItem(name, value);
+            };
+            Storage.readCookie = function (name) {
+                if (typeof localStorage !== "undefined")
+                    return localStorage.getItem(name);
+                return undefined;
+            };
+            Storage.eraseCookie = function (name) {
+                if (typeof localStorage !== "undefined")
+                    localStorage.removeCookie(name);
+            };
+            Storage.readAndParse = function (name) {
+                var storedData;
+                var fromCookie = Storage.readCookie(name);
+
+                if (!fromCookie)
+                    return false;
+
+                try {
+                    storedData = JSON.parse(fromCookie);
+                } catch (e) {
+                    throw "Failed to parse stored data!";
+                }
+                return storedData;
+            };
+
+            var Popup = {};
+            Popup.isPopupOpen = false;
+            Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+            Popup.openThreshold = 2; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+            Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+            Popup.setLastClosed = function() {
+                Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+            };
+            Popup.determineIfPopupShows = function() {
+
+                var popupCookie = Storage.readAndParse("popup_information");
+                var timeBool = false;
+                var limitBool = false;
+
+                // ---------------------------------------------
+                // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+                // ---------------------------------------------
+                var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+                if(timeDifference > Popup.showPopupAfter) {
+                    timeBool = true;
+                }
+                else
+                {
+                    console.log("SHOW AFTER FAILED");
+                    console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+                }
+
+                // ---------------------------------------------
+                // LIMIT OPEN THRESHOLD
+                // ---------------------------------------------
+                if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+                    if(popupCookie.popup_last_closed != null) {
+                        // INCREASE OPEN COUNTER BY 1
+                        Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                    }
+
+                    limitBool = true;
+                }
+                console.log("TIMEBOOL : " + timeBool);
+                console.log("LIMITBOOL: " + limitBool);
+
+                return (timeBool && limitBool);
+            };
+            Popup.setKeyValue = function(key, value) {
+
+                var popupCookie = Storage.readAndParse("popup_information");
+                popupCookie[key] = value;
+
+                Storage.createCookie("popup_information",JSON.stringify(popupCookie));
+            };
+
+            /* Open TDR Overlay */
+            var OverlayHelpers = {};
+
+            (function () {
+
+                var isAlreadyOpenCalled = false;
+
+                OverlayHelpers.openOverlay = function (overlay, onOverlayOpen) {
+                    if (isAlreadyOpenCalled)
+                        return false;
+
+                    isAlreadyOpenCalled = true;
+                    var element = $("<a href=\"" + overlay + "\" style=\"display: none;\"></a>");
+                    $("body").append(element);
+
+                    function waitForOverlayOpen(overlay) {
+                        if (!overlay.$overlayContent)
+                            return setTimeout(function () {
+                                waitForOverlayOpen(overlay);
+                            }, 50);
+                        onOverlayOpen(overlay);
+                    }
+
+
+                    /*require(['overlay/component.overlay'],*/
+
+                    element.on('click', function (e) {
+                        e.preventDefault();
+                    });
+
+
+                    if(!Storage.readAndParse("popup_information")) {
+
+                        Storage.createCookie("popup_information", JSON.stringify({
+                            "popup_display_count": 1,
+                            "popup_last_closed": null
+                        }));
+
+                        var overlay = guxOverlay.default.init(element);
+                        console.log("Trigger Popup");
+                        overlay.getOverlayContent('/overlay/content/overlays/target/tdr-popin');
+                        waitForOverlayOpen(overlay);
+                        Popup.isPopupOpen = true;
+                    }
+                    else
+                    {
+                        if(Popup.determineIfPopupShows()) {
+                            var overlay = guxOverlay.default.init(element);
+                            console.log("Trigger Popup");
+                            overlay.getOverlayContent('/overlay/content/overlays/target/tdr-popin');
+                            waitForOverlayOpen(overlay);
+                        }
+                    }
+
+
+                    //var overlay = guxOverlay.default.init(element);
+                    //overlay.getOverlayContent('/overlay/content/overlays/target/tdr-popin');
+                    //waitForOverlayOpen(overlay);
+
+                    //element.click();
+                    element.remove();
+                };
+
+                /* Fill overlay with data */
+                OverlayHelpers.fillOverlay = function (overlay, data, closeHandlers, limit) {
+                    ENV.overlayInstance = overlay;
+                    var overlayContent = overlay.$overlayContent;
+                    var image = overlayContent.find("img.picture-tag-fallback");
+
+                    if (limit >= 100)
+                        return false;
+
+                    if (!image.length)
+                        return setTimeout(function () {
+                            OverlayHelpers.fillOverlay(overlay, data, closeHandlers, limit ? limit++ : 1);
+                        }, 40);
+
+                    locateAllElements(overlayContent, image, data.offerPrice ? true : false);
+                    fillFinishedBnPOverlay(data, closeHandlers);
+
+                };
+
+                function locateAllElements(overlayContent, image, hasOfferPrice) {
+                    ENV.elements.overlayContent = overlayContent.addClass("optprg-tdr-pop-up-ov-content");
+                    ENV.elements.image = image.addClass("optprg-tdr-pop-up-image");
+                    ENV.elements.heading = overlayContent.find("h3").addClass("optprg-tdr-pop-up-heading");
+                    ENV.elements.offerPrice = overlayContent.find("h4").addClass("optprg-tdr-pop-up-price");
+                    ENV.elements.offerPrice.before(DOMBuilder({
+                        type: "p",
+                        className: "optprg-car-name",
+                        child: [{
+                            type: "span",
+                            className: "optprg-car-name-main-name",
+                            callback: function (element) {
+                                ENV.elements.mainName = element;
+                                globalCarMainName: ENV.elements.mainName;
+                            }
+                        }, {
+                            type: "span",
+                            className: "optprg-car-name-sub-name",
+                            callback: function (element) {
+                                ENV.elements.subName = element;
+                            }
+                        }]
+                    })).before(DOMBuilder({
+                        type: "p",
+                        className: "optprg-main-price-label",
+                        text: hasOfferPrice ? ENV.Localisation.getTranslation("mainPriceLabel") : ENV.Localisation.getTranslation("mainPriceLabelNoOfferPrice")
+                    }));
+                    ENV.elements.retailPrice = overlayContent.find("h5").addClass("optprg-tdr-pop-up-price");
+                    //test
+                    ENV.elements.dutyFreePrice = overlayContent.find("h5").addClass("optprg-tdr-pop-up-price");
+                    ENV.elements.afterPrices = ENV.elements.retailPrice.next("p");
+                    ENV.elements.secondatyButton = overlayContent.find("a.cta-button.cta-button-secondary");
+                    ENV.elements.primaryButton = overlayContent.find("a.cta-button.cta-button-primary");
+                    ENV.elements.priceInformation = ENV.elements.retailPrice.after(DOMBuilder({
+                        type: "p",
+                        className: "commercial-vehicle-price"
+                    })).next();
+                    ENV.elements.priceInformation = ENV.elements.primaryButton.after(DOMBuilder({
+                        type: "p",
+                        className: "optprg-co2-info"
+                    })).next();
+                    ENV.elements.co2Information = ENV.elements.priceInformation.after(DOMBuilder({
+                        type: "p",
+                        className: "optprg-price-info"
+                    })).next();
+                }
+
+                function fillFinishedBnPOverlay(data, closeHandlers) {
+
+                    var i = 0;
+                    ENV.elements.heading.html(ENV.Localisation.getTranslation("heading").replace("<nameplate>", data.carName + ' ' + data.subName));
+
+                    if (!data.offerPrice)
+                        ENV.elements.offerPrice.hide();
+                    else {
+                        ENV.elements.offerPrice.html(Constructions.getPrice({
+                            pricePrefixName: "offerPricePrefix",
+                            priceSuffixName: "offerPriceSuffix",
+                            price: '€' + ENV.Localisation.formatMoney(data.offerPrice),
+                            dutyPrice: '€' + ENV.Localisation.formatMoney(data.dutyFreePrice),
+                            // text: ENV.Localisation.getTranslation("disclaimer1"),
+                            // number: "*",
+                            heading: ENV.Localisation.getTranslation("priceTooltipHeading"),
+                            overlay: ENV.elements.overlayContent
+                        }));
+                    }
+
+                    if (!data.retailPrice)
+                        ENV.elements.retailPrice.hide();
+                    else {
+                        ENV.elements.retailPrice.attr("class", "optprg-retail-price-box " + (data.offerPrice ? "optprg-include-offer" : "optprg-not-include-offer")).html(Constructions.getPrice({
+                            pricePrefixName: "retailPricePrefix",
+                            priceSuffixName: "retailPriceSuffix",
+                            price: '€' + ENV.Localisation.formatMoney(data.retailPrice),
+                            dutyPrice: '€' + ENV.Localisation.formatMoney(data.dutyFreePrice),
+                            // text: ENV.Localisation.getTranslation("disclaimer2"),
+                            // number: "**",
+                            heading: ENV.Localisation.getTranslation("priceTooltipHeading"),
+                            overlay: ENV.elements.overlayContent
+                        }));
+
+                    }
+
+                    //Commercial Vehicles (Duty Free)
+                    var commVehicles = [
+                        "TRANSIT COURIER", //1
+                        "TRANSIT CONNECT", //2
+                        "TRANSIT CUSTOM", //3
+                        "TRANSIT", //4
+                        "TRANSIT CHASSIS CAB" //5
+                    ]
+
+                    //comm vehicles not working - no code on URL: NOUVEAU TRANSIT CUSTOM,
+
+                    if (commVehicles.includes(storedData.carName)) {
+                        console.log('commercial vehicle');
+                        $('.commercial-vehicle-price').text('Excl. BTW/BPM');
+                        $('.optprg-main-price-label').text('Netto catalogusprijs');
+                        $('.commercial-vehicle-price').css("font-size", '12px');
+                        $('.optprg-vehicle-attribute-prefix').hide();
+                        $('.commercial-vehicle').show();
+                        $('.value').hide();
+                        console.log(storedData.carName);
+                    } else {
+                        console.log('not commercial vehicle');
+                        $('.commercial-vehicle').hide();
+                    }
+
+
+                    ENV.elements.overlayContent.find("source").attr("srcset", data.img);
+                    ENV.elements.image.removeAttr("src").attr("src", data.img).attr("alt", data.carName).attr("title", data.carName);
+                    ENV.elements.secondatyButton.remove();
+                    ENV.elements.primaryButton
+                        .attr("href", "/handige-links/ik-wil/proefrit-aanvragen" + (data.contextualiseLink || "?vehicleCode=" + data.tdr))
+                        .text(ENV.Localisation.getTranslation("bookTDRButton"))
+                        //.attr("target", "_blank")
+                        .removeAttr("data-cta-name")
+                        .on("click", function () {
+                            // e.preventDefault();
+                            closeHandlers.dontShowAgainClose("clicked_TDR_CTA", function () {
+
+                                window.targetCampaign = window.targetCampaign || {
+                                    page: {
+                                        campaignName: "tt:nwp:opt-655:xt:ase:rt-popin:bp-start"
+                                    }
+                                }
+
+                                FordPersonalisation.guxFrameworkDeferred.then(function () {
+                                    _satellite.track("OT-655 | XT | NL | TDR | Active Engagement TDR Pop-in (B&P retargeting)")
+                                });
+
+                                ENV.overlayInstance.hideOverlay();
+                            });
+                        });
+
+                    ENV.elements.afterPrices.hide();
+                    ENV.elements.mainName.text(data.carName + " ");
+                    ENV.elements.subName.text(data.subName);
+                    ENV.elements.priceInformation.text(ENV.Localisation.getTranslation("priceValidText"));
+                    var emissions = getValueUnit(data.emissions.co),
+                        litersToUnit = getValueUnit(data.emissions.lToKm);
+                    if (emissions && litersToUnit)
+                        ENV.elements.co2Information.html(
+                            ENV.Localisation.getTranslation("co2Information", {
+                                coValue: emissions.value,
+                                coUnit: emissions.unit,
+                                ltValue: litersToUnit.value,
+                                ltUnit: litersToUnit.unit
+                            })
+                        );
+                    else
+                        ENV.elements.co2Information.hide();
+                    console.log('hidden emissions');
+
+                }
+
+                function getValueUnit(map) {
+                    var units = Object.keys(map);
+                    if (!units.length)
+                        return null;
+                    return {
+                        unit: map[units[0]].unit,
+                        value: map[units[0]].value
+                    };
+                }
+            }());
+
+
+            var storedData;
+
+            // if (!Storage.readCookie("psyma_participation"))
+            //     return;
+            // if (Storage.readCookie("psyma_ip_block"))
+            //     return;
+
+            try {
+                storedData = Storage.readAndParse(ENV.MarketConfiguration.storageCookieName);
+                if (!storedData)
+                    return console.info("Empty record!");
+            } catch (e) {
+                return console.error(e);
+            }
+
+            //exclude Ford Focus
+            if (!storedData.img || !storedData.tdr || !storedData.carName
+                //|| /nieuwe focus/i.test(storedData.carName)
+                || !storedData.hasTDR
+                || /transit chassis cab/i.test(storedData.carName))
+                return;
+            setCookie("optprg-popups-disable", true, {
+                expires: 1,
+                path: "/"
+            });
+
+            setTimeout(function () {
+
+                OverlayHelpers.openOverlay(ENV.MarketConfiguration.overlay, function (overlay) {
+
+                    OverlayHelpers.fillOverlay(overlay, storedData, initializeCloseHandlers(overlay.$overlayContent));
+
+                    //var node = $('.cta-button.cta-button-primary.initialized.initialized-contextualLinks');
+                    //node.after('<p> Sample Div </p>');
+
+                    // Send info about pop up open
+                    adobe.target.trackEvent({
+                        "mbox": MBOXName,
+                        "params": {
+                            "open": "pop-up-open"
+                        }
+                    });
+
+                    window.targetCampaign = window.targetCampaign || {
+                        page: {
+                            campaignName: "impression:tt:nwp:opt-655:xt:ase:rt-popin:bp-start"
+                        }
+                    }
+
+                    FordPersonalisation.guxFrameworkDeferred.then(function () {
+                        _satellite.track("impression-xt-popin")
+                    });
+
+                });
+                // }
+            }, ENV.MarketConfiguration.delayBeforeOpenOverlay);
+        });
+
+    }());
+    console.log("in TDR Test");
+</script>

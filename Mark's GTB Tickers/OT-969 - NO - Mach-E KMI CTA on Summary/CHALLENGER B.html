@@ -1,0 +1,178 @@
+<!-- BUTTONS -->
+<script>
+    $(document).ready(function() {
+        console.log("OT-969");
+        var targetCampaign = targetCampaign || {};
+
+        function DOMBuilder(obj) {
+            if (!obj) return;
+            if ($.isArray(obj)) {
+                var i, arr = [];
+                for (i = 0; i < obj.length; i++) {
+                    (obj[i] instanceof $) ? arr.push(obj[i]) : arr.push(DOMBuilder(obj[i]));
+                }
+                return arr;
+            } else if (obj instanceof $) return obj;
+            else if ($.isFunction(obj)) return DOMBuilder(obj());
+            else {
+                if (!obj.type) return obj.html || obj.text || undefined;
+                if (obj.hasOwnProperty("render") && !obj.render)
+                    return undefined;
+                var $e = $('<' + obj.type + '>');
+                if (obj.id) $e.prop('id', obj.id);
+                if (obj.className) $e.addClass(obj.className);
+                if ($.isPlainObject(obj.data) && obj.data.key) $e.data(obj.data.key, obj.data.value);
+                obj.html ? $e.html(obj.html) : $e.text(obj.text || '');
+                if (obj.child) $e.append(DOMBuilder(obj.child));
+                if ($.isPlainObject(obj.handlers)) {
+                    for (var evName in obj.handlers) $e.on(evName, obj.handlers[evName]);
+                }
+                if ($.isPlainObject(obj.props)) {
+                    for (var propName in obj.props) $e.prop(propName, obj.props[propName]);
+                }
+                if ($.isFunction(obj.callback)) obj.callback($e);
+                return $e;
+            }
+        }
+
+        function findLastDiv() {
+            if ($('main > div > div > div').length > 0) {
+                return $('main > div > div > div').last().children().last();
+            } else {
+                return setTimeout(findLastDiv, 250);
+            }
+        }
+
+        function addButtons() {
+            if (findLastDiv() > 0)
+                return setTimeout(addButtons, 250);
+
+            findLastDiv().after(DOMBuilder({type: "div", id: "container_969", child: [{
+                type: "button",
+                id: "PreOrder_969",
+                text: "Bestill Nå",
+                handlers: {
+                    click: function (e) {
+                        e.preventDefault();
+                        var preOrderBtn = $('.reserveProgressBar button:contains("BESTILL NÅ")');
+                        preOrderBtn.click();
+                    }
+                }
+            }, {
+                type: "a",
+                id: "KMI_969",
+                className: "cta-secondary-gux-3",
+                text: "Hold meg oppdatert",
+                props: {
+                    href: "/kjoepe/neste-steg/hold-meg-oppdatert/all-electric"
+                }
+            }]}));
+
+            if ($("#container_969")[0].previousSibling.innerText == "") {
+                $("#container_969")[0].previousSibling.style.display = 'none';
+            }
+        }
+
+        function execute_N_S_N() {
+            if (/summary/i.test(window.location.href)) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: "tt:nwp:opt-969:ab:bp:kmi-cta-ngc:challenger"
+                    }
+                };
+                _satellite.track("genericTestingImpressionIDWorkaround");
+                addButtons();
+            }
+        }
+
+        $(window).on("hashchange", execute_N_S_N);
+        execute_N_S_N();
+    });
+</script>
+<style>
+
+    #container_969 {
+        display: flex;
+        width: 110%;
+        margin-top: 15px;
+    }
+
+    #PreOrder_969 {
+        width: 100%;
+        font-size: 1.125rem;
+        line-height: 0.722222;
+        letter-spacing: 1px;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        -webkit-box-pack: center;
+        justify-content: center;
+        background-color: rgb(16, 43, 78);
+        color: rgb(255, 255, 255);
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        -webkit-box-align: center;
+        align-items: center;
+        height: 40px;
+        font-weight: 500;
+        text-decoration: none;
+        border-width: 0px;
+        border-style: initial;
+        border-color: initial;
+        border-image: initial;
+        transition: background-color 0.3s ease-in-out 0s, color 0.3s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
+    }
+
+    #PreOrder_969::after {
+        font-size: 0.8125rem;
+        margin-left: 12px;
+        font-family: icomoon-gux-3;
+        speak: none;
+        font-style: normal;
+        font-weight: normal;
+        text-transform: none;
+        line-height: 1;
+        content: "";
+        font-variant: normal;
+    }
+
+    #PreOrder_969:hover, #PreOrder_969:active, #PreOrder_969:focus {
+        background-color: rgb(40, 97, 164);
+        color: rgb(255, 255, 255);
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px;
+    }
+
+    #KMI_969 {
+        width: 80%;
+        margin-left: 15px;
+        align-self: center;
+        font-size: 16px;
+    }
+    
+    
+    @media only screen and (min-width: 992px){
+        #container_969 {
+            width: 50em;
+        }
+    }
+
+    /* TABLET */
+    @media only screen and (min-width: 768px) and (max-width: 991px) {
+        #KMI_969 {
+            margin-right: 70px;
+            margin-left: unset !important;
+        }
+    }
+
+    /* MOBILE */
+    @media only screen and (max-width: 480px),
+    only screen and (min-width: 480px) and (max-width: 767px) {
+        #KMI_969 {
+            width: 70% !important;
+            margin-top: 10px !important;
+            margin-left: unset !important;
+        }
+        #container_969 {
+            display: unset !important;
+            width: unset !important;
+        }
+    } 
+</style>

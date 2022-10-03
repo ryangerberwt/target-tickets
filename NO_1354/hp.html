@@ -1,0 +1,92 @@
+<script>
+    var storedData_1354;
+    $(document).ready(function () {
+        setTimeout(function () {
+            var billboard_paragraph = null;
+            var str = '';
+             storedData_1354 = {
+                carName: "${profile.carName}",
+                subName: "${profile.subName}",
+                vehicleType: "${profile.vehicleType}",
+            }
+
+            var promo_pages = {
+                Fiesta: "https://www.ford.de/fahrzeuge/ford-fiesta/aktionen-angebote/privatkunden",
+                Ecosport: "https://www.ford.de/fahrzeuge/ford-ecosport/aktionen-angebote/privatkunden",
+                Puma: "https://www.ford.de/fahrzeuge/ford-puma/aktionen-angebote/privatkunden",
+                Focus: "https://www.ford.de/fahrzeuge/ford-focus/aktionen-angebote/privatkunden",
+                "Tourneo Connect": "https://www.ford.de/fahrzeuge/ford-tourneo-connect/aktionen-angebote/privatkunden",
+                Kuga: "https://www.ford.de/fahrzeuge/ford-kuga-angebote/aktionen-angebote/privatkunden",
+                Mondeo: "https://www.ford.de/fahrzeuge/ford-mondeo/aktionen-angebote/privatkunden",
+                Mustang: "https://www.ford.de/fahrzeuge/ford-mustang-angebote/aktionen-angebote/privatkunden",
+                "S-Max": "https://www.ford.de/fahrzeuge/ford-s-max/aktionen-angebote/privatkunden",
+                Galaxy: "https://www.ford.de/fahrzeuge/ford-galaxy/aktionen-angebote/privatkunden",
+                "Tourneo Custom": "https://www.ford.de/fahrzeuge/ford-tourneo-custom/aktionen-angebote/geschaeftskunden",
+                "Tourneo Courier": "https://www.ford.de/fahrzeuge/ford-tourneo-courier/aktionen-angebote/privatkunden",
+                Explorer: "https://www.ford.de/fahrzeuge/ford-explorer-plug-in-hybrid-angebote/aktionen-angebote/privatkunden",
+                "Transit Courier": "https://www.ford.de/nutzfahrzeuge-modelle/ford-transit-courier/aktionen-angebote/geschaeftskunden",
+                "Transit Connect": "https://www.ford.de/nutzfahrzeuge-modelle/ford-transit-connect/aktionen-angebote/geschaeftskunden",
+                "Transit Custom": "https://www.ford.de/nutzfahrzeuge-modelle/ford-transit-custom/aktionen-angebote/geschaeftskunden",
+                "Transit Van": "https://www.ford.de/nutzfahrzeuge-modelle/ford-transit/aktionen-angebote/geschaeftskunden",
+                "Transit Minibus": "https://www.ford.de/nutzfahrzeuge-modelle/ford-transit/aktionen-angebote/geschaeftskunden",
+                "Ranger": "https://www.ford.de/nutzfahrzeuge-modelle/ford-ranger/aktionen-angebote/privatkunden",
+                "Transit Chassis": "https://www.ford.de/nutzfahrzeuge-modelle/ford-ranger/aktionen-angebote/geschaeftskunden",
+            }
+
+            function getLink(storedData) {
+                console.log(storedData);
+                var promo_list = [];
+                if (storedData.vehicleType == "PV" || storedData.vehicleType == "CV") { 
+                    let promo_list = JSON.parse(localStorage.getItem("promoCV"));
+                    if (storedData.vehicleType == "CV") {
+                        promo_list = JSON.parse(localStorage.getItem("promo"));
+                    }
+                    for (let i = 0; i < promo_list.length; i++) {
+                        for (let val in promo_list[i]) {
+                            if (storedData.carName.toUpperCase().indexOf(promo_list[i].name) > -1) {
+                                for (let prop in promo_pages) {
+                                    if (storedData.carName.toLowerCase().indexOf(prop.toLowerCase()) > -1) {
+                                        str = promo_pages[prop];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            getLink(storedData_1354);
+            console.log("OT-1354");
+            async function waitForElm(selector) {
+                return new Promise(resolve => {
+                    if (document.querySelectorAll(selector)) {
+                        return resolve(document.querySelectorAll(selector));
+                    }
+                    const observer = new MutationObserver(mutations => {
+                        if (document.querySelectorAll(selector)) {
+                            resolve(document.querySelectorAll(selector));
+                            observer.disconnect();
+                        }
+                    });
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
+                });
+            }
+            waitForElm(".billboard-paragraph h2").then(result => {
+                console.log('car name is ' + storedData_1354.carName);
+                console.log('str is now ' + str);
+                if (storedData_1354.carName != '' && str != '') {
+                    billboard_paragraph = [...result].filter(el => el.innerText.includes("Jetzt aktuelle Angebote entdecken!"));
+                    if (billboard_paragraph.length > 0) {
+                        billboard_paragraph[0].innerHTML = "Jetzt aktuelle " + storedData_1354.carName + " Angebote entdecken!";
+                        let billboard_link = billboard_paragraph[0].parentElement.closest(".billboard-paragraph").nextElementSibling;
+                        billboard_link.href = str;
+                    }
+                }
+            })
+        }, 1000)
+    })
+
+</script>

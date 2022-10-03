@@ -1,0 +1,35 @@
+<script>
+    $(document).ready(function(){
+        console.log("OT-814 - C - TDR-A");
+
+        var d = new Date();
+        d.setTime(d.getTime() + 1209600000);
+
+        var storedData = {
+            action: "${profile.hpr.personalization.action}", 
+            vehicleViewed: "${profile.hpr.personalization.vehicleViewed}", 
+        };
+
+        if (storedData.action == "Is On TDR Page" && !storedData.vehicleViewed) {
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.hpr.personalization.market" : "DE",
+                    "profile.hpr.personalization.action" : "TDR-A",
+                    "profile.hpr.personalization.triggerHomePage" : true,
+                    "profile.hpr.personalization.visibleUntil" : d,
+                "profile.hpr.personalization.seen": 0
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        }
+    });
+</script>

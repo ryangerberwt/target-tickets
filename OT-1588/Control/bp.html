@@ -1,0 +1,28 @@
+<script>
+    window.addEventListener('hashchange', () => {
+        console.log("control is running");
+
+window.targetCampaign = {
+  page: {
+    campaignName: 'tt:nwp:opt-1588:ab:bp:hyperlink:control'
+
+  }
+}
+
+_satellite.track('genericTestingImpressionIDWorkaround');
+console.log('done firing -- first pass');
+
+
+setTimeout(function(){
+
+  window.targetCampaign = {
+  page:{
+    campaignName: ''
+  }
+}
+_satellite.track('');
+console.log('done firing -- second pass');
+},250)   
+  }, false);
+
+</script>

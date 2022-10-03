@@ -1,0 +1,65 @@
+<!-- B - NPP Visited -->
+<script>
+
+    window.addEventListener("hashchange",function(){
+  
+      console.log("1032 - Bp - NPP Visited");
+      
+  
+      
+  
+      adobe.target.getOffer({
+          'mbox': "global-mbox",
+          'params': {
+              "profile.market" : "UK",
+              "profile.action" : "NPP Visited",
+              "profile.triggerHomePage" : true,
+              
+              
+              "profile.seen": 0
+          },
+          'success': function(offer) {
+              adobe.target.applyOffer( {
+                  'mbox': 'global-mbox',
+                  'offer': offer
+              });
+          },
+          'error': function(status, error) {
+              console.log('Error', status, error);
+          }
+      });
+      
+    })
+    window.addEventListener("load",function(){
+  
+      console.log("1032 - Bp - NPP Visited");
+      
+  
+      
+  
+      adobe.target.getOffer({
+          'mbox': "global-mbox",
+          'params': {
+              "profile.market" : "UK",
+              "profile.action" : "NPP Visited",
+              "profile.triggerHomePage" : true,
+              
+              
+              "profile.seen": 0
+          },
+          'success': function(offer) {
+              adobe.target.applyOffer( {
+                  'mbox': 'global-mbox',
+                  'offer': offer
+              });
+          },
+          'error': function(status, error) {
+              console.log('Error', status, error);
+          }
+      });
+      
+    })
+      
+        
+      
+  </script>

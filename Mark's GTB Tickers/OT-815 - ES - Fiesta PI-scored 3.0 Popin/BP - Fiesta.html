@@ -1,0 +1,22 @@
+<script>
+    $(document).ready(function() {
+        console.log("OT-815 - Fiesta BP");
+        
+        adobe.target.getOffer({
+            'mbox': "global-mbox",
+            'params': {
+                "profile.piscored.market" : "ES",
+                "profile.piscored.action.bp" : "BP"
+            },
+            'success': function(offer) {
+                adobe.target.applyOffer( {
+                    'mbox': 'global-mbox',
+                    'offer': offer
+                });
+            },
+            'error': function(status, error) {
+                console.log('Error', status, error);
+            }
+        });
+    });
+</script>

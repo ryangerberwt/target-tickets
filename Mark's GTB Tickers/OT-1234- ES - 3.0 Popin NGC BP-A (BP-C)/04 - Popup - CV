@@ -1,0 +1,5 @@
+<script>
+    function displayPopup(storedData) {
+        return storedData.vehicleType == "CV";
+    }
+</script>

@@ -1,0 +1,21 @@
+<!-- Brochure -->
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            if (!$('.prom-1040').length > 0 && $('.brd-1040').length > 0) {
+                // E
+                window.targetCampaign = window.targetCampaign || {
+                    page: {
+                        campaignName: "tt:nwp:opt-1040:ab:vhp:second-cta:var-e"
+                    }
+                }
+                _satellite.track("genericTestingImpressionIDWorkaround");
+            }
+        }, 1000);
+    });
+</script>
+<a class="icon-build-price-solid initialized initialized-contextualLinks brd-1040" 
+href="/shop/research/brochure-download#overlay/content/overlays/download-a-brochure/puma" 
+id="cdq_element_0" style="line-height: 58px; height: 58px;">
+    <strong>Brochure</strong>
+</a>

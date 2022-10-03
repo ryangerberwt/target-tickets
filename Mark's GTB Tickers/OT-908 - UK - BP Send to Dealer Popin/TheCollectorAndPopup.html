@@ -1,0 +1,216 @@
+<script type="text/javascript">
+    var p_Market = "UK";
+    var dataStored = false;
+    var theInfo;
+    (function () {
+        /**
+         * JS VARIANT "Control" - Create testdrive popin or similar approach to generate additional testdrive leads
+         */
+        FordPersonalisation.guxFrameworkDeferred.then(function () {
+            var ENV = {
+                services: {}
+            };
+
+            /* Help to receive data about all models from API */
+
+            (function (services) {
+
+                var urlParseRegExp = /catalogID\/([^\/]+).*code\=([^&\/\s]+)/i,
+                    codeRegexp = /[^:]+/i;
+
+                function getCarIDs() {
+                    var parsedCurrentURL = urlParseRegExp.exec(location.href);
+                    if (!parsedCurrentURL || parsedCurrentURL.length < 3)
+                        return false;
+                    var currentCode = getCurrentCarCode(getAllModelCodes(parsedCurrentURL[1]), parsedCurrentURL[2]);
+
+                    return {
+                        usc: parsedCurrentURL[1],
+                        codeWithFeatures: parsedCurrentURL[2]
+                    };
+                }
+
+                var getEndPointConfiguration = (function () {
+                    var conf;
+                    return function () {
+                        if (conf)
+                            return conf;
+                        conf = $("#bsl-endpoints-configuration > .configuration").data();
+                        return conf;
+                    };
+                }());
+
+                function getCarConfiguration(serviceVersion, IDs, callback) {
+                    var url = [
+                        getEndPointConfiguration().endpoint,
+                        "/vehicleModel/",
+                        (serviceVersion ? serviceVersion : "v0"),
+                        "/load?locale=",
+                        getEndPointConfiguration().locale,
+                        "&retrieve=images,specs,featuresMkt,selectedMkt,featureImages,featureSpecs,keyFeatures,keyFeaturesModel,uscCodes,prices,featurePrices&namedConfig=",
+                        "default",
+                        "&config=",
+                        IDs.usc,
+                        "~",
+                        IDs.codeWithFeatures.replace(/\:/g, ",")
+                    ].join("");
+                    $.ajax({
+                        url: url,
+                        xhrFields: {
+                            withCredentials: !!getEndPointConfiguration().cookieToBsl
+                        }
+                    }).done(function (response) {
+                        if (response.status && response.status.statusCode === 200)
+                            return callback(undefined, response.data);
+                        callback("Bad response status");
+                    }).fail(function () {
+                        callback("Request failed");
+                    });
+                }
+
+                function getNameplate(usc) {
+                    var nameplate = $("#bnp-configuration > span.configuration")
+                            .data()
+                            .nameplatesConfigurations
+                            .filter(function (nmp) {
+                                return nmp.nameplateCode === usc;
+                            }),
+                        model;
+
+                    if (!nameplate || !nameplate.length)
+                        return false;
+                    return nameplate[0];
+                }
+
+                function getAllModelCodes(usc) {
+                    var nameplate = getNameplate(usc),
+                        codes = [];
+                    if (!nameplate)
+                        return false;
+
+                    for (var i = 0; i < nameplate.models.length; i++)
+                        codes.push(nameplate.models[i].code)
+                    return codes;
+                }
+
+                function getCurrentCarCode(allCarCodes, codeWithFeatures) {
+                    var splitedCWF = codeWithFeatures.split(":");
+                    for (var i = 0; i < allCarCodes.length; i++)
+                        if (splitedCWF.indexOf(allCarCodes[i]) !== -1)
+                            return allCarCodes[i];
+                    return false;
+                }
+
+                function getCarSchema(usc, code) {
+                    var nameplate = getNameplate(usc);
+                    if (!nameplate)
+                        return false;
+
+                    model = nameplate.models
+                        .filter(function (model) {
+                            return model.code === code;
+                        });
+                    if (!model || !model.length)
+                        return false;
+                    return {
+                        nameplate: nameplate,
+                        model: model[0]
+                    };
+                }
+
+                function sanitizeAPIResponse(data, nameplate, IDs) {
+                    return {
+                        carName: ENV.services.getCarName().name,
+                        img: data.images.exterior[0].urls[0],
+                        subName: ENV.services.getCarName().subname,
+                    }
+                }
+
+                services.sanitizeAPIResponse = sanitizeAPIResponse;
+                services.describeCall = getCarConfiguration;
+                services.getCarIDs = getCarIDs;
+                services.getCarSchema = getCarSchema;
+                services.getNameplate = getNameplate;
+
+            }(ENV.services));
+
+            var MBOXName = "UK_SummaryPage_S2D_Popin_2";
+
+            /* Get model basic info */
+
+            (function (bundle) {
+                var BnPHeadingSelector = "#build-price-configurator > div.app-view div.bp-header-wrapper div.bp-configurator-header-wrap > h3",
+                    SummaryPageHeadingSelector = "#build-price-configurator > div.app-view div.vehicle-view-content.left-content > h3";
+
+                function isSummaryPage() {
+                    return /\/summary\//i.test(window.location.href);
+                }
+
+                function getCarName() {
+                    var wrapper;
+                    if (!isSummaryPage()) {
+                        wrapper = $(BnPHeadingSelector);
+                        return {
+                            name: (wrapper.find("strong").text() || "").trim(),
+                            subname: (wrapper.find("span").text() || "").trim()
+                        };
+                    }
+                    wrapper = $(SummaryPageHeadingSelector).find("strong");
+                    return {
+                        name: (wrapper.text() || "").trim(),
+                        subname: (wrapper[0].nextSibling.nodeValue || "").trim()
+                    };
+                }
+
+                bundle.isSummaryPage = isSummaryPage;
+                bundle.getCarName = getCarName;
+
+            }(ENV.services));
+
+            
+            function reRun() {
+                setTimeout(function() {
+                    runInformationsGathering();
+                }, 250);
+            }
+
+            function runInformationsGathering() {
+                if (/summary/i.test(window.location.href)) {
+                    executePopup();
+                } else if (/build-and-price/i.test(window.location.href)) {
+                    var currentIDs = ENV.services.getCarIDs(),
+                    currentNameplate = ENV.services.getNameplate(currentIDs.usc);
+                    if (!currentNameplate)
+                        return console.log("Nameplate not found!");
+
+                    ENV.services.describeCall(currentNameplate.serviceVersion, currentIDs, function (err, result) {
+                        if (err)
+                            return console.log(err);
+                        
+                        theInfo = ENV.services.sanitizeAPIResponse(result, currentNameplate, currentIDs);
+                        dataStored = true;
+                    });
+                } 
+            }
+
+            $(window).on("hashchange", runInformationsGathering);
+            runInformationsGathering();
+            
+
+            var reRunInterval;
+
+            reRunInterval = setInterval(function() {
+                if (!dataStored && /build-and-price/i.test(window.location.href)) {
+                    reRun();
+                } else {
+                    console.log('stopped looping');
+                    clearInterval(reRunInterval);
+                }
+            }, 100);
+
+        });
+
+    }());
+
+    
+</script>

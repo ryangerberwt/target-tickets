@@ -1,0 +1,156 @@
+<script>
+    var $;
+    var originalControlsOrder, newControlsOrder,formControls, newControlsCollection;
+    console.log('OT-1594 | Challenger');
+
+    var enableLogs = true;
+    var _log = console.log;
+    var _dir = console.dir;
+    console.log = function (logMsg) {
+      if (enableLogs) {
+        _log.apply(console, arguments);
+      }
+    };
+    console.dir = function (logMsg) {
+      if (enableLogs) {
+        _dir.apply(console, arguments);
+      }
+    };
+
+    window.onload = function () {
+        debugger;
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                // You can place the rest of your script(s) here
+                runScript();
+                setTimeout(function(){
+                    $(document).on('click', blockImpressionId());
+                    $(document).on('keyup', blockImpressionId());
+                },1500);
+            }
+        }, 500);
+
+    }
+
+
+    function runScript() {
+        console.log('runScript called');
+        newControlsCollection = [];
+        formControls = jQuery('.aem-container').children();
+        originalControlsOrder = [];
+        newControlsOrder = [];
+        //Define the current sections
+        
+        //BUDGET
+        originalControlsOrder['budget'] =  formControls[1];
+        //VÉHICULE (VEHICLE)
+        originalControlsOrder['vehicle'] = formControls[2];
+        //LIVRAISON (DELIVERY)
+        originalControlsOrder['delivery'] = formControls[4];
+        //COULEUR (COLOR)
+        originalControlsOrder['color'] = formControls[5];
+        //TYPE DE CARBURANT (FUEL TYPE)
+        originalControlsOrder['fuel'] = formControls[5];
+        //TRANSMISSION
+        originalControlsOrder['transmission'] = formControls[6];
+
+
+        if(determineContext() === 'generic'){
+
+            /*
+                NEW ORDER IS AS FOLLOWS
+                LIVRAISON (DELIVERY)
+                VÉHICULE (VEHICLE)
+                COULEUR (COLOR)
+                TYPE DE CARBURANT (FUEL TYPE)
+                TRANSMISSION
+                BUDGET
+            */
+
+            newControlsOrder = [
+                'delivery',
+                'vehicle',
+                'color',
+                'fuel',
+                'transmission'
+            ];
+
+     
+            for(var i = 0; i < newControlsOrder.length; i++){
+                console.log('cloning');
+                cloneElement(newControlsOrder[i],originalControlsOrder,newControlsCollection);
+            }
+            removeCloneParents('.aem-container');
+
+        }else{
+
+
+            /*
+                NEW ORDER IS AS FOLLOWS
+                LIVRAISON (DELIVERY)
+                COULEUR (COLOR)
+                TYPE DE CARBURANT (FUEL TYPE)
+                TRANSMISSION
+                BUDGET
+                VÉHICULE (VEHICLE) -- Set collapsed
+            */
+
+
+            newControlsOrder = [
+                'delivery',
+                'vehicle',
+                'color',
+                'fuel',
+                'transmission'
+            ];
+
+            for(var i = 0; i < newControlsOrder.length; i++){
+                console.log('cloning');
+                cloneElement(newControlsOrder[i],originalControlsOrder,newControlsCollection);
+            }
+            removeCloneParents('.aem-container');
+            appendItems(newControlsCollection,'.aem-container');
+        }
+
+    }
+
+    function appendItems(newElementCollection, selector){
+        for(var i = 0; i < newControlsCollection.length; i++){
+           jQuery(selector).appendChild(jQuery(newControlsCollection[i]));
+        }
+    }
+
+    //.aem-container
+    function removeCloneParents(selector){
+            jQuery(selector).children().remove();
+            console.log('Element(s) removed');
+    }
+
+    function cloneElement(elementIndex,elementCollection,newElementCollection){
+
+        newElementCollection[elementIndex] = jQuery(elementCollection[elementIndex]).clone(true,true);
+    }
+
+    function determineContext(){
+         if(window.location.href.indexOf('#config=') >= 0){
+            return 'nameplate';
+         }else{
+            return 'generic';
+         }
+    }
+
+    function blockImpressionId(){
+        window.targetCampaign = {
+            page: {
+                campaignName: ''
+            }
+        }
+        console.log('blocking impression')
+        _satellite.track('genericTestingImpressionIDWorkaround');
+    }
+
+</script>

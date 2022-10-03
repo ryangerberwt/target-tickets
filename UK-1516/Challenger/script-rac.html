@@ -1,0 +1,204 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1516 | CHALLENGER | RAC');
+
+    var ctaSelector = 'a[data-analytics-cta-name="brochures"]';
+    var configSelector = '.wizard.initialized-wizard.ng-scope > span.configuration';
+    var enableLogs = false;
+    var _log = console.log;
+    console.log = function(logMsg){
+        if(enableLogs){
+ 
+            _log.apply(console,arguments);
+        }
+    }  
+
+    $(document).ready(function () {
+        console.log('doc ready');
+        console.log('adding hashchange');
+        $(window).on("load", runLogic);
+        runLogic();
+    });
+
+    function checkUrl() {
+        return window.location.href.indexOf('www.ford.co.uk/shop/research/request-a-contact') >= 0;
+    }
+
+    function checkForNullOrUndefined(elementToCheck) {
+        if (elementToCheck !== undefined && elementToCheck !== null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function getCookie(name) {
+        console.log('checking cookie')
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function checkIfCarHasKMI() {
+        //TODO:CHECK IF THIS CAR HAS KMI
+
+    }
+
+    function loadJsonModel() {
+        modelsJson = $.getJSON("https://www.ford.co.uk/content/guxeu/uk/en_gb/configuration/applications-and-services/ngc-configuration-bev.model.json", function (data) {
+            console.dir(data);
+            $.each(data.nameplateConfig.labels, function (key, val) {
+                if (id.includes(val.key) && val.formsContext !== null) {
+                    console.log('found v code');
+                    var deepLinkCode = val.formsContext;
+                    updateHref($(ctaSelector), ('https://www.ford.co.uk/shop/research/keep-me-informed' + deepLinkCode));
+                    $(ctaSelector).text('Keep me informed');
+                }
+            });
+        });
+    }
+
+    function updateHref(targetElement, updatedHref) {
+        if (checkForNullOrUndefined(targetElement) && targetElement !== 0 && checkForNullOrUndefined(updatedHref)) {
+            targetElement.attr('href', updatedHref);
+            console.log('updated href');
+        } else {
+            console.log('Unable to update href :: element is null');
+        }
+    }
+
+
+    function addClickEvents() {
+        $('.vehicle-name.select-vehicle-link.ng-binding').on('click', function () {
+
+            console.dir($(this));
+
+
+        });
+        $('.vehicle-list-item',).on('click', function () {
+
+            console.dir($(this));
+
+
+        });
+
+
+    }
+
+
+    function waitForElement(element, limit) {
+        let localLimit = 0;
+        let waitForMe = setInterval(function () {
+            if (element !== undefined && element.length > 0 && localLimit <= limit) {
+                console.log('element found');
+                clearInterval(waitForMe);
+                return true;
+            } else if (localLimit > limit) {
+                console.log('limit reached');
+                return false;
+            }
+
+            localLimit++;
+
+        }, 500)
+    }
+
+
+    function getId() {
+
+        //TODO: Get vehicle code / id using the configuration 
+
+
+        $(configSelector).attr('d')
+
+
+    }
+
+
+    function runLogic() {
+        //We'll use a custom data attribute to check if we've run this before
+        console.log('runLogic');
+        if (checkUrl()) {
+            if (waitForElement($(ctaSelector)), 20) {
+                id = getId();
+                if (checkForNullOrUndefined(id) && (getCookie('kmiCtaClick') === undefined || getCookie('kmiCtaClick') === null || getCookie('kmiCtaClick') === false)) {
+                    loadJsonModel();
+                    console.log('addingClickEvent');
+                    //Add click event
+                    $(selectors.primaryCTA.sel).on('click', function () {
+                        console.log('Clicked CTA -- setting cookie val...');
+                        document.cookie = 'kmiCtaClick=true';
+                        console.log('Cookie val is set to ' + getCookie('kmiCtaClick'));
+                    });
+                    fireImpressionId();
+                    setTimeout(function () {
+                        console.log('clicking');
+                        setOnClick();
+                        $('body').click();
+                    }, 750);
+
+
+                } else {
+                    console.log('id ' + id + ' not found.');
+                }
+            }
+        } else {
+            console.log('not on correct page');
+        }
+    }
+
+
+
+
+    $(document).ready(function () {
+        fireImpressionId();
+        setTimeout(function () {
+            console.log('clicking');
+            setOnClick();
+            $('body').click();
+        }, 750);
+    });
+
+
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1516:ab:bp:kmi-pers:challenger", //Change this to your impressionID
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener');
+            _satellite.track('');
+
+        });
+    }
+
+    //We don't always need this but adding it here for reference
+    function setOnKeyUp() {
+        window.addEventListener('keyUp', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener')
+            _satellite.track('');
+
+        });
+    }
+
+</script>

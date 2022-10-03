@@ -1,0 +1,344 @@
+<script>
+    console.log('OT-1261');
+
+    $(function () {
+
+        var steps = /eire/;
+        var url = window.location.href;
+        var popupId = "js-popup-pumanext";
+        var num;
+        const maxCount = 3;
+        const timeLimit = 900;
+
+        /*
+        function tempData(){
+          adobe.target.getOffer({
+                            'mbox': 'global-mbox',
+                            'params': {
+                                'profile.popup_test' : "new popup test",
+                               
+                            },
+                            'success': function(offer) {
+                                adobe.target.applyOffer( {
+                                    'mbox': 'global-mbox',
+                                    'offer': offer
+                                });
+                            },
+                            'error': function(status, error) {
+                                console.log('Error', status, error);
+                            }
+                        });
+        }
+        tempData();
+        console.log("cccccccccccccccccccccc");
+        console.log("${profile.popup_test}");
+        */
+
+        $(function () {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1261:xt:osb:osb-abandon-popup",
+                },
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        });
+
+        function createPopup() {
+
+            var translations = {
+                mainHeading: "Online Service Booking",
+                primaryCta: "Bestill her",
+                offer: "Bestill service online hos din Ford Forhandler",
+                date: "",
+                //voucherCode: "RDV10",
+                primaryCtaUrl: "https://www.ford.no/eiere/min-bil/bestill-service#/vehicle-step",
+                disclaimer: "N/A",
+            };
+
+            // Get image of configured Puma (exists on page)
+            var carImageUrl =
+                "/content/dam/guxeu/rhd/central/sandbox/training/billboard/ford-pop_up_banner-eu-GettyImages-3x2-1800x1201-bb-man-with-a-labtop-on-a-sofa.jpg";
+
+            // Build the popup
+            var popupShell = $(
+                '<div class="popup-overlay" id="' +
+                popupId +
+                '"><div class="popup-dialog"><div class="popup-header"><button class="popup-close">&times;</button></div><div class="popup-body"><img src="' +
+                carImageUrl +
+                '" /><h1>' +
+                translations.mainHeading +
+                ' </h1><h2 class="heading-small">' +
+                translations.offer +
+                '</h2><h2 class="heading-small">' +
+                translations.date +
+                '</h2><a href="' +
+                translations.primaryCtaUrl +
+                '" class="popup-btn" id="js-popup-testdrive">' +
+                translations.primaryCta +
+                "</a><div class='m-small'><sup>*</sup>" +
+                translations.disclaimer +
+                '</div></div><div style="clear:both;"></div></div></div>'
+            );
+            $("body").append(popupShell);
+
+            setTimeout(() => {
+                openPopup(popupId);
+            }, 4000);
+
+        }
+
+        function openPopup(popupId) {
+
+            Scroll = (function () {
+                var x, y;
+
+                function hndlr() {
+                    window.scrollTo(x, y);
+                    //return;
+                }
+                return {
+                    disable: function (x1, y1) {
+                        x = x1;
+                        y = y1;
+                        if (window.addEventListener) {
+                            window.addEventListener("scroll", hndlr);
+                        } else {
+                            window.attachEvent("onscroll", hndlr);
+                        }
+                    },
+                    enable: function () {
+                        if (window.removeEventListener) {
+                            window.removeEventListener("scroll", hndlr);
+                        } else {
+                            window.detachEvent("onscroll", hndlr);
+                        }
+                    },
+                };
+            })();
+            Scroll.disable(0, document.body.scrollTop);
+            document.getElementById(popupId).classList.add("active");
+            document
+                .querySelector(".popup-close")
+                .addEventListener("click", function () {
+                    document.getElementById(popupId).classList.remove("active");
+
+                    Scroll.enable();
+                });
+
+        }
+
+        function closePopup(popupId) {
+            document.getElementById(popupId).classList.remove("active");
+        }
+
+        function currentTime() {
+
+            var date = new Date();
+            var h = date.getHours();
+            var min = date.getMinutes();
+            var sec = date.getSeconds();
+
+            return {
+                hours: h,
+                min: min,
+                sec: sec
+            };
+
+        }
+
+        function storeData() {
+
+            sessionStorage.setItem("t1", JSON.stringify(currentTime()));
+            sessionStorage.setItem("dataset", true);
+
+        }
+
+        function convertToSeconds(obj) {
+
+            var seconds = obj.hours * 60 * 60 + obj.min * 60 + obj.sec;
+
+            return seconds;
+
+        }
+
+        var count = function () {
+
+            num = sessionStorage.getItem("count");
+
+            if (num == undefined || num == "undefined" || num == null) {
+
+                sessionStorage.setItem("count", 0);
+                num = parseInt(sessionStorage.getItem("count"));
+
+                return num;
+
+            } else {
+
+                num = parseInt(sessionStorage.getItem("count")) + 1;
+                return num;
+
+            }
+
+        };
+
+        function displaypopup() {
+
+            var countNum = parseInt(count());
+
+            if (countNum <= maxCount) {
+
+                var obj = JSON.parse(sessionStorage.getItem("t1"));
+
+                var t = Math.abs(
+                    parseInt(convertToSeconds(obj)) -
+                    parseInt(convertToSeconds(currentTime()))
+                );
+
+                if (t >= timeLimit && countNum != 0) {
+                    createPopup();
+                    sessionStorage.setItem("count", countNum);
+                } else if (countNum <= 1) {
+                    createPopup();
+                    sessionStorage.setItem("count", countNum);
+                }
+
+            }
+
+        }
+
+        if (steps.test(url) && !sessionStorage.getItem("dataset")) {
+            storeData();
+        } else if (/services/.test(url) && !steps.test(url)) {
+            if (sessionStorage.getItem("dataset")) {
+                displaypopup();
+            }
+        }
+
+    });
+
+</script>
+
+
+
+
+<style>
+    .popup-overlay {
+        position: fixed;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog {
+        position: absolute;
+        height: auto;
+        width: 320px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+    }
+
+    @media screen and (min-width: 768px) {
+        .popup-dialog {
+            height: auto;
+            width: 500px;
+        }
+    }
+
+    .popup-header {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 60px;
+        line-height: 30px;
+        padding: 0;
+        color: #102a4d;
+        background-color: transparent;
+        margin: 8px 0 0 0;
+    }
+
+    .popup-body {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body h1,
+    .popup-body h2,
+    .popup-body p {
+        padding: 0 20px;
+    }
+
+    .popup-body img {
+        display: block;
+        width: 100%;
+        padding-bottom: 20px;
+    }
+
+    .popup-body h1 {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.6rem;
+        font-weight: bold;
+    }
+
+    .popup-btn {
+        display: block;
+        padding: 8px 20px;
+        background-color: #102a4d;
+        text-decoration: none;
+        color: white;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px,
+            rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        font-size: 1.125rem;
+        cursor: pointer;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px auto;
+        max-width: 250px;
+    }
+
+    .popup-btn:hover {
+        color: white;
+    }
+
+    .heading-small {
+        font-size: 1.2rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .m-small {
+        padding: 20px;
+        font-size: 0.8rem;
+    }
+
+    .voucher-code {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 0;
+        padding: 0;
+    }
+</style>

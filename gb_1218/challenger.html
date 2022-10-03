@@ -1,0 +1,42 @@
+<script>
+
+     var $ = jQuery;
+     var targetErrors = targetErrors || [];
+     console.log('OT-1218 - Challenger');
+     //Click 'Select' on first result (Which is automatically the closest dealer)
+
+     var theInterval = setInterval(selectDealer,250);
+          function selectDealer(){
+          if (window.location.href.indexOf('shop/price-and-locate/bp/preferred-dealer') > 0) {
+               if ($('button[data-automation="dealer-summary-action-button"]').length > 0) {
+
+                    console.log('Firing Impression');
+                    window.targetCampaign = window.targetCampaign || {
+                         page: {
+                              campaignName: "tt:nwp:opt-1218:ab:ecom:deafault-dealer-mess:var-b"
+                         }
+                    }
+                    _satellite.track("genericTestingImpressionIDWorkaround");
+                    console.log('Done Firing Impression');
+
+                    $('button[data-automation="dealer-summary-action-button"]').first().trigger('click');
+
+                    //Change text on the second 'back' button
+                    //From 'Back' to 'Choose My Own Dealer'
+
+                    $('button[data-automation="back-to-results-button"]').text('< Choose My Own Dealer');
+
+                    clearInterval(theInterval);
+
+               }
+          }
+     }
+
+</script>
+<style>
+     button[data-automation="back-to-results-button"]{
+          font-size: 16px !important;
+          font-family: FordAntennaRegular !important;
+          font-weight: 400 !important;
+     }
+</style>

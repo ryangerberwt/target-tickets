@@ -1,0 +1,108 @@
+<script>
+var billboard_paragraph = null;
+var str = '';
+var storedData_1352
+var promo_pages;
+var promo_list;
+
+    $(document).ready(function () {
+        console.log("OT-1352");
+        setTimeout(function () {
+
+
+            storedData_1352 = {
+                carName: "${profile.carName}",
+                subName: "${profile.subName}",
+                vehicleType: "${profile.vehicleType}",
+                promo: getPromo(),
+            }
+
+            function getPromo() {
+             if (localStorage.getItem("promo") != undefined && localStorage.getItem("promo") != null && localStorage.getItem("promo") != '') {
+                 return JSON.parse(localStorage.getItem("promo"))
+ 
+             }
+             return '';
+         }
+
+            console.log("storedData_1352");
+            console.dir(storedData_1352)
+             promo_pages = {
+                Puma: "https://www.ford.fr/voitures-neuves/puma/promotions/offres-vehicules-particuliers",
+                Kuga: "https://www.ford.fr/voitures-neuves/kuga-promotions/promotions/offres-vehicules-particuliers",
+                Mustang: "https://www.ford.fr/voitures-neuves/mustang-promotions/promotions/offres-vehicules-particuliers",
+                Fiesta: "https://www.ford.fr/voitures-neuves/fiesta/promotions/offres-vehicules-particuliers",
+                "Tourneo Courier": "https://www.ford.fr/voitures-neuves/tourneo-courier/promotions/offres-vehicules-particuliers",
+                EcoSport: "https://www.ford.fr/voitures-neuves/ecosport/promotions/offres-vehicules-particuliers",
+                Focus: "https://www.ford.fr/voitures-neuves/focus/promotions/offres-vehicules-particuliers",
+                "Tourneo Connect": "https://www.ford.fr/voitures-neuves/tourneo-connect/promotions/offres-vehicules-particuliers",
+                Mondeo: "https://www.ford.fr/voitures-neuves/mondeo/promotions/offres-vehicules-particuliers",
+                "S-Max": "https://www.ford.fr/voitures-neuves/s-max/promotions/offres-vehicules-particuliers",
+                Galaxy: "https://www.ford.fr/voitures-neuves/galaxy/promotions/offres-vehicules-particuliers",
+                Explorer: "https://www.ford.fr/voitures-neuves/nouveau-explorer/promotions/offres-vehicules-particuliers",
+                "Tourneo Custom": "https://www.ford.fr/voitures-neuves/tourneo-custom/promotions/offres-vehicules-professionnels",
+                Ranger: "https://www.ford.fr/utilitaires-et-pick-up/ranger/promotions/offres-vehicules-particuliers",
+                Raptor: "https://www.ford.fr/utilitaires-et-pick-up/ranger-raptor/promotions/offres-vehicules-particuliers",
+                "Transit Courier": "https://www.ford.fr/utilitaires-et-pick-up/transit-courier/promotions/offres-vehicules-particuliers",
+                "Transit Connect": "https://www.ford.fr/utilitaires-et-pick-up/transit-connect/promotions/offres-vehicules-particuliers",
+                "Transit Custom": "https://www.ford.fr/utilitaires-et-pick-up/transit-custom/promotions/offres-vehicules-particuliers",
+                "Transit": "https://www.ford.fr/utilitaires-et-pick-up/transit/promotions/offres-vehicules-particuliers",
+                "Transit Minicar": "https://www.ford.fr/utilitaires-et-pick-up/transit-minicar/offres/offres-vehicules-particuliers",
+                "Transit Chassis Cabine": "https://www.ford.fr/utilitaires-et-pick-up/transit-chassis-cab/promotions/offres-vehicules-particuliers",
+            }
+
+
+            function getLink(storedData) {
+                 promo_list = [];
+                if (storedData.vehicleType == "PV1352" || storedData.vehicleType == "CV1352") {
+                    let promo_list = storedData.promo;
+                    for (let i = 0; i < promo_list.length; i++) {
+                        for (let val in promo_list[i]) {
+                            if (storedData.carName.toLowerCase().includes(promo_list[i].analyticsNameplateName.toLowerCase())) {
+                                for (let prop in promo_pages) {
+                                    if (storedData.carName.toLowerCase().includes(prop.toLowerCase())) {
+                                        str = promo_pages[prop];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            getLink(storedData_1352);
+
+
+            let x = setInterval(function () {
+            //console.log('waiting')
+            //console.dir(str);
+                if (storedData_1352.carName != '' && str != '') {
+                    console.log('found something')
+                    if(
+                        $('.billboard-paragraph>div>div.richtext.section>.richtext.initialized.initialized-ctaButton>div.regular.rt-white.richtext-inner>h4>strong') !== undefined 
+                    &&  $('.billboard-paragraph>div>div.richtext.section>.richtext.initialized.initialized-ctaButton>div.regular.rt-white.richtext-inner>h4>strong').length > 0
+                    &&  $('.billboard-paragraph>div>div.richtext.section>.richtext.initialized.initialized-ctaButton>div.regular.rt-white.richtext-inner>p>a') !== undefined 
+                    &&  $('.billboard-paragraph>div>div.richtext.section>.richtext.initialized.initialized-ctaButton>div.regular.rt-white.richtext-inner>p>a').length > 0
+                    ){
+                        $('.billboard-paragraph>div>div.richtext.section>.richtext.initialized.initialized-ctaButton>div.regular.rt-white.richtext-inner>h4>strong').html('<br> Profitez de nos offres ' + storedData_1352.carName + ' du moment')
+                        $('.billboard-paragraph>div>div.richtext.section>.richtext.initialized.initialized-ctaButton>div.regular.rt-white.richtext-inner>p>a').attr('href',str);
+                        $('.billboard-link-layer.initialized.initialized-contextualLinks[data-cta-name="view promotions"][href="/achat/poursuivre-lexperience/promotions"]').attr('href',str);
+                        clearInterval(x);
+                    }
+                       
+                    
+                } else {
+                    console.log('nothing found')
+                    clearInterval(x);
+                }
+            }, 250)        
+            
+
+
+
+        }, 1000)
+
+
+    })
+
+</script>

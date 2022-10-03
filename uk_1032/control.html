@@ -1,0 +1,28 @@
+<script>
+    $(document).ready(function () {
+
+        $('a.billboard-link-layer').on('click', function (e) {
+            e.preventDefault;
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: 'tt:nwp:opt-1032:ab:hp:hpr-cv:control'
+                }
+            }
+            let redir = $(this).href;
+            console.log(redir);
+            _satellite.track('genericTestingImpressionIDWorkaround')
+            let redirect = setTimeout(doRedirect($(this).href),500);
+
+        });
+
+
+        function doRedirect(linkRedir){
+            debugger;
+            window.location.href = linkRedir;
+        }
+
+
+    });
+
+
+</script>

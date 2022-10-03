@@ -1,0 +1,356 @@
+<script>
+    console.log('OT-1022');
+
+
+    var popupData_1022 = {
+        popup_last_closed: Number("${profile.es.popup_last_closed}"),
+        popup_display_count: Number("${profile.es.popup_display_count}"),
+        osbpopup_abondoned: ('true' == "${profile.osbpopup.abondoned}")
+    };
+    console.log(popupData_1022);
+
+    $(function () {
+
+        var arr = window.location.href.split('/');
+        console.log("split url : ", arr);
+        if (arr[3] == 'clientes') {
+
+            var url = window.location.href;
+            var popupId = "js-popup-pumanext-1022";
+
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1022:xt:osb:osb-abandon-popup",
+                },
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+
+            function updatePopupData(popup_last_closed, popup_display_count) {
+                adobe.target.getOffer({
+                    'mbox': 'global-mbox',
+                    'params': {
+                        'profile.es.popup_last_closed': popup_last_closed,
+                        'profile.es.popup_display_count': popup_display_count
+                    },
+                    'success': function (offer) {
+                        adobe.target.applyOffer({
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function (status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+            }
+
+            var Popup = {};
+            Popup.isPopupOpen = false;
+            Popup.showPopupAfter = 900; // IN SECONDS - 900 SECONDS WHICH IS 15 MINUTES
+            Popup.openThreshold = 2; // LIMIT THE AMOUNT OF TIMES THE POPUP OPENS
+            Popup.currentTimeStamp = Math.floor(Date.now() / 1000);
+            Popup.setLastClosed = function () {
+                Popup.setKeyValue("popup_last_closed", Math.floor(Date.now() / 1000));
+            };
+            Popup.determineIfPopupShows = function () {
+
+                var popupCookie = popupData_1022;
+                var timeBool = false;
+                var limitBool = false;
+
+                // -------------------------------------------------------
+                // DETERMINE IF 15 DAYS HAS PASSED SINCE LAST POPUP CLOSED
+                // -------------------------------------------------------
+                var lastClosed_minutes = Math.floor(popupCookie.popup_last_closed / 60);
+                var current_minutes = Math.floor(Popup.currentTimeStamp / 60);
+                var minuteDifference = current_minutes - lastClosed_minutes;
+                if (minuteDifference >= 21600) {
+                    popupData_1022.popup_last_closed = 0;
+                    popupData_1022.popup_display_count = 1;
+                    updatePopupData(popupData_1022.popup_last_closed, popupData_1022.popup_display_count);
+                    return true; // In order for popup to appear
+                }
+
+                // ---------------------------------------------
+                // DETERMINE IF 15 MINUTE TIME LIMIT HAS EXPIRED
+                // ---------------------------------------------
+                var timeDifference = Popup.currentTimeStamp - popupCookie.popup_last_closed;
+
+                if (timeDifference > Popup.showPopupAfter) {
+                    timeBool = true;
+                } else {
+                    console.log("SHOW AFTER FAILED");
+                    console.log("TIME DIFFERENCE: " + timeDifference + "/" + Popup.showPopupAfter);
+                }
+
+                // ---------------------------------------------
+                // LIMIT OPEN THRESHOLD
+                // ---------------------------------------------
+                if (popupCookie.popup_display_count <= Popup.openThreshold && timeBool === true) {
+
+                    if (popupCookie.popup_last_closed != null) {
+                        // INCREASE OPEN COUNTER BY 1
+                        Popup.setKeyValue("popup_display_count", ++popupCookie.popup_display_count);
+                        Popup.setLastClosed();
+                    }
+
+                    limitBool = true;
+                }
+                console.log("TIMEBOOL : " + timeBool);
+                console.log("LIMITBOOL: " + limitBool);
+
+                return (timeBool && limitBool);
+            };
+
+            Popup.setKeyValue = function (key, value) {
+
+                popupData_1022[key] = value;
+
+                updatePopupData(popupData_1022.popup_last_closed, popupData_1022.popup_display_count)
+            };
+
+
+            // create popup function
+
+            function createPopup() {
+
+                var translations = {
+                    mainHeading: "TU SOLICITUD DE CITA PREVIA <br> SIGUE ESPERÁNDOTE.<br> ¿LA HACEMOS AHORA?",
+                    primaryCta: "Pide tu cita",
+                    offer: "",
+                    date: "",
+                    subHeading: "Es rápido y 100% online",
+                    primaryCtaUrl: "/clientes/mi-vehiculo/pide-tu-cita#/vehicle-step ",
+                    disclaimer: "",
+                };
+
+                // Get image of configured Puma (exists on page)
+                var carImageUrl =
+                    "/content/dam/guxeu/rhd/central/sandbox/training/billboard/ford-pop_up_banner-eu-GettyImages-3x2-1800x1201-bb-man-with-a-labtop-on-a-sofa.jpg";
+
+                // Build the popup
+                var popupShell = $(
+                    '<div class="popup-overlay-1022" id="' +
+                    popupId +
+                    '"><div class="popup-dialog-1022"><div class="popup-header-1022"><button class="popup-close-1022">&times;</button></div><div class="popup-body-1022"><img src="' +
+                    carImageUrl +
+                    '" /><h1 class="heading-medium-1022">' +
+                    translations.mainHeading +
+                    ' </h1><h2 class="heading-small-1022">' + translations.subHeading +
+                    '</h2><a href="' +
+                    translations.primaryCtaUrl +
+                    '" class="popup-btn-1022" id="js-popup-testdrive">' +
+                    translations.primaryCta +
+                    "</a><div class='m-small-1022'>" +
+                    translations.disclaimer +
+                    '</div></div><div style="clear:both;"></div></div></div>'
+                );
+                $("body").append(popupShell);
+
+                setTimeout(() => {
+                    openPopup(popupId);
+                }, 4000);
+
+            }
+
+            //end of createPopup function
+
+            function openPopup(popupId) {
+
+                Scroll = (function () {
+                    var x, y;
+
+                    function hndlr() {
+                        window.scrollTo(x, y);
+                        //return;
+                    }
+                    return {
+                        disable: function (x1, y1) {
+                            x = x1;
+                            y = y1;
+                            if (window.addEventListener) {
+                                window.addEventListener("scroll", hndlr);
+                            } else {
+                                window.attachEvent("onscroll", hndlr);
+                            }
+                        },
+                        enable: function () {
+                            if (window.removeEventListener) {
+                                window.removeEventListener("scroll", hndlr);
+                            } else {
+                                window.detachEvent("onscroll", hndlr);
+                            }
+                        },
+                    };
+                })();
+                Scroll.disable(0, document.body.scrollTop);
+                document.getElementById(popupId).classList.add("active");
+                document
+                    .querySelector(".popup-close-1022")
+                    .addEventListener("click", function () {
+                        document.getElementById(popupId).classList.remove("active");
+
+                        Scroll.enable();
+                    });
+
+            }
+
+            function closePopup(popupId) {
+                document.getElementById(popupId).classList.remove("active");
+            }
+
+            function displaypopup() {
+                setTimeout(() => {
+                    if (!popupData_1022) {
+                        updatePopupData(0, 1);
+                        Popup.setLastClosed();
+                        console.log("Trigger Popup first time");
+
+                        createPopup();
+
+                    } else if (Popup.determineIfPopupShows()) {
+                        console.log("Trigger Popup second time");
+                        createPopup();
+
+                    }
+                }, 2000)
+            }
+
+            displaypopup();
+        }
+        else {
+            console.log("do not execute code this is not the right place");
+        }
+    });
+</script>
+
+<style>
+    .popup-overlay-1022 {
+        position: fixed;
+        top: -100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay-1022.active {
+        top: 0;
+        opacity: 1;
+    }
+
+    .popup-dialog-1022 {
+        position: absolute;
+        height: auto;
+        width: 320px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        background-color: white;
+    }
+
+    @media screen and (min-width: 768px) {
+        .popup-dialog-1022 {
+            height: auto;
+            width: 500px;
+        }
+    }
+
+    .popup-header-1022 {
+        width: 100%;
+        text-align: right;
+    }
+
+    .popup-close-1022 {
+        appearance: none;
+        border: none;
+        box-shadow: none;
+        font-size: 50px;
+        line-height: 30px;
+        padding: 0;
+        color: #102a4d;
+        background-color: transparent;
+        margin: 8px 0 0 0;
+        font-weight: 200;
+    }
+
+    .popup-body-1022 {
+        width: 100%;
+        text-align: center;
+    }
+
+    .popup-body-1022 h1,
+    .popup-body-1022 h2,
+    .popup-body-1022 p {
+        padding: 0 20px;
+    }
+
+    .popup-body-1022 img {
+        display: block;
+        width: 100%;
+        padding-bottom: 20px;
+    }
+
+    .popup-body-1022 h1 {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.6rem;
+        font-weight: bold;
+    }
+
+    .popup-btn-1022 {
+        display: block;
+        padding: 8px 20px;
+        background-color: #102a4d;
+        text-decoration: none;
+        color: white;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px,
+            rgba(0, 0, 0, 0.1) 0px 20px 20px 0px;
+        border-radius: 20px;
+        font-size: 1.125rem;
+        cursor: pointer;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px auto;
+        max-width: 180px;
+        margin-top: 30px;
+    }
+
+    .popup-btn-1022:hover {
+        color: white;
+    }
+
+    .heading-small-1022 {
+        font-size: 1.0rem;
+        margin-bottom: 0.2rem;
+        color: black;
+        margin-top: 21px;
+        margin-bottom: -10px;
+    }
+
+    .heading-medium-1022 {
+        font-size: 1.2rem !important;
+    }
+
+    .m-small-1022 {
+        padding: 20px;
+        font-size: 0.8rem;
+    }
+
+    .voucher-code-1022 {
+        font-family: FordAntennaCondLight, Arial, Helvetica, sans-serif;
+        color: rgb(77, 77, 77);
+        line-height: 1.15;
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 0;
+        padding: 0;
+    }
+</style>

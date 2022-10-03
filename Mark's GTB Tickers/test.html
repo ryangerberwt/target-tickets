@@ -1,0 +1,22 @@
+function getMachIDs() {
+    var id = 'WAENX-CGW-2021-CX727BEVSUVNOR202100';
+    var code, features = "";
+
+    var parsedCurrentHash = parseRegNoCatalogIDExp.exec(location.hash);
+
+    if (parsedCurrentHash == null) {
+        return {id, code, features};
+    } 
+    
+    var tempList = parsedCurrentHash[0].split('&');
+
+    for (var i = 0; i < tempList.length; i++) {
+        var key_value = tempList[i].split('=');
+        if (key_value[0].includes('series')) {
+            code = key_value[1];
+        } else {
+            features += features == "" ? key_value[1] : "," + key_value[1];
+        }
+    }
+    return {id, code, features};
+}

@@ -1,0 +1,36 @@
+<script>
+    var $ = jQuery;
+    console.log('1435 - CONTROL TDR');
+
+    $(document).ready(function () {
+        setTimeout(function () {
+            //Fire impression ID
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1435:ab:tdr:mandatoryfields:control'
+                }
+            }
+            _satellite.track('');
+
+        }, 150);
+
+        setTimeout(function(){
+            setOnClick();
+        },350);
+
+    });
+
+
+    function setOnClick() {
+            $(document).on('click', function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+            });
+        }
+
+
+
+</script>

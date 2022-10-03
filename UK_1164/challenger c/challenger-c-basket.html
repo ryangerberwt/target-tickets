@@ -1,0 +1,66 @@
+<script>
+
+    var $ = jQuery;
+    var ctaLbl = "Complete Purchase";
+    var impressionID = 'tt:nwp:opt-1164:ab:bp:checkout-cta:var-c';
+    var sendImpression = true;
+
+    $('body').on('click', function () {
+        console.log('clicked doc sned impression ' + sendImpression);
+        if (window.targetCampaign !== undefined) {
+            console.log('setting target var');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            _satellite.track("");
+        }
+    });
+/*
+    $(document).on('keyup', function () {
+
+        console.log('in keyp');
+        if (window.targetCampaign !== undefined) {
+            console.log('setting target var');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            _satellite.track("");
+        }
+
+    });*/
+
+
+    $(document).ready(function () {
+        console.log('1164 - Challenger C')
+        let waitForElement = setInterval(function () {
+            if ($('.padlock-icon-button-text>div.button-text') != undefined
+                && $('.padlock-icon-button-text>div.button-text') !== null
+                && $('.padlock-icon-button-text>div.button-text').length > 0) {
+                $('.padlock-icon-button-text>div.button-text').text(ctaLbl);
+                console.log('element found');
+                clearInterval(waitForElement);
+                let waitForImpression = setTimeout(fireImpression, 1500, function () {
+                    console.log('in callback');
+                    $('body').click();
+                });
+            } else {
+                console.log('waiting for element')
+            }
+        }, 500)
+
+        function fireImpression() {
+            console.log('firing impression')
+            window.targetCampaign = {
+                page: {
+                    campaignName: impressionID
+                }
+            }
+            sendImpression = false;
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        }
+    });
+</script>

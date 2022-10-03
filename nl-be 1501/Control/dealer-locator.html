@@ -1,0 +1,38 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1478 : Control');
+
+    $(document).ready(function () {
+        if (window.location.href.indexOf("nl.ford.be/verdelers") > 0) {
+            setTimeout(fireImpressionId(), 250);
+            setTimeout(function () {
+                $(document).on('click', blockImpressionId());
+            }, 500);
+
+        }
+    });
+
+    function fireImpressionId() {
+        targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1478:ab:lad:dealer-filters:control"
+            }
+        };
+        _satellite.track("genericTestingImpressionIDWorkaround");
+        console.log('Fired Impression ID');
+
+    }
+
+
+
+    function blockImpressionId() {
+        targetCampaign = {
+            page: {
+                campaignName: ""
+            }
+        };
+        _satellite.track("");
+        console.log('Blocked Impression ID');
+    }
+</script>

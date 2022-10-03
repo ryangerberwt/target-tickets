@@ -1,0 +1,53 @@
+<script>
+    var $;
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                // You can place the rest of your script(s) here
+            }
+        }, 500);
+    }
+
+    function run(){
+        setTimeout(fireImpressionId(),500);
+        setOnClick();
+        $('body').click();
+    }
+
+
+    function fireImpressionId() {
+        console.log('firing impression id');
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1585:ab:chk:remove-padlock:control",
+            },
+        };
+     
+        _satellite.track("genericTestingImpressionIDWorkaround");
+     
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            console.log('firing impression on event listener')
+            _satellite.track('');
+     
+        });
+    }
+
+</script>
+
+<style>
+    /* Hide the Padlock */
+</style>

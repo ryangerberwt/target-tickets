@@ -1,0 +1,46 @@
+<script>
+    var $ = jQuery;
+    console.log('OT-1433');
+    console.log('Control');
+    var impressionID = 'tt:nwp:opt-1433:ab:tdr:with-livechat:control';
+    var sendImpression = true;
+
+
+    $(document).on('click',function (e) {
+                console.log('Clicked the');
+                console.dir(e.target);
+            })
+
+
+
+
+    $(document).ready(function () {
+        if (window.location.href.indexOf('/achat/poursuivre-lexperience/demande-d-essai') > 0) {
+            console.log('Loaded');
+            function fireImpression() {
+                console.log('firing impression ID');
+                window.targetCampaign = {
+                    page: {
+                        campaignName: impressionID
+                    }
+                }
+                sendImpression = false;
+                _satellite.track("");
+            }
+
+            console.log('1433 - Control');
+            fireImpression();
+
+            let tOut = setTimeout(function () {
+                if (window.targetCampaign !== undefined) {
+                    try {;
+                        window.targetCampaign.page.campaignName = "";
+                        _satellite.track("genericTestingImpressionIDWorkaround");
+                    } catch (ex) {
+                        console.error(ex);
+                    }
+                }
+            },1500);
+        }
+    });
+</script>

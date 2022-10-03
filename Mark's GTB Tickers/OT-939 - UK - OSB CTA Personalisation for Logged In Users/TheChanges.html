@@ -1,0 +1,61 @@
+<script>
+    console.log("OT-939");
+    
+    $(document).ready(function() {
+
+        var storedData = {
+            market: "${profile.market}",
+            greetings: "${profile.greetings}"
+        };
+
+        function getCookie () {
+            var cookie = " " + document.cookie;
+            var search = " " + 'opus_auth' + "=";
+            var setStr = null;
+            var offset = 0;
+            var end = 0;
+            if (cookie.length > 0) {
+                offset = cookie.indexOf(search);
+                if (offset != -1) {
+                    offset += search.length;
+                    end = cookie.indexOf(";", offset)
+                    if (end == -1) {
+                        end = cookie.length;
+                    }
+                    setStr = unescape(cookie.substring(offset, end));
+                }
+            }
+            return (setStr);
+        };
+
+        $(window).on('hashchange', checkPage);
+        checkPage();
+
+        function checkPage() {
+            if (/vehicle-step/i.test(window.location.href)) {
+                stepOneChanges()
+            }
+        }
+
+        function stepOneChanges() {
+            if ($('.osb-welcome-box span').length > 0) {
+                if (getCookie() == "true") {
+                    // User is logged in
+                    var welcome = "Welcome";
+                    if (storedData.market == "UK" && storedData.greetings.length > 0)
+                        welcome = storedData.greetings;
+                    
+                    $('.osb-welcome-box span')[0].innerHTML = "<h4>" + welcome + "</h4> Simply enter your vehicle details below and select from a number of our new digital, contactless and secure Ford service options.";
+                } else {
+                    // User not logged in
+                    $('.osb-welcome-box span')[0].innerHTML = "Booking's easier with <a class='link-blue-and-bold' href='/dashboard'>Ford Account. Log in or register now</a> to access all your vehicle's online features.";
+                }
+            }
+        }
+
+        function stepSevenChanges() {
+
+        }
+
+    });
+</script>

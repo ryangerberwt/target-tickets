@@ -1,0 +1,35 @@
+<script>
+    console.log('OT-1634 Challenger')
+    var selector = '.vehicle-build-price-link.cta-secondary-chevron-right.ng-scope';
+    var ngcLink = 'https://www.ford.co.uk/shop/buy-online/build-your-own/ngc1/'; //This WILL change later
+    var allLinks;
+    var $;
+    window.onload = function () {
+ 
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                setTimeout(function(){
+                    console.log('waiting for controls');
+                    allLinks = document.querySelectorAll(selector);
+                    console.log('All BnP Links');
+                    $.each(allLinks,function(i,v){
+                        console.dir(v);
+
+                        //extract the hash
+                        let theHash = v.hash;
+                        if(theHash !== undefined && theHash !== '' && theHash !== null){
+                            v.href = ngcLink + theHash;
+                            console.log('New link is ' + v.href);
+                        }
+
+                    });
+                },1000);
+            }
+        }, 500);
+    }
+
+</script>

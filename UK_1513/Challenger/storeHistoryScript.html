@@ -1,0 +1,20 @@
+<script>
+    //The job of this script is to set
+    //A cookie value which can be used to 
+    //If we came back from the dealer locator / cart page
+    var $ = jQuery;
+
+    $(document).ready(function(){        
+        console.log('OT-1513 | StoreHistory Script');
+        debugger;
+        setTimeout(function(){
+            if(localStorage.getItem('cartOrLocatorVisited') === null || localStorage.getItem('cartOrLocatorVisited')  === '' ){
+                localStorage.setItem('cartOrLocatorVisited','true');
+        }
+        },500)
+       
+    });
+
+
+
+</script>

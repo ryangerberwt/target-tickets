@@ -1,0 +1,13 @@
+<script>
+    $(document).ready(function() {
+        if (window.innerWidth <= 767) {
+            window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: "tt:nwp:opt-1165:ab:tdr:mob-auto-progress:control"
+                }
+            };
+
+            _satellite.track("genericTestingImpressionIDWorkaround");
+        } 
+    });
+</script>

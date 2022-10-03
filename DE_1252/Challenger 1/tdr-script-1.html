@@ -1,0 +1,49 @@
+<script>
+    jQuery(document).ready(function () {
+
+        console.log("overLay wizard open")
+
+        jQuery('<div style="display:none;"  id="tdr-1252" />').appendTo("body");
+        jQuery('#tdr-1252').load('https://www.ford.de/kaufberatung/informieren/probefahrt-vereinbaren-var-a');
+        async function waitForElm(selector) {
+            return new Promise(resolve => {
+                if (document.querySelector(selector)) {
+                    return resolve(document.querySelector(selector));
+                }
+                const observer = new MutationObserver(mutations => {
+                    if (document.querySelector(selector)) {
+                        resolve(document.querySelector(selector));
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            });
+        }
+
+        setTimeout(function () {
+            waitForElm(".content#gux3").then(result => {
+                console.log("results >> ", result);
+                var ch = result;
+                // var ch = document.querySelector("div[data-ng-controller='wizardController as wizardCtrl']");
+                var rep = document.querySelector("#tdr-1252 .content#gux3");
+                console.log("rep >> ", rep);
+
+                console.log("ch >> ", ch)
+                ch.replaceWith(rep);
+
+
+
+
+
+            });
+        }, 1500)
+
+
+
+    })
+
+
+</script>

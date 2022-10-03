@@ -1,0 +1,33 @@
+<script>
+    var $ = jQuery;
+    var preventFire = false;
+    console.log('OT-1325 Control');
+    window.onload = function () {
+        if (window.location.href.indexOf('ford.co.uk/shop/research/request-a-contact') > 0) {
+            console.log('On Request Contact Page')
+            $(function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: 'tt:nwp:opt-1325:ab:lad:search-input:control'
+                    }
+                }
+                console.log('firing impression')
+                _satellite.track('genericTestingImpressionIDWorkaround');
+            });
+
+            setTimeout(function () {
+
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+                _satellite.track('');
+                console.log('done firing -- second pass');
+            }, 250)
+        } else {
+            console.log('impression has fired... skipping...')
+        }
+
+    }
+</script>

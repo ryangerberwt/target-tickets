@@ -1,0 +1,37 @@
+<!-- B - Brochure Requested -->
+<script>
+    $(window).on('hashchange', function(e) {
+        if (window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-puma") > 0 ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-kuga") > 0 ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/explorer") > 0 ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-mondeo") > 0 ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/tourneo-custom") > 0) {
+
+                console.log("OT-867 - B - Brochure Requested");
+
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.hpr.range.personalisation.market" : "BE-NL",
+                        "profile.hpr.range.personalisation.action" : "Brochure Requested",
+                        "profile.hpr.range.personalisation.triggerHomePage" : true,
+                        "profile.hpr.range.personalisation.imageToShow" : "Hybrid & Electric",
+                        "profile.hpr.range.personalisation.visibleUntil" : d,
+                        "profile.hpr.range.personalisation.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+        }
+    });
+</script>

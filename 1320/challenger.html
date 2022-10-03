@@ -1,0 +1,194 @@
+<script>
+    var $ = jQuery;
+  console.log("new trigger rules ")
+  $(document).ready(function(){
+  
+      console.log("OT-1320");
+  var mobility_element = null;
+  var book_service_href = "";
+  var quick_links_href = "";
+  var startTime = "";
+  var quick_links_element = null;
+  
+  if(screen.width < 480){
+  var changed = false;
+  var icon = null;
+  var icon = document.querySelector(".toggle-nav-content.hamburger-icon");
+  if(icon !=null){
+  
+    icon.addEventListener("click",function(){
+    
+      if(changed == false){
+        
+        setTimeout(function(){
+        var mobile_list = document.querySelector(".extra-nav");
+        //console.log(mobile_list)
+        
+        var list_item = mobile_list.querySelectorAll("li span");
+        //console.log("list items",list_item);
+  
+        [...list_item].forEach(el=>{
+          
+        
+          if(el.innerHTML.includes("Motability")){
+            
+            el.innerHTML = "Book a Service";
+            el.closest("a").href = "/owner/my-vehicle/book-a-service";
+  
+            el.addEventListener("click",function(){
+  
+              alert("Book a Service clicked")
+              window.targetCampaign = window.targetCampaign || {
+            page: {
+                campaignName: 'tt:nwp:opt-1320:ab:nav:osb-motability:challenger'
+            }
+          }
+  
+          _satellite.track('genericTestingImpressionIDWorkaround');
+            })
+  
+  
+  
+            
+  
+          
+          }else if(el.innerHTML.includes("Book a Service")){
+  
+          
+  
+            el.innerHTML = "Motability";
+            el.closest("a").href = "/shop/price-and-locate/motability";
+            
+            el.addEventListener("click",function(){
+              alert("motability clicked");
+  
+              window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: 'tt:nwp:opt-1320:ab:nav:osb-motability:challenger'
+                }
+              }
+  
+              _satellite.track('genericTestingImpressionIDWorkaround');
+  
+            })
+  
+  
+          }
+        })
+        changed = true;
+  
+      },200)
+      }
+    })
+  }
+   
+  }
+  
+  function lookUp() {
+  startTime = setInterval(function () {
+    mobility_element = document.querySelector(
+      ".extra-nav-links li a[href='/shop/price-and-locate/motability']"
+    );
+   
+    quick_links_element = document.querySelectorAll(
+      ".extra-nav-links li a span"
+    );
+  
+    
+  }, 50);
+  setTimeout(() => {
+    modifyLinks("Book a Service", "Motability");
+    // clearInterval(startTime);
+    
+  }, 1000);
+  }
+  
+  function modifyLinks(text1, text2) {
+  if (
+    mobility_element != null &&
+    mobility_element.innerText.includes("Motability")
+  ) {
+    mobility_element.innerHTML = text1;
+    mobility_element.href = "/owner/my-vehicle/book-a-service";
+    mobility_element.addEventListener("click",function(){
+  
+      
+  
+      $(function(){
+  
+  window.targetCampaign = window.targetCampaign || {
+   page: {
+       campaignName: 'tt:nwp:opt-1320:ab:nav:osb-motability:challenger'
+   }
+  }
+  
+  _satellite.track('genericTestingImpressionIDWorkaround');
+  
+  });
+  
+    })
+    
+  }
+  }
+  
+  function modifyQuicklinks(text1, text2) {
+  if (quick_links_element != null) {
+   
+      for (let i = 0; i < quick_links_element.length; i++) {
+        if (quick_links_element[i].innerText.includes("Quick Links")) {
+              console.log(quick_links_element[i])
+          quick_links_element[i].addEventListener("click", function () {
+            setTimeout(function () {
+              var d =
+                quick_links_element[i].closest("a").parentElement.children[1]
+                  .children[0].children;
+              //quick_links_href = quick_links_element[i].children[0].href;
+              
+          
+  
+              for (let j = 0; j < d.length; j++) {
+                if (d[j].innerText.includes(text1)) {
+                  var x = d[j].querySelector("span");
+                      var z = d[j].children[0].href; 
+                      d[j].children[0].href = "/shop/price-and-locate/motability";   
+                      d[j].children[0].addEventListener("click",function(){
+                        $(function(){
+  
+                          
+  
+                            window.targetCampaign = window.targetCampaign || {
+                              page: {
+                                  campaignName: 'tt:nwp:opt-1320:ab:nav:osb-motability:challenger'
+                              }
+                            }
+  
+                            _satellite.track('genericTestingImpressionIDWorkaround');
+  
+                          });
+                      })
+                     // mobility_element.href = z;
+                      
+                  x.innerHTML = text2;
+                }
+              }
+            }, 50);
+          });
+        }
+      }
+    
+  }
+  }
+  
+  lookUp();
+  setTimeout(function () {
+  if (mobility_element != null || quick_links_element != null) {
+    clearInterval(startTime);
+    modifyQuicklinks("Book a Service","Motability")
+  
+  }
+  }, 250);
+  
+  
+  })
+  
+  </script>

@@ -1,0 +1,146 @@
+<script>
+    $(document).ready(function () {
+        var str = '';
+        var promo_list;
+        setTimeout(function () {
+            var billboard_paragraph = null;
+
+
+            var storedData_1360 = {
+                carName: "${profile.carName}",
+                subName: "${profile.subName}",
+                vehicleType: "${profile.vehicleType}",
+                promo: getPromo()
+            }
+
+            function getPromo() {
+                if (localStorage.getItem("promo") != undefined && localStorage.getItem("promo") != null && localStorage.getItem("promo") != '') {
+                    return JSON.parse(localStorage.getItem("promo"))
+
+                }
+                return '';
+            }
+
+            console.log(storedData_1360.carName);
+
+            var promo_pages = {
+                //PROMOTIONAL PAGES - PV
+                Fiesta: "https://www.ford.pl/osobowe/fiesta/promocje/promocje",
+                Puma: "https://www.ford.pl/osobowe/puma/promocje-i-ceny/promocje",
+                Focus: "https://www.ford.pl/osobowe/focus/promocje/promocje",
+                "Tourneo Connect": "https://www.ford.pl/osobowe/nowy-tourneo-connect/promocje-i-ceny/promocje",
+                Kuga: "https://www.ford.pl/osobowe/kuga-promotions/promocje-i-ceny/promocje",
+                Mondeo: "https://www.ford.pl/osobowe/mondeo/promocje-i-ceny/promocje",
+                Galaxy: "https://www.ford.pl/osobowe/galaxy/promocje-i-ceny/promocje",
+                "Tourneo Custom": "https://www.ford.pl/osobowe/nowy-tourneo-custom/promocje-i-ceny/promocje",
+                "Tourneo Connect": "https://www.ford.pl/osobowe/nowy-tourneo-connect/promocje-i-ceny/promocje",
+                "S-Max": "https://www.ford.pl/osobowe/s-max/promocje/promocje",
+                "Ecosport": "https://www.ford.pl/osobowe/ecosport/promocje-i-ceny/promocje",
+                Mustang: "https://www.ford.pl/osobowe/mustang/promocje-i-ceny/promocje",
+
+                //PROMOTIONAL PAGES - CV
+                "Fiesta Van": "https://www.ford.pl/oferta/dopasuj/promocje/dostawcze",
+                "Transit Courier": "https://www.ford.pl/dostawcze/transit-courier/promocje-i-ceny/oferty-dla-firm",
+                "Transit Connect": "https://www.ford.pl/dostawcze/nowy-transit-connect/promocje-i-ceny/oferty-dla-firm",
+                "Transit Custom": "https://www.ford.pl/dostawcze/nowy-transit-custom/promocje-i-ceny/oferty-dla-firm",
+                "Transit Van": "https://www.ford.pl/dostawcze/transit/promocje-i-ceny/oferty-dla-firm",
+                "Transit Connect Double Cab": "https://www.ford.pl/dostawcze/nowy-transit-connect/promocje-i-ceny/oferty-dla-firm",
+                "Transit Custom Brigade": "https://www.ford.pl/dostawcze/nowy-transit-custom/promocje-i-ceny/oferty-dla-firm",
+                "Transit Double Cab": "https://www.ford.pl/dostawcze/transit/promocje-i-ceny/oferty-dla-firm",
+                "Transit Custom Kombi": "https://www.ford.pl/dostawcze/nowy-transit-custom/promocje-i-ceny/oferty-dla-firm",
+                "Transit Bus": "https://www.ford.pl/dostawcze/nowy-transit-autobus/promocje-i-ceny/oferty-dla-firm",
+                "Transit Chassis Single Cab": "https://www.ford.pl/dostawcze/transit-podwozia/promocje-i-ceny/oferty-dla-firm",
+                "Transit Chassis Double Cab": "https://www.ford.pl/dostawcze/transit-podwozia/promocje-i-ceny/oferty-dla-firm",
+                "Ford Transit Chassis Cab": "https://www.ford.pl/dostawcze/transit-podwozia/promocje-i-ceny/oferty-dla-firm",
+                Ranger: "https://www.ford.pl/dostawcze/ranger/promocje-i-ceny/oferty-dla-firm",
+                "Ranger Double Cab": "https://www.ford.pl/dostawcze/ranger/promocje-i-ceny/oferty-dla-firm",
+                "Ranger Raptor": "https://www.ford.pl/dostawcze/ranger-raptor/promocje-i-ceny/oferty-dla-firm",
+                "Custom Nugget": "https://www.ford.pl/dostawcze/nowy-transit-custom/promocje-i-ceny/oferty-dla-firm",
+                "Custom Nugget Plus": "https://www.ford.pl/dostawcze/nowy-transit-custom/promocje-i-ceny/oferty-dla-firm"
+
+            }
+            var ctaURL = promo_pages[JSON.stringify(storedData_1360.carName.replace("Ford", ""))];
+            console.log(ctaURL);
+
+            function getLink(storedData) {
+                console.log(storedData.vehicleType);
+                if (storedData.vehicleType == "PV" || storedData.vehicleType == "CV") {
+                    promo_list = storedData_1360.promo;
+                    if (promo_list != null) {
+                        for (let i = 0; i < promo_list.length; i++) {
+                            for (let val in promo_list[i]) {
+                                var vehicleName = promo_list[i].name.replace("NOWA", "");
+                                if (storedData.carName.toUpperCase().indexOf(vehicleName) > -1) {
+                                    for (let prop in promo_pages) {
+                                        if (storedData.carName.includes(prop)) {
+                                            str = promo_pages[prop];
+                                            console.log("LINK " + str);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            getLink(storedData_1360);
+
+            console.log("OT-1360");
+
+            /*async function waitForElm(selector) {
+                return new Promise(resolve => {
+
+                    if (document.querySelectorAll(selector)) {
+                        return resolve(document.querySelectorAll(selector));
+                    }
+
+                    const observer = new MutationObserver(mutations => {
+                        if (document.querySelectorAll(selector)) {
+                            resolve(document.querySelectorAll(selector));
+                            observer.disconnect();
+                        }
+                    });
+
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
+                });
+            }*/
+
+            /*waitForElm(".billboard-paragraph h2").then(result => {
+
+                if (storedData_1360.carName != '' && str != '') {
+
+                    billboard_paragraph = [...result].filter(el => el.innerText.includes("Aktualne promocje"));
+
+                    if (billboard_paragraph.length > 0) {
+
+                        billboard_paragraph[0].innerHTML = "Sprawdź najnowsze promocje " + storedData_1360.carName;
+
+                        let billboard_link = billboard_paragraph[0].parentElement.closest(".billboard-paragraph").nextElementSibling;
+                        billboard_link.href = str;
+
+                    }
+                }
+
+            })*/
+
+            let x = setInterval(function () {
+                if (storedData_1360.carName != '' && str != '') {
+                    if ($('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2') !== undefined && $('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2').length > 0) {
+                        $('div[data-analytics-content-sub-type="promotions banner"]').eq(0).children('h2').eq(0).text("Sprawdź najnowsze promocje " + storedData_1360.carName);
+                        $('.billboard-link-layer.at-element-click-tracking.initialized.initialized-contextualLinks').attr('href', str)
+                        //$('.cta-button.cta-button-primary.initialized.initialized-contextualLinks[data-cta-name="view promotions"]').attr('href',str)
+                        clearInterval(x);
+                    }
+                } else {
+                    clearInterval(x);
+                }
+            }, 250)
+
+        }, 1000)
+    })
+
+</script>

@@ -1,0 +1,464 @@
+<script>
+
+    console.log('OT-1667 | Challenger | RAC');
+
+    var enableLogs = true;
+    var _log = console.log;
+    var mbox_rac_complete = 'OT_1667_RAC';
+    var mbox_validation_errors = 'OT_1667_Validation_Errors';
+    var mbox_opt_ins = 'OT_1667_Opt_Ins';
+    var variant = 'challenger';
+    console.log = function (logMsg) {
+        if (enableLogs) {
+
+            _log.apply(console, arguments);
+        }
+    }
+    //Added because we sometimes use the console.dir function to display vars
+    var _dir = console.dir;
+    console.dir = function (dirMsg) {
+        if (enableLogs) {
+            _dir.apply(console, arguments);
+        }
+    }
+
+
+
+    function onFormSubmitOverride() {
+        jQuery('form[name="ngForm"]').on('submit', function () {
+            console.log('RAC is complete!');
+
+            //TODO: Check for optins
+
+            if ($('input[data-analytics-input-name="mobile permission"]').checked
+                || $('input[data-analytics-input-name="sms permission"]').checked
+                || $('input[data-analytics-input-name="email permission"]').checked
+                || $('button.cta-button.cta-button-tertiary.contact-permission-select-all-button').hasClass('isActive')) {
+                trackOptIns();
+            }
+            trackRacComplete();
+        });
+    }
+
+    function watchErrorMessages() {
+        waitForElm('.message-wrapper.ng-scope').then((elm) => {
+
+            console.log('error has occured!');
+            console.dir(elm);
+            trackValidationErrors();
+
+        });
+    }
+
+    function trackTargetEvent(params) {
+        console.log('tracking');
+        return adobe.target.trackEvent(params)
+    }
+
+    function trackRacComplete() {
+        trackTargetEvent({
+            'mbox': mbox_rac_complete,
+            'params': {
+                'submit': 'rac-form',
+                'variant': variant
+            }
+        })
+    }
+
+    function trackValidationErrors() {
+        trackTargetEvent({
+            'mbox': mbox_validation_errors,
+            'params': {
+                'errors': 'true',
+                'variant': variant
+            }
+        })
+    }
+
+    function trackOptIns() {
+        trackTargetEvent({
+            'mbox': mbox_opt_ins,
+            'params': {
+                'opt-in': 'true',
+                'variant': variant
+            }
+        })
+    }
+
+    function waitForElm(selector) {
+        return new Promise(resolve => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector));
+            }
+
+            const observer = new MutationObserver(mutations => {
+                console.log('selector : ' + selector);
+                if (document.querySelector(selector)) {
+                    console.log('resolving');
+                    resolve(document.querySelector(selector));
+                    observer.disconnect();
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    }
+
+    var str = `<div class="main-con" id="action_insert_16556484201962479">
+    <label class="container">
+    <p class="contact-permission-radio-wrapper-label">Telemóvel</p>
+    
+      <input type="checkbox">
+      <span class="checkmark"></span>
+    </label>
+    <label class="container">
+    <p class="contact-permission-radio-wrapper-label">SMS</p>
+    
+      <input type="checkbox">
+      <span class="checkmark"></span>
+    </label>
+    <label class="container">
+    <p class="contact-permission-radio-wrapper-label">Correio eletrónico</p>
+      <input type="checkbox">
+      <span class="checkmark"></span>
+    </label>
+    
+    </div>
+`
+
+    function detectmob() {
+        if (navigator.userAgent.match(/Android/i)
+            || navigator.userAgent.match(/webOS/i)
+            || navigator.userAgent.match(/iPhone/i)
+            || navigator.userAgent.match(/iPad/i)
+            || navigator.userAgent.match(/iPod/i)
+            || navigator.userAgent.match(/BlackBerry/i)
+            || navigator.userAgent.match(/Windows Phone/i)
+        ) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    function doChange(val) {
+        var call_to_action = "undefined";
+        var pos = "undefined";
+        let labels = [];
+        let chk = [];
+        let con = null;
+
+        let search = setInterval(function () {
+            console.log("serching radion buttons")
+            labels = document.querySelectorAll('.contactPermissionsItem label');
+            chk = document.querySelectorAll('.main-con label');
+            con = document.querySelectorAll('.apd-form-contactPermissions');
+            stopSearch(labels);
+
+        }, 50)
+
+
+        function stopSearch(lb) {
+
+            if (lb.length > 0) {
+                clearInterval(search);
+                /*window.targetCampaign = window.targetCampaign || {
+                    page: {
+                        campaignName: 'tt:nwp:opt-1639:ab:tdr:permissions:challenger'
+                    }
+                }
+
+                _satellite.track('genericTestingImpressionIDWorkaround');*/chk
+                console.log("radion buttons found  \n stopped searching");
+                var arrRadio = [...labels];
+
+                for (let i = 0; i < arrRadio.length; i++) {
+
+                    if (i % 2 != 0) {
+                        console.log(arrRadio[i]);
+                        arrRadio[i].click();
+                        mapData();
+
+
+                    }
+                }
+
+
+            }
+
+        }
+
+        function mapData() {
+
+            let length = chk.length;
+            for (let i = 0; i < length; i++) {
+
+                chk[i].addEventListener("click", function () {
+                    if (i == 0) {
+                        labels[i + 2].click();
+
+                    } else if (i == 1) {
+                        labels[i + 3].click();
+
+                    }
+                    else if (i == 2) {
+                        labels[i + 4].click();
+
+                    }
+
+                })
+            }
+        }
+
+
+        let search_interval = setInterval(() => {
+            clear_search(search_interval);
+
+        }, 50)
+
+        let clear_search = function () {
+            call_to_action = document.querySelectorAll('div.call-to-action button');
+            pos = document.querySelector('.apd-form-contactPermissions');
+            var container_element = document.createElement('div');
+            container_element.className = "mobile-con";
+            container_element.innerHTML = str;
+
+            if (call_to_action.length > val && call_to_action != "undefined") {
+                clearInterval(search_interval);
+                console.log("elements found now replacing")
+                pos.parentNode.insertBefore(container_element, pos);
+
+            }
+        }
+
+    }
+
+    function fireImpressionID() {
+        var theCookie = getCookie('OT-1667-impressionid-challenger-fired');
+        console.log('FIREIMPRESSIONID - ' + theCookie);
+        if (theCookie === undefined || theCookie === null) {
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1639:ab:tdr:permissions:challenger '
+                }
+            };
+            _satellite.track("genericTestingImpressionIDWorkaround");
+            console.log('done firing -- first pass');
+            setCookieForImpressionID(12, '/', 'OT-1667-impressionid-challenger-fired', true);
+            console.log('We fired the impressionID ' + window.targetCampaign.page.campaignName);
+            setTimeout(function () {
+                setOnClick();
+                console.log('setOnClick done');
+                jQuery('body').click();
+            }, 500);
+
+        }
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            if (window.targetCampaign !== undefined) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+            }
+            
+            console.dir(window.targetCampaign);
+            console.log('blocking impression on event listener')
+
+        });
+
+        /*window.addEventListener('touchend', function () {
+            if (window.targetCampaign !== undefined) {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ""
+                    }
+                }
+            }
+        });
+
+        console.dir(window.targetCampaign);
+        console.log('touchend blocking impression on event listener')*/
+
+    }
+
+    function setCookieForImpressionID(expireInHours,path,cookieName,cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+          console.log("no cookie set --- setting now");
+          var now = new Date();
+          now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+          document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+          console.log("cookie is set");
+          return true;
+        } else {
+          console.log("Cookie is still valid");
+          return false;
+        }
+      }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+
+    //doChange(1)
+    window.onload = function () {
+        fireImpressionID();
+      
+
+
+        if (detectmob()) {
+            doChange(1)
+            /*window.targetCampaign = window.targetCampaign || {
+                page: {
+                    campaignName: 'tt:nwp:opt-1624:ab:tdr:back-cta:challenger'
+                }
+            }
+
+            _satellite.track('genericTestingImpressionIDWorkaround');*/
+        } else {
+            doChange(0)
+            try{
+                mapData();
+            }catch(ex){
+                console.log('mapData not defined yet');
+            }
+        }
+        //Tracking
+        onFormSubmitOverride();
+        watchErrorMessages();
+    }
+</script>
+<style>
+    /*Original form container div*/
+    .contactpermissions.contactPermissions.medium-12.columns.xlarge-12 large-12 {
+        height: 0;
+        opacity: 0;
+    }
+
+    .contactpermissions.contactPermissions .apd-form-contactPermissions {
+        position: absolute;
+        left: -300px;
+        visibility: hidden;
+    }
+
+    /* The container */
+
+
+    .container {
+        display: flex;
+        position: relative;
+        padding-left: 35px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        font-size: 22px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Hide the browser's default checkbox */
+    .container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    /* Create a custom checkbox */
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #fff;
+        border: 2px solid #4d4d4d;
+        border-radius: 4px;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .container:hover input~.checkmark {
+        background-color: #fff;
+    }
+
+    /* When the checkbox is checked, add a blue background */
+    .container input:checked~.checkmark {
+        border: 2px solid #102B4E;
+    }
+
+    /* Create the checkmark/indicator (hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the checkmark when checked */
+    .container input:checked~.checkmark:after {
+        display: block;
+    }
+
+    /* Style the checkmark/indicator */
+    .container .checkmark:after {
+        left: 6px;
+        top: 3px;
+        width: 5px;
+        height: 10px;
+        border: solid #4d4d4d;
+        ;
+        border-width: 0 3px 3px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+
+    label p {
+        margin: 0 15px;
+    }
+
+    .main-con label {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .main-con label p {
+        margin-left: 0 !important;
+        margin-top: -5px !important;
+    }
+
+    @media only screen and (min-width: 700px) {
+        .main-con {
+            display: flex;
+            min-width: 460px;
+            padding-bottom: 50px;
+        }
+
+    }
+
+    @media only screen and (max-width: 600px) {
+        .main-con {
+            display: flex;
+            justify-content: space-around;
+            justify-content: space-between;
+            padding-bottom: 50px;
+            max-width: 460px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+    }
+</style>

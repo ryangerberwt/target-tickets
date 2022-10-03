@@ -1,0 +1,46 @@
+<script>
+    var $ = jQuery;
+
+    function storeAlertState(last_closed, display_count) {
+        let objs = {
+            last_closed_time: last_closed, alert_display_count: display_count 
+        }
+        localStorage.setItem('popupState', JSON.stringify(objs));
+        console.log('local storage');
+        console.log(JSON.parse(localStorage.getItem('popupState')));
+    }
+
+    function compareLastClosed() {
+        let popupState = JSON.parse(localStorage.getItem('popupState'));
+        let current_timestamp = Math.floor(Date.now() / 1000);
+        let last_closed_current = Math.floor(popupState.last_closed_time / 1000);
+        var minuteDifference = (current_timestamp / 60) - (last_closed_current / 60);
+        console.log('min diff is ' + minuteDifference);
+        if (minuteDifference >= 1) {
+            if (popupState.alert_display_count < 3) {
+                showAlert();
+            } else {
+                console.log('Waiting');
+            }
+        }
+
+    }
+
+    function showAlert() {
+        alert('My Alert');
+        let popupState = JSON.parse(localStorage.getItem('popupState'));
+        storeAlertState(Math.floor(Date.now()), (Number(popupState.alert_display_count) + 1));
+
+    }
+
+    if(localStorage.getItem('popupState') === undefined || localStorage.getItem('popupState') === null){
+        storeAlertState(null, Number(0));
+        showAlert();
+    }
+
+    let myInterval = setInterval(function(){
+        console.log('running check');
+        compareLastClosed();
+    },5000);
+
+</script>

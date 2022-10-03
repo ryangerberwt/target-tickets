@@ -1,0 +1,61 @@
+<script>
+    console.log('HP CONTROL');
+    var enableLogs = false;
+    var _log = console.log;
+        console.log = function(logMsg){
+            if(enableLogs){
+     
+                _log.apply(console,arguments);
+            }
+        }
+        //Added because we sometimes use the console.dir function to display vars
+        var _dir = console.dir;
+        console.dir = function(dirMsg){
+            if(enableLogs){
+                _dir.apply(console,arguments);
+            }
+        }
+
+    function getCookie(name) {
+        function escape(s) { return s.replace(/([.*+?\^$(){}|\[\]\/\\])/g, '\\$1'); }
+        var match = document.cookie.match(RegExp('(?:^|;\\s*)' + escape(name) + '=([^;]*)'));
+        return match ? match[1] : null;
+    }
+
+    function setCookieForImpressionID(expireInHours,path,cookieName,cookieValue) {
+        console.log("setting cookie for impression ID");
+        if (getCookie(cookieName) === undefined || getCookie(cookieName) === "" || getCookie(cookieName) === null) {
+          console.log("no cookie set --- setting now");
+          var now = new Date();
+          now.setTime(now.getTime() + expireInHours * 3600 * 1000);
+          document.cookie = cookieName + "=" + cookieValue + ";path=" + path + ";expires=" + now.toUTCString();
+          console.log("cookie is set");
+          window.targetCampaign =  {
+            page: {
+                campaignName: "tt:nwp:opt-1422:ab:tdr:tdra-tdrc:control",
+            },
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+        } else {
+          console.log("Cookie is still valid");
+        }
+      }
+    let ls = JSON.parse(localStorage.getItem('carInfo'))
+
+    if (ls !== undefined && ls !== null) {
+        if (ls.visited === true) {
+            setTimeout(function () {
+                console.log('firing impression ID');
+                adobe.target.trackEvent({
+                    "mbox": "NO_TDR_A",
+                    "params": {
+                        "open": "pop-up-open"
+                    }
+                });
+
+                setCookieForImpressionID(0.25,'/','1422-control-fired','true')
+            }, 250);
+        }
+    }
+</script>

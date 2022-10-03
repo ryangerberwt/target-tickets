@@ -1,0 +1,120 @@
+<script>
+
+    var $ = jQuery;
+    console.log('OT-1436 | Challenger');
+    var translation = 'Name des Händler';
+    var singleTranslationUpper = "Händler";
+    var singleTranslationLower = "händler";
+    $(document).ready(function () {
+        fireImpressionId();
+        setTimeout(function () {
+            setOnKeyUp();
+            setOnClick();
+            $('body').click();
+
+        }, 750);
+
+
+        let x = setInterval(function () {
+            console.log('checking');
+            if ($('label.label-for-radiobutton[for="byDealerField"]') !== undefined && $('label.label-for-radiobutton[for="byDealerField"]') !== null && $('label.label-for-radiobutton[for="byDealerField"]').length > 0) {
+                clearInterval(x);
+                modifyContent($('label.label-for-radiobutton[for="byDealerField"]'), translation, true, 1, 0);
+            }
+        }, 250)
+        setTimeout(function () {
+            $('input#byDealerField').on('click', setPlaceholderChange);
+        }, 1000);
+        updateTermsAndConditions();
+        updateTopSection();
+    });
+
+
+
+    function modifyContent(element, newContentString, childNodes, childNodeIndex, parentNodeIndex) {
+        if (childNodes === true) {
+            element[parentNodeIndex].childNodes[childNodeIndex].nodeValue = newContentString;
+        } else {
+            element[parentNodeIndex].nodeValue = newContentString;
+        }
+    }
+
+    function setPlaceholderChange() {
+        setTimeout(function () {
+            $('#location-input').attr('placeholder', translation);
+        }, 25)
+
+    }
+
+    function waitForElement(element, newContentString) {
+ 
+    }
+
+    function updateTermsAndConditions() {
+        $('.disclosure-generic.disclosure-paragraph-wrapper.large-type').children().each(function (i, v) {
+            console.dir(v);
+            v.innerText = v.innerText.replace('Partner', singleTranslationUpper);
+            v.innerText = v.innerText.replace('partner', singleTranslationLower);
+        });
+
+         $('.disclosure-text.no-scroll').addClass('fixText');
+    }
+
+    function updateTopSection(){
+        $('.form-wizard-wrapper').children('div[class^="richtext_"]').each(function(i,v){
+            v.innerText = v.innerText.replace('Partner', singleTranslationUpper);
+            v.innerText = v.innerText.replace('partner', singleTranslationLower);
+        });
+
+        $('.form-wizard-wrapper').children('div[class^="richtext_"]').addClass('fixText');
+    }
+
+    function fireImpressionId() {
+        window.targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1436:ab:tdr:dealer-partner:challenger", 
+            },
+        };
+        _satellite.track("");
+    }
+
+    function setOnClick() {
+        window.addEventListener('click', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            _satellite.track('');
+
+        });
+    }
+
+    //We don't always need this but adding it here for reference
+    function setOnKeyUp() {
+        window.addEventListener('keyUp', function () {
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            console.dir(window.targetCampaign);
+            _satellite.track('');
+
+        });
+    }
+
+</script>
+
+
+<style>
+    .fixText {
+        text-align: left;
+        font-size: 1rem;
+        color: #4d4d4d;
+        font-family: FordAntenna, Ford Antenna, Arial, Helvetica, sans-serif;
+        font-weight: 400;
+        line-height: 2;
+    }
+</style>

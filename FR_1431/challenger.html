@@ -1,0 +1,48 @@
+<script>
+
+    var $ = jQuery;
+
+    console.log('OT-1431 Challenger')
+
+    function runCode() {
+
+        console.log(window.location.href);
+        if (window.location.href.indexOf('https://www.ford.fr/achat/poursuivre-lexperience/reservation/configurez-votre-vehicule#/model?catalogId=WAEFX-CGW-2022-Mach-EFRA202225' > 0)) {
+
+            console.log('running code');
+            return true;
+
+        } else {
+            console.log('not running code');
+            return false;
+        }
+
+    }
+
+    if (runCode()) {
+        window.targetCampaign = {
+            page: {
+                campaignName: 'tt:nwp:opt-1431:ab:bp:logo-to-homepage:challenger'
+            }
+        }
+        console.log('firing impression')
+        _satellite.track('genericTestingImpressionIDWorkaround');
+        let waitForEl = setInterval(function () {
+            if ($('div[role="banner"').children().filter('a') !== undefined && $('div[role="banner"').children().filter('a') !== null && $('div[role="banner"').children().filter('a').length > 0) {
+                $('div[role="banner"').children().filter('a').eq(0).attr('href', '/');
+            }
+        }, 125);
+
+        setTimeout(function () {
+
+            window.targetCampaign = {
+                page: {
+                    campaignName: ''
+                }
+            }
+            _satellite.track('genericTestingImpressionIDWorkaround');
+            console.log('done firing -- second pass');
+        }, 250)
+    }
+
+</script>

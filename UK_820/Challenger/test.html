@@ -1,0 +1,18 @@
+<script>
+$('<div style="display:none;"  id="promo" />').appendTo("body");     
+$('#promo').load('https://www.ford.co.uk/shop/price-and-locate/promotions/personal');
+$('[data-offers]').data().offers[0].nameplateOffers;
+
+$('<div style="display:none;"  id="promo" />').appendTo("body");     
+ 
+$.get('https://www.ford.co.uk/shop/price-and-locate/promotions/personal',  // url
+      function (data, textStatus, jqXHR) {  // success callback
+          console.dir(jQuery.parseHTML(data))
+
+          let returnedDOM = jQuery.parseHTML(data);
+          let jsonParentNode = returnedDOM.find('div#global-ux.page');
+
+    });
+
+
+</script>

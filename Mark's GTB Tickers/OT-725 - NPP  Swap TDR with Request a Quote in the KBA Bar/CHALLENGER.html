@@ -1,0 +1,58 @@
+<script>
+    if (document.URL.indexOf('/auto/') > 0 || document.URL.indexOf('/veicoli-commerciali/') > 0) {
+        var targetCampaign = targetCampaign || {};
+
+        targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-725:ab:vhp:tdr-vs-preventivo:challenger"
+            }
+        };
+
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+        /* NPP CHANGES */
+
+        var textUpdate = false;
+        var stf_counter;
+
+        setTimeout(function() {
+            executeSevenTwoFiveChanges(500);
+        }, 500);
+
+        function updateButtons() {
+            tempButtons = $('.splitter-column.large-4.columns').find('a');
+
+            var vCode = $('#contextual-links-configuration > span.configuration')[0].dataset.forms;
+
+            for (stf_counter = 0; stf_counter < tempButtons.length; stf_counter++) {
+                if (tempButtons[stf_counter].innerText.trim().toLowerCase() == "Richiedi un Test Drive".trim().toLowerCase() || tempButtons[stf_counter].innerText.trim().toLowerCase() == "Richiedi Test Drive".trim().toLowerCase()) {
+
+                    tempButtons[stf_counter].href = "/content/overlays/wizard-overlays/send-to-dealer" + vCode;//"/guida-allacquisto/scegli-la-tua-ford/contatta-ford-partner";
+                    tempButtons[stf_counter].children[1].children[0].innerText = "Richiedi un preventivo".trim();
+
+                    tempButtons[stf_counter].onclick = function() { linkClicked(); };            
+                }
+            }
+        }
+
+        function executeSevenTwoFiveChanges(time) {
+            setTimeout(function() {
+                console.log('OT-725-CHALLENGER');
+                updateButtons();
+            }, time);
+        }
+        
+        /* POPUP CHANGES  */
+
+        function linkClicked() {
+            textUpdate = false;
+            setInterval(function() {
+                if (!textUpdate) {
+                    $('.wizard-title')[0].outerHTML = '<span class="wizard-title">Richiedi un preventivo</span>';
+                    $('.step-heading')[0].style.display = 'none';
+                    textUpdate = true;
+                }
+            }, 100);
+        }
+    }
+</script>

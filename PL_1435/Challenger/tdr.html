@@ -1,0 +1,42 @@
+<script>
+    var $ = jQuery;
+    console.log('1435 - CHALLENGER TDR');
+
+
+    $(document).ready(function () {
+
+        setTimeout(function () {
+            //Get all fields at a parent level
+            document.querySelectorAll('.clearleft').forEach(function (i, v) {
+                console.log('element');
+                console.dir(i.children[0].children[0].children[1].textContent += " *");
+            });
+
+            document.querySelectorAll('.dealerlocatorfield.dealerLocatorField.medium-12.columns.xlarge-12.large-12')[0].children[0].children[1].children[1].children[0].placeholder += ' *'
+
+            //Fire impression ID
+            window.targetCampaign = {
+                page: {
+                    campaignName: 'tt:nwp:opt-1435:ab:tdr:mandatoryfields:challenger'
+                }
+            }
+            _satellite.track('');
+        }, 300);
+
+        setTimeout(function(){
+            setOnClick();
+        },350);
+
+    });
+
+    function setOnClick() {
+            $(document).on('click', function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: ''
+                    }
+                }
+            });
+        }
+
+</script>

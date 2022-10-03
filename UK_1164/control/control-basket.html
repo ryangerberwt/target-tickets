@@ -1,0 +1,58 @@
+<script>
+
+    var $ = jQuery;
+    var ctaLbl = "Buy Online Now";
+    var impressionID = 'tt:nwp:opt-1164:ab:bp:checkout-cta:var-a';
+    var sendImpression = true;
+
+    
+    $('body').on('click', function () {
+        console.log('clicked doc sned impression ' + sendImpression);
+        if (window.targetCampaign !== undefined) {
+            console.log('setting target var');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            _satellite.track("");
+        }
+    });
+
+    /*$(document).on('keyup', function () {
+
+        console.log('in keyp');
+        if (window.targetCampaign !== undefined) {
+            console.log('setting target var');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+            _satellite.track("");
+        }
+
+    });*/
+
+    $(document).ready(function () {
+        console.log('1164 - Control');
+        let waitForImpression = setTimeout(fireImpression, 1500, function () {
+            console.log('in callback');
+            $('body').click();
+        });
+    });
+
+    function fireImpression() {
+        console.log('firing impression ID');
+        window.targetCampaign = {
+            page: {
+                campaignName: impressionID
+            }
+        }
+        sendImpression = false;
+        _satellite.track("genericTestingImpressionIDWorkaround");
+
+    }
+
+
+</script>

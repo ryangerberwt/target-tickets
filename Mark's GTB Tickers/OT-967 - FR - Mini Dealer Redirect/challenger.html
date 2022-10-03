@@ -1,0 +1,59 @@
+<script>
+    setTimeout(function() {
+
+         setTimeout(function() {
+            var miniDealerObject = $(".component-content.top-section.ng-scope:contains('Trouver le concessionnaire')");
+            if (miniDealerObject.length > 0) {
+                console.log('OT-967');
+
+                window.targetCampaign = window.targetCampaign || {
+                    page: {
+                        campaignName: 'tt:nwp:opt-967:ab:vhp:mini-dealer-redirect:var-b'
+                    }
+                }
+                
+                _satellite.track('genericTestingImpressionIDWorkaround');
+                
+                // Hides the things we no longer need. AKA Advanced Search.
+                // There's 2 for whatever reason, assuming the 2nd pops up when you searched previously?
+                // They're both gone now.
+                miniDealerObject.find('.mini-dl-text').hide()
+                var query = '';
+
+                miniDealerObject.find('.search-input > .submit-btn').on('click', function(e) {
+                    logIt();
+                    window.location.href = 'https://www.ford.fr/votre-concessionnaire' + '#/search/' + miniDealerObject.find('.search-input input')[0].value;
+                })
+
+                miniDealerObject.find('.search-input input').keypress(function(e) {
+                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                    if(keycode == '13'){
+                        logIt();
+                        window.location.href = 'https://www.ford.fr/votre-concessionnaire' + '#/search/' + miniDealerObject.find('.search-input input')[0].value 
+                    }
+                });
+
+                miniDealerObject.find('.dealer-autocomplete-list').on('click', function(e) {
+                    logIt();
+                    window.location.href = 'https://www.ford.fr/votre-concessionnaire' + '#/search/'  + e.target.outerText
+                });
+            }
+
+         }, 1000);
+
+        function logIt() {
+            adobe.target.trackEvent({
+                'mbox': 'FR_Mini_Dealer_Redirect',
+                'params': {
+                    'redirected': 'true'
+                }
+            });
+        }
+    }, 1000);
+</script>
+
+<style>
+    .component-content.top-section.ng-scope .mini-dl-text {
+        display: none !important;
+    }
+</style>

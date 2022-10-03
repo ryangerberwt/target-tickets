@@ -1,0 +1,38 @@
+<script>
+    $(window).on('hashchange', function(e) {
+        if (window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/fiesta-van") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-transit-courier") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-transit-connect") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/transit-custom") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-transit-2t") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-transit-chassis-cab") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-ranger") ||
+            window.location.hash.indexOf("overlay/content/overlays/download-a-brochure/new-transit-minibus")) {
+
+                console.log("OT-817 - B - Brochure Requested");
+
+                var d = new Date();
+                d.setTime(d.getTime() + 1209600000);
+
+                adobe.target.getOffer({
+                    'mbox': "global-mbox",
+                    'params': {
+                        "profile.hpr.personalization.market" : "BE-NL",
+                        "profile.hpr.personalization.action" : "Brochure Requested",
+                        "profile.hpr.personalization.triggerHomePage" : true,
+                        "profile.hpr.personalization.visibleUntil" : d,
+                        "profile.hpr.personalization.seen": 0
+                    },
+                    'success': function(offer) {
+                        adobe.target.applyOffer( {
+                            'mbox': 'global-mbox',
+                            'offer': offer
+                        });
+                    },
+                    'error': function(status, error) {
+                        console.log('Error', status, error);
+                    }
+                });
+        }
+    });
+</script>

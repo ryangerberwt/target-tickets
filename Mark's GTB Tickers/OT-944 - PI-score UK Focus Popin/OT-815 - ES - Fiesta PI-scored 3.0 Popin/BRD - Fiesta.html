@@ -1,0 +1,31 @@
+<script>
+    $(document).ready(function() {
+        setBRDOnClick();
+    });
+
+    function setBRDOnClick() {
+        if ($('.splitter-column.large-3.columns:contains("Fiesta") a').length == 0)
+            return setTimeout(setBRDOnClick, 50);
+        
+        $('.splitter-column.large-3.columns:contains("Fiesta") a').on('click', function() {
+            console.log("OT-815 - Fiesta BRD");
+
+            adobe.target.getOffer({
+                'mbox': "global-mbox",
+                'params': {
+                    "profile.piscored.market" : "ES",
+                    "profile.piscored.action.brd" : "BRD"
+                },
+                'success': function(offer) {
+                    adobe.target.applyOffer( {
+                        'mbox': 'global-mbox',
+                        'offer': offer
+                    });
+                },
+                'error': function(status, error) {
+                    console.log('Error', status, error);
+                }
+            });
+        });
+    }
+</script>

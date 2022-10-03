@@ -1,0 +1,122 @@
+<!--USE ON NPP-->
+<style>
+    .highly-visible {
+        background-color: red;
+        color: lime;
+        font-weight: 900;
+        text-decoration: underline;
+    }
+</style>
+<script type="text/javascript">
+    var $ = jQuery;
+    var disclosureData;
+    var enumerators;
+    var disclosuresObj;
+    var myEnumerator;
+    var listHtml;
+    var existingSups;
+
+    $(document).ready(function () {
+
+
+        function buildDisclosures() {
+
+            console.log('building 3.0 disclosures');
+
+            if ($('span[data-disclosures-json]') !== undefined) {
+                disclosureData = $('span[data-disclosures-json]').data('disclosures-json');
+                enumerators = disclosureData.enumerators;
+                myEnumerator = Number(enumerators[enumerators.length - 1]);
+                disclosuresObj = JSON.parse(localStorage.getItem('3.0_disclaimers'));
+                for (var y = 0; y < disclosuresObj.length; y++) {
+                    disclosuresObj[y].suffix_key = (myEnumerator + (y + 1)).toString();
+                }
+
+                for (var x = 0; x < disclosuresObj.length; x++) {
+                    let counter = Number(x + 1)
+                    disclosureData.enumerators.push((Number(myEnumerator) + counter).toString());
+                    disclosureData.disclosures.push({
+                        name: 'disclaimer_' + x,
+                        text: '<p>' + disclosuresObj[x].disclaimer_content + '</p>'
+                    });
+
+                }
+
+                $('span[data-disclosures-json]').attr('data-disclosures-json', JSON.stringify({
+                    disclosures: disclosureData.disclosures,
+                    enumerators: disclosureData.enumerators
+                }));
+                console.log('Done building 3.0 Disclosures');
+            }
+        }
+
+
+        function addToPopin() {
+            console.log('adding 3.0 disclaimers to popin');
+            existingSups = $('.optprg-sup');
+            for (var i = 0; i < disclosuresObj.length; i++) {
+                if (disclosuresObj[i].disclaimer_content.length > 0) {
+                    existingSups.eq(i).text(disclosuresObj[i].suffix_key);
+                    let myId = 'opt-gux3-' + (Number(myEnumerator) + 1);
+                    existingSups.eq(i).attr('id', myId);
+                    existingSups.eq(i).attr('data-acc-disclosure', 'disclaimer_' + i);
+                    //Init
+                    accDisclosures.default.initOne($('#' + myId));
+                }
+
+                console.log('Done adding 3.0 Disclosures to popin');
+            }
+        }
+
+    });
+
+</script>
+
+<!--USE ON DC-->
+<script>
+    var enums;
+    var discs;
+
+    function getDisclaimerEnums(arr) {
+        enums_1414 = $('span[class^="Attributes__AttributePrefixSuffixDropdown"] ~');
+        if (enums_ !== undefined) {
+            for (var i = 0; i < enums_.length; i++) {
+                arr.push({ 'enumKey': enums_[i].textContent });
+            }
+        }
+    }
+
+    function matchEnumsToDisclaimers(arr) {
+        let discArr_1414 = [];
+        discs_1414 = $('div[class^="BottomDisclosure__BottomDisclosureContent"]');
+        if (discs_1414 !== undefined) {
+            for (var i = 0; i < arr.length; i++) {
+                for (var x = 1; x < discs_1414.length; x++) {
+                    if (discs_1414[x].innerText.includes('[' + arr[i].enumKey + ']')) {
+                        console.log('found a disclaimer');
+
+                        let disclaimer_ = {
+                            'disclaimer': i,
+                            'suffix_key': arr[i].enumKey,
+                            'disclaimer_content': discs_1414[x].textContent.replace('[' + arr[i].enumKey + ']', '').trim()
+                        };
+                        discArr_1414.push(disclaimer_);
+                    }
+                }
+            }
+            localStorage.setItem('3.0_disclaimers', '');
+            localStorage.setItem('3.0_disclaimers', JSON.stringify(discArr_1414));
+
+        }
+    }
+
+    $(window).on("hashchange", function () {
+        runInformationsGathering();
+        let enumsArr_ = [];
+        getDisclaimerEnums(enumsArr_);
+        matchEnumsToDisclaimers(enumsArr_);
+
+    });
+
+
+</script>

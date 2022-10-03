@@ -1,0 +1,245 @@
+<style>
+    .container-moved-cta {
+        padding-left: 70px;
+    }
+    .container-moved-cta .cta-custom-primary {
+        width: 300px;
+        height: 40px;
+        display: inline-block;
+        -webkit-box-pack: center;
+        justify-content: center;
+        background-color: #102b4e;
+        color: #fff;
+        font-family: FordAntennaCondRegular, Arial, Helvetica, sans-serif;
+        font-size: 0.875rem;
+        -webkit-box-align: center;
+        align-items: center;
+        letter-spacing: 1.7px;
+        font-weight: 500;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 10px 0px, rgba(0, 0, 0, 0.1) 0px 20px 20px 0px, rgba(0, 0, 0, 0.15) 0px 30px 30px 0px;
+        border-radius: 3px;
+        text-decoration: none;
+        margin: 0px auto;
+        border-width: 0px;
+        border-style: initial;
+        border-color: initial;
+        border-image: initial;
+        padding: 0px;
+        transition: background-color 0.3s ease-in-out 0s, color 0.3s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
+    }
+    .container-moved-cta .cta-custom-primary:after {
+        font-family: icomoon-gux-3;
+        speak: none;
+        font-style: normal;
+        font-weight: normal;
+        text-transform: none;
+        line-height: 1;
+        content: "";
+        font-variant: normal;
+        position: relative;
+        right: -100px;
+        top: 2px;
+    }
+    .container-moved-cta .cta-custom-secondary {
+        margin-left: 20px;
+        font-size: 15px;
+        font-family: AntennaCondMedium,Arial,Helvetica,sans-serif;
+        font-weight: 500;
+        line-height: 1.667;
+        letter-spacing: 3px;
+        text-decoration: none;
+        display: inline-block;
+        position: relative;
+        border: 0;
+        background: #0000;
+        outline-offset: .65em;
+        padding-right: 15px;
+        color: #102b4e;
+    }
+    .container-moved-cta .cta-custom-secondary:after {
+
+        font-family: icomoon-gux-3;
+        speak: none;
+        font-style: normal;
+        font-weight: normal;
+        text-transform: none;
+        line-height: 1;
+        content: "";
+        font-variant: normal;
+        position: relative;
+        right: -14px;
+        top: -2px;
+        color: #fff;
+        background: #102b4e;
+        border-radius: 50%;
+        font-size: 9px;
+        padding: 5px 1px 5px 5px;
+    }
+
+    .cta-container-mobile {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        display: none;
+    }
+    .cta-container-mobile .cta-mobile-primary {
+        padding: 15px 0;
+
+        display: inline-block;
+        flex: 1;
+        margin: 0;
+        background: #102b4e;
+        color: #fff;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 300;
+    }
+    .cta-container-mobile .cta-mobile-primary > span {
+        position: relative;
+        top: 8px;
+    }
+    .cta-container-mobile .cta-mobile-primary > span:after {
+        font-family: icomoon-gux-3;
+        speak: none;
+        font-style: normal;
+        font-weight: normal;
+        text-transform: none;
+        line-height: 1;
+        content: "";
+        font-variant: normal;
+        position: relative;
+        right: -14px;
+        top: -2px;
+        color: #fff;
+        background: #102b4e;
+        border-radius: 50%;
+        font-size: 9px;
+        padding: 5px 1px 5px 5px;
+    }
+    .cta-container-mobile .cta-mobile-secondary {
+        display: inline-block;
+        flex: 1;
+        margin: 0;
+        background: white;
+        padding: 15px 0;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 300;
+    }
+
+    .cta-container-mobile .cta-mobile-secondary .image-container {
+        display: inline-block;
+        width: 25%;
+        color: #102b4e;
+    }
+    .cta-container-mobile .cta-mobile-secondary .image-container:after {
+        font-family: icomoon-gux-3;
+        speak: none;
+        font-style: normal;
+        font-weight: normal;
+        text-transform: none;
+        line-height: 1;
+        content: "";
+        font-variant: normal;
+    }
+    .cta-container-mobile .cta-mobile-secondary .price-container {
+        display: inline-block;
+        width: 60%;
+        text-align: left;
+        color: #102b4e;
+    }
+    .cta-container-mobile .cta-mobile-secondary .price-container .top { display: block; font-size: 15px }
+    .cta-container-mobile .cta-mobile-secondary .price-container .bottom {  display: block; font-size: 22px }
+
+    @media only screen and (max-width: 991px)  {
+        .cta-container-mobile {
+            display: flex;
+        }
+        /* .container-moved-cta .cta-custom-primary {
+            margin-bottom: 30px;
+        } */
+        .container-moved-cta {
+            display: none;
+        }
+    }
+</style>
+<script>
+  	console.log('OT-788');
+    $(document).ready(function() {
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+
+        if(location.pathname === "/achat/poursuivre-lexperience/reservation/configurez-votre-vehicule")
+        {
+            console.log("Found page");
+            $(window).on('hashchange', function(e) {
+
+                console.log('hash changed');
+
+                var series = getParameterByName('series');
+
+                if(window.location.hash.indexOf("/summary") > 0 && (series === "ACMRA_VS-KZ" || series === "ACMRJ_VS-LE"))
+                {
+                    console.log("Series Found");
+                    var targetCampaign = targetCampaign || {};
+                    window.targetCampaign = window.targetCampaign || {page: {campaignName: "tt:nwp:opt-788:ab:bp:ebp-sum-cta-position:var-b"}};
+                    _satellite.track("genericTestingImpressionIDWorkaround");
+
+                    var buttonSelector = "button.Button__ButtonCommon-sc-5scy24-0.Cta__PrimaryCta-sc-1m0if6r-1.ReserveProgressBar__ProgressBarCTA-sc-13kezfk-8.eCqolP";
+
+                    var interval = setInterval(function() {
+
+                        if($(buttonSelector).length > 0) {
+
+                            //var price = $(".MainNavigationHeader__Price-lcxcfv-9.guvqfV > span.Attributes__AttributeValue-m3qu0l-3.hpSPE").text();
+                            var price = $("span.SummaryVehiclePreview__SummaryPrice-hg0o7h-14.fpmvdw").html();
+
+                            var html = "<div class='container-moved-cta'>" +
+                                "<button class='cta-custom-primary'>Reserve</button>" +
+                                //"<a class='cta-custom-secondary' href='https://www.ford.fr/achat/poursuivre-lexperience/tenez-moi-informe/all-electric'>Tenez-moi Informé</a>" +
+                                "</div>";
+
+                            var htmlMobile = "<div class='cta-container-mobile'>" +
+                                "<a class='cta-mobile-secondary'>" +
+                                "<span class='image-container'></span>" +
+                                "<div class='price-container'>" +
+                                "<span class='top'>à partir de</span>" +
+                                "<span class='bottom'>###</span>" +
+                                "</div>" +
+                                "</a>" +
+                                "<a class='cta-mobile-primary'><span>Reserve</span></a>" +
+                                "</div>";
+                            htmlMobile = htmlMobile.replace("###", price);
+
+                            clearInterval(interval);
+                            $(buttonSelector).hide();
+                            //$(".SummaryVehiclePreview__SummaryPreviewInfo-hg0o7h-4.fSZZQT").append(html);
+                            $('.SummaryIntro__SummaryIntroWrapper-ki7nzt-0.jxKZOx').append(html);
+                            $("body").append(htmlMobile);
+
+                            $(".cta-container-mobile .cta-mobile-secondary .price-container .bottom sup").click(function() {
+                                $("sup.Disclaimer__DisclaimerEnumeration-q2sm22-2.gvdzTs").eq(1).trigger("click");
+                            });
+
+                            $(".cta-custom-primary, .cta-mobile-primary").click(function() {
+                                $(buttonSelector).trigger("click");
+                            });
+                        }
+                    }, 500);
+                }
+
+            } );
+        }
+    });
+</script>

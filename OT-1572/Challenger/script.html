@@ -1,0 +1,119 @@
+<script>
+    console.log('OT-1572');
+    var $;
+    var controllerInstance;
+    var angularScopes;
+    var linkSelector = '.select-vehicle-link';
+    var wizControllerName = 'wizardController as wizardCtrl';
+    var enableLogs = true;
+    var vehicleData = {
+        "itemCode": "871H",
+        "desc": "New Fiesta",
+        "modelCode": "00M",
+        "modelName": "New Fiesta",
+        "derivativeCode": "",
+        "derivativeDesc": "",
+        "franchise": "PV",
+        "sequence": "7",
+        "omnitureDesc": "ford fiesta",
+        "omnitureModelYear": "2022",
+        "omnitureBrochureType": "vehicle",
+        "wersCode": "CE115",
+        "wersDerivCode": "",
+        "vehicleCategory": "car-small",
+        "groupName": "Cars",
+        "groupCode": "1",
+        "imagePath": "/content/dam/guxeu/global-shared/vehicle-images/new-fiesta/ford-fiesta-eu-B479_STline-eu-STL-01_L_16x9-618x348.png",
+        "imageAltText": "New Fiesta",
+        "vehicleCode": "CE115"
+    };
+
+    var _log = console.log;
+    console.log = function (logMsg) {
+        if (enableLogs) {
+            _log.apply(console, arguments);
+        }
+    }
+
+    window.onload = function () {
+
+        let waitForJquery = setInterval(function () {
+            console.log('Checking for jQuery')
+            if (window.jQuery) {
+                // jQuery is loaded
+                console.log('jQuery loaded');
+                $ = jQuery;
+                clearInterval(waitForJquery);
+                run();
+
+            } else {
+                // jQuery is not loaded
+                console.log("Not loaded - will check again in 500ms");
+            }
+        }, 500);
+
+
+    }
+
+    function checkForNullOrUndefined(ref) {
+        if (ref !== undefined && ref !== null && ref.length > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function changeStep(scopeInstance, stepComponent, step) {
+        stepComponent.currentStep = step;
+    }
+
+    //Usage: changeStep('wizardCtrl','form',controllerInstance)
+
+
+
+    function getScope(controllerName) {
+        var sel = 'div[data-ng-controller="' + controllerName + '"]';
+        return angular.element(sel).scope();
+    }
+
+    //Usage: controllerInstance = getScope('wizardController as wizardCtrl')
+
+    function traverseStoredDataSet() {
+        var accessAvailable = accessStoredDataSet();
+        if (accessAvailable !== false) {
+            var currentStep = accessAvailable.ngIf;
+            var currentForm = JSON.parse(accessAvailable.form);
+            var pageInfo = JSON.parse(accessAvailable.pageName);
+        }
+        return [];
+    }
+
+    function accessStoredDataSet() {
+        if (checkForNullOrUndefined($('.wizard-header') && $('.wizard-header').children())) {
+            return $('.wizard-header').children[1].dataset;
+        }
+
+        return false;
+    }
+
+    function populateSelectedVehicles(scopeInstance,data){
+        scopeInstance.wizardCtrl.selectedVehicles.push(data);
+    }
+
+    function run() {
+
+        //We get an instance of the controllers scope
+        controllerInstance = getScope(wizControllerName)
+        console.log('Controller instance is ');
+        console.dir(controllerInstance);
+        //We pre-populate the vehicle
+        console.log('populating')
+        populateSelectedVehicles(controllerInstance,vehicleData);
+        console.log('Changing step');
+        //Go to the next step
+        changeStep(controllerInstance, controllerInstance.wizardCtrl, 'form', controllerInstance);
+     
+
+    }
+
+</script>

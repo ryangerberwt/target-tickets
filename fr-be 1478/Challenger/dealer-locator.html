@@ -1,0 +1,143 @@
+<script>
+    var $ = jQuery;
+
+
+    console.log('OT-1478 : Challenger');
+
+    MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+    var classesToRemove = [
+        '.dealer-locator__results-item-address',
+        '.dealer-locator__results-item-phone-number',
+        '.dealer-locator__results-item-distance',
+        '.dealer-locator__results-item-dealer-links',
+        '.dealer-locator__results-item-furtherinfo.accordion',
+        '.dealer-locator__results-item-star-rating'
+    ]
+
+
+
+    $(document).ready(function () {
+        if (window.location.href.indexOf("fr.ford.be/distributeurs") > 0) {
+            waitForClick();
+            waitForSearchInput();
+            setTimeout(fireImpressionId(), 250);
+            setTimeout(function () {
+                $(document).on('click', blockImpressionId());
+            }, 500);
+        }
+    });
+
+
+
+    function removeItems(reruns) {
+
+        var localCount = 0;
+
+        let removeElements = setInterval(function () {
+            console.log('removing element # ' + localCount);
+            for (var i = 0; i < classesToRemove.length; i++) {
+                if ($(classesToRemove[i]) !== undefined
+                    && $(classesToRemove[i]) !== null
+                    && $(classesToRemove[i]).length > 0) {
+                    $(classesToRemove[i]).remove();
+                }
+            }
+
+            localCount++;
+            if (localCount >= reruns) {
+                clearInterval(removeElements);
+            }
+
+
+        }, 50);
+
+
+    }
+
+    function waitForResults() {
+        //Used to wait for the results to load after searching.
+
+        var wait = setInterval(function () {
+            if
+                (
+                $('.dealer-locator__results-item-detail') !== undefined &&
+                $('.dealer-locator__results-item-detail') !== null &&
+                $('.dealer-locator__results-item-detail').length > 0
+            ) {
+                console.log('results found');
+                removeItems($('.dealer-locator__results-item-detail').length);
+                clearInterval(wait);
+            }
+            else {
+                console.log('waiting on results');
+            }
+        }, 100);
+    }
+
+    function waitForClick() {
+        var wait = setInterval(function () {
+            console.log('adding click event');
+            $(document).on('click', function (e) {
+                console.log('element is');
+                console.dir(e.target);
+                if (e.target.className === "results-controls-button ng-scope") {
+                    removeItems(5);
+                }
+                else if (e.target.className === 'dealer-locator__autocomplete-link txt-body-s text-decoration_none ng-binding') {
+                    waitForResults();
+                }
+            });
+            clearInterval(wait);
+        })
+    }
+
+    function waitForSearchInput() {
+        var wait = setInterval(function () {
+
+            if
+                (
+                $('#search-field') !== undefined &&
+                $('#search-field') !== null &&
+                $('#search-field').length > 0
+
+            ) {
+                $('#search-field').on('change', function () {
+                    console.log('onChange');
+
+                });
+
+
+                clearInterval(wait);
+            }
+
+
+        }, 150)
+    }
+
+    function fireImpressionId() {
+        targetCampaign = {
+            page: {
+                campaignName: "tt:nwp:opt-1478:ab:lad:dealer-filters:challenger"
+            }
+        };
+        _satellite.track("genericTestingImpressionIDWorkaround");
+        console.log('Fired Impression ID');
+
+    }
+
+
+
+    function blockImpressionId() {
+        targetCampaign = {
+            page: {
+                campaignName: ""
+            }
+        };
+        _satellite.track("");
+        console.log('Blocked Impression ID');
+    }
+
+
+
+
+</script>

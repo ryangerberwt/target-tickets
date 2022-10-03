@@ -1,0 +1,41 @@
+<script>
+
+    $ = jQuery;
+
+    console.log('OT-1479');
+
+    console.log('Control');
+
+    $(document).ready(function () {
+
+        if (window.location.href.indexOf('nl.ford.be/verdelers') > 0) {
+
+
+            console.log('firing impression ID');
+            setTimeout(function () {
+                window.targetCampaign = {
+                    page: {
+                        campaignName: "tt:nwp:opt-1506:ab:lad:filter-position:control"
+                    }
+                }
+
+                _satellite.track("genericTestingImpressionIDWorkaround");
+            });
+
+
+        }
+    });
+
+    window.addEventListener('click', function (e) {
+        if (window.location.href.indexOf('nl.ford.be/verdelers') > 0) {
+            console.log('blocking!');
+            window.targetCampaign = {
+                page: {
+                    campaignName: ""
+                }
+            }
+        }
+    });
+
+
+</script>
